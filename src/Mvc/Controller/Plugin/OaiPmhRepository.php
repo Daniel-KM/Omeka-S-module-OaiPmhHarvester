@@ -175,7 +175,7 @@ class OaiPmhRepository extends AbstractPlugin
             }
 
             if (is_null($totalSets)) {
-                $totalSets = isset($response->ListRecords->resumptionToken)
+                $totalSets = isset($response->ListSets->resumptionToken)
                     ? (int) $response->ListSets->resumptionToken['completeListSize']
                     : count($response->ListSets->set);
             }
