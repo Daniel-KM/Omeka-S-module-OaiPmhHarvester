@@ -28,8 +28,7 @@ class Module extends AbstractModule
 
     public function upgrade($oldVersion, $newVersion, ServiceLocatorInterface $services): void
     {
-        $serviceLocator = $services;
-        $this->setServiceLocator($serviceLocator);
+        $this->setServiceLocator($services);
         require_once __DIR__ . '/data/scripts/upgrade.php';
     }
 
