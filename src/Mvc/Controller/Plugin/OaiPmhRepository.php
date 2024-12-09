@@ -90,7 +90,7 @@ class OaiPmhRepository extends AbstractPlugin
         }
 
         $url = $endpoint . '?verb=Identify';
-        $response = @\simplexml_load_file($url . '?verb=Identify');
+        $response = @\simplexml_load_file($url);
         return (bool) $response;
     }
 
