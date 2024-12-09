@@ -4,7 +4,6 @@ namespace OaiPmhHarvester\Job;
 
 use Omeka\Api\Exception\NotFoundException;
 use Omeka\Job\AbstractJob;
-use Omeka\Stdlib\Message;
 
 class Undo extends AbstractJob
 {
@@ -25,10 +24,10 @@ class Undo extends AbstractJob
         $index = 0;
         foreach (array_chunk($harvestEntityIds, 100, true) as $chunk) {
             if ($this->shouldStop()) {
-                $logger->warn(new Message(
-                    'The job "Undo" was stopped: %d/%d resources processed.', // @translate
-                    $index, count($harvestEntityIds)
-                ));
+                $logger->warn(
+                    'The job "Undo" was stopped: {count}/{total} resources processed.', // @translate
+                    ['count' => $index, 'total' => count($harvestEntityIds)]
+                );
                 break;
             }
             try {

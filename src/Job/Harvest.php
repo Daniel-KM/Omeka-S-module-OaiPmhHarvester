@@ -92,10 +92,10 @@ class Harvest extends AbstractJob
 
         $metadataPrefix = $args['metadata_prefix'] ?? null;
         if (!$metadataPrefix || !$harvesterMapManager->has($metadataPrefix)) {
-            $this->logger->err(sprintf(
-                'The format "%s" is not managed by the module currently.', // @translate
-                $metadataPrefix
-            ));
+            $this->logger->err(
+                'The format "{format}" is not managed by the module currently.', // @translate
+                ['format' => $metadataPrefix]
+            );
             $this->api->update('oaipmhharvester_harvests', $harvestId, ['o-module-oai-pmh-harvester:has_err' => true]);
             return false;
         }
@@ -110,13 +110,21 @@ class Harvest extends AbstractJob
         $resumptionToken = false;
         do {
             if ($this->shouldStop()) {
-                $this->logger->notice(new Message(
-                    'Results: total records = %1$s, harvested = %2$d, not in whitelist = %3$d, blacklisted = %4$d, imported = %5$d, medias = %6$d, errors = %7$d.', // @translate
-                    $stats['records'], $stats['harvested'], $stats['whitelisted'], $stats['blacklisted'], $stats['imported'], $stats['medias'], $stats['errors']
-                ));
-                $this->logger->warn(new Message(
+                $this->logger->notice(
+                    'Results: total records = {total}, harvested = {harvested}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, imported = {imported}, medias = {medias}, errors = {errors}.', // @translate
+                    [
+                        'total' => $stats['records'],
+                        'harvested' => $stats['harvested'],
+                        'whitelisted' => $stats['whitelisted'],
+                        'blacklisted' => $stats['blacklisted'],
+                        'imported' => $stats['imported'],
+                        'medias' => $stats['medias'],
+                        'errors' => $stats['errors'],
+                    ]
+                );
+                $this->logger->warn(
                     'The job was stopped.' // @translate
-                ));
+                );
                 return false;
             }
 
@@ -132,38 +140,38 @@ class Harvest extends AbstractJob
             $response = simplexml_load_file($url);
             if (!$response) {
                 $message = 'Server unavailable. Retrying.'; // @translate
-                $this->logger->warn(new Message(
-                    'Error: the harvester does not list records with url %1$s. Retrying %2$d/%3$d times in %4$d seconds', // @translate
-                    $url, 1, self::REQUEST_MAX_RETRY, self::REQUEST_WAIT * 3
-                ));
+                $this->logger->warn(
+                    'Error: the harvester does not list records with url {url}. Retrying {count}/{total} times in {seconds} seconds', // @translate
+                    ['url' => $url, 'count' => 1, 'total' => self::REQUEST_MAX_RETRY, 'seconds' => self::REQUEST_WAIT * 3]
+                );
 
                 sleep(self::REQUEST_WAIT * 3);
                 $response = simplexml_load_file($url);
                 if (!$response) {
                     $message = 'Server unavailable. Retrying.'; // @translate
-                    $this->logger->warn(new Message(
-                        'Error: the harvester does not list records with url %1$s. Retrying %2$d/%3$d times in %4$d seconds', // @translate
-                        $url, 2, self::REQUEST_MAX_RETRY, self::REQUEST_WAIT * 6
-                    ));
+                    $this->logger->warn(
+                        'Error: the harvester does not list records with url {url}. Retrying {count}/{total} times in {seconds} seconds', // @translate
+                        ['url' => $url, 'count' => 2, 'total' => self::REQUEST_MAX_RETRY, 'seconds' => self::REQUEST_WAIT * 6]
+                    );
 
                     sleep(self::REQUEST_WAIT * 6);
                     $response = simplexml_load_file($url);
                     if (!$response) {
                         $message = 'Server unavailable. Retrying.'; // @translate
-                        $this->logger->warn(new Message(
-                            'Error: the harvester does not list records with url %1$s. Retrying %2$d/%3$d times in %4$d seconds', // @translate
-                            $url, 3, self::REQUEST_MAX_RETRY, self::REQUEST_WAIT * 10
-                        ));
+                        $this->logger->warn(
+                            'Error: the harvester does not list records with url {url}. Retrying {count}/{total} times in {seconds} seconds', // @translate
+                            ['url' => $url, 'count' => 3, 'total' => self::REQUEST_MAX_RETRY, 'seconds' => self::REQUEST_WAIT * 10]
+                        );
 
                         sleep(self::REQUEST_WAIT * 10);
                         $response = simplexml_load_file($url);
                         if (!$response) {
                             $this->hasErr = true;
                             $message = 'Error.'; // @translate
-                            $this->logger->err(new Message(
-                                'Error: the harvester does not list records with url %1$s.', // @translate
-                                $url
-                            ));
+                            $this->logger->err(
+                                'Error: the harvester does not list records with url {url}.', // @translate
+                                ['url' => $url]
+                            );
                             break;
                         }
                     }
@@ -173,10 +181,10 @@ class Harvest extends AbstractJob
             if (!$response->ListRecords) {
                 $this->hasErr = true;
                 $message = 'Error.'; // @translate
-                $this->logger->err(new Message(
-                    'Error: the harvester does not list records with url %s.', // @translate
-                    $url
-                ));
+                $this->logger->err(
+                    'Error: the harvester does not list records with url {url}.', // @translate
+                    ['url' => $url]
+                );
                 break;
             }
 
@@ -260,21 +268,29 @@ class Harvest extends AbstractJob
 
         $this->api->update('oaipmhharvester_harvests', $harvestId, $harvestData);
 
-        $this->logger->notice(new Message(
-            'Results: total records = %1$s, harvested = %2$d, not in whitelist = %3$d, blacklisted = %4$d, imported = %5$d, medias = %6$d, errors = %7$d.', // @translate
-            $stats['records'], $stats['harvested'], $stats['whitelisted'], $stats['blacklisted'], $stats['imported'], $stats['medias'], $stats['errors']
-        ));
+        $this->logger->notice(
+            'Results: total records = {total}, harvested = {harvested}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, imported = {imported}, medias = {medias}, errors = {errors}.', // @translate
+            [
+                'total' => $stats['records'],
+                'harvested' => $stats['harvested'],
+                'whitelisted' => $stats['whitelisted'],
+                'blacklisted' => $stats['blacklisted'],
+                'imported' => $stats['imported'],
+                'medias' => $stats['medias'],
+                'errors' => $stats['errors'],
+            ]
+        );
 
         if ($stats['medias']) {
-            $this->logger->notice(new Message(
+            $this->logger->notice(
                 'Imports of medias should be checked separately.' // @translate
-            ));
+            );
         }
 
         if ($stats['errors']) {
-            $this->logger->err(new Message(
+            $this->logger->err(
                 'Some records were not imported, probably related to issue on media. You may check the main logs.' // @translate
-            ));
+            );
         }
     }
 
@@ -305,32 +321,32 @@ class Harvest extends AbstractJob
                 $identifierTotal = count($identifierIds);
                 if ($identifierTotal === count($resources)) {
                     if ($identifierTotal === 1) {
-                        $this->logger->info(new Message(
-                            '%1$d resource created from oai record %2$s: #%3$s.', // @translate
-                            1, $identifier, reset($identifierIds)
-                        ));
+                        $this->logger->info(
+                            '{count} resource created from oai record {identifier}: #{ids}.', // @translate
+                            ['count' => 1, 'identifier' => $identifier, 'ids' => reset($identifierIds)]
+                        );
                     } else {
-                        $this->logger->info(new Message(
-                            '%1$d resources created from oai record %2$s: #%3$s.', // @translate
-                            $identifierTotal, $identifier, implode('#, ', $identifierIds)
-                        ));
+                        $this->logger->info(
+                            '{count} resources created from oai record {identifier}: #{ids}.', // @translate
+                            ['count' => $identifierTotal, 'identifier' => $identifier, 'ids' => implode('#, ', $identifierIds)]
+                        );
                     }
                 } elseif ($identifierTotal && $identifierTotal !== count($resources)) {
-                        $this->logger->warn(new Message(
-                            'Only %1$d/%2$d resources created from oai record %3$s: #%4$s.', // @translate
-                            $identifierTotal, count($resources) - $identifierTotal, $identifier, implode('#, ', $identifierIds)
-                        ));
+                        $this->logger->warn(
+                            'Only {count}/{total} resources created from oai record {identifier}: #{ids}.', // @translate
+                            ['count' => $identifierTotal, 'total' => count($resources) - $identifierTotal, 'identifier' => $identifier, 'ids' => implode('#, ', $identifierIds)]
+                        );
                 } else {
-                    $this->logger->warn(new Message(
-                        'No resource created from oai record %s.', // @translate
-                        $identifier
-                    ));
+                    $this->logger->warn(
+                        'No resource created from oai record {identifier}.', // @translate
+                        ['identifier' => $identifier]
+                    );
                 }
             } else {
-                $this->logger->warn(new Message(
-                    'No resource created from oai record %s, according to its metadata.', // @translate
-                    $identifier
-                ));
+                $this->logger->warn(
+                    'No resource created from oai record {identifier}, according to its metadata.', // @translate
+                    ['identifier' => $identifier]
+                );
             }
         }
         return $total;
