@@ -27,7 +27,7 @@ Installation
 
 Uncompress files and rename module folder `OaiPmhHarvester`.
 
-See general end user documentation for [Installing a module] and follow the
+See general end user documentation for [installing a module] and follow the
 config instructions.
 
 
@@ -116,7 +116,7 @@ the digital library [Numistral].
 [METS]: http://www.loc.gov/standards/mets
 [MARCXML]: http://www.loc.gov/standards/marcxml
 [RFC 1807]: http://www.ietf.org/rfc/rfc1807.txt
-[Installing a module]: https://omeka.org/s/docs/user-manual/modules/#installing-modules
+[installing a module]: https://omeka.org/s/docs/user-manual/modules/#installing-modules
 [module issues]: https://gitlab.com/Daniel-KM/Omeka-S-module-OaiPmhHarvester/-/issues
 [GNU/GPL]: https://www.gnu.org/licenses/gpl-3.0.html
 [Omeka Classic]: https://omeka.org/classic
