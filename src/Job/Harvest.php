@@ -164,10 +164,10 @@ class Harvest extends AbstractJob
                                 'Error: the harvester does not list records with url %1$s.', // @translate
                                 $url
                             ));
+                            break;
                         }
                     }
                 }
-                break;
             }
 
             if (!$response->ListRecords) {
