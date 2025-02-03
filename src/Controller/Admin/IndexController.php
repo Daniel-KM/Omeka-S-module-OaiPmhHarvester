@@ -44,9 +44,8 @@ class IndexController extends AbstractActionController
                     $params['action'] = 'sets';
                     $params['prev_action'] = 'index';
                     return $this->forward()->dispatch(__CLASS__, $params);
-                } else {
-                    $this->messenger()->addFormErrors($form);
                 }
+                $this->messenger()->addFormErrors($form);
             }
         }
 
@@ -81,6 +80,7 @@ class IndexController extends AbstractActionController
             if (!$form->isValid()) {
                 $params['action'] = 'index';
                 $params['has_error'] = true;
+                $this->messenger()->addFormErrors($form);
                 return $this->forward()->dispatch(__CLASS__, $params);
             }
             $data = $form->getData();
@@ -107,8 +107,10 @@ class IndexController extends AbstractActionController
         }
         $data['predefined_sets'] = $predefinedSets;
 
+        $storeXml = !empty($data['store_xml']);
+
         // TODO Move last checks to form.
-        $optionsData = $this->dataFromEndpoint($endpoint, $harvestAllRecords, $predefinedSets);
+        $optionsData = $this->dataFromEndpoint($endpoint, $harvestAllRecords, $predefinedSets, $storeXml);
         if (!empty($optionsData['message'])) {
             $this->messenger()->addError($optionsData['message']);
             $params['action'] = $optionsData['redirect'] ?? 'sets';
@@ -207,6 +209,7 @@ class IndexController extends AbstractActionController
         $form->setData($post);
         if (!$form->isValid()) {
             $params['action'] = 'sets';
+            $this->messenger()->addFormErrors($form);
             return $this->forward()->dispatch(__CLASS__, $params);
         }
 
@@ -426,7 +429,7 @@ class IndexController extends AbstractActionController
      *
      * The endpoint should be checked.
      */
-    protected function dataFromEndpoint($endpoint, $harvestAllRecords, $predefinedSets): array
+    protected function dataFromEndpoint($endpoint, $harvestAllRecords, $predefinedSets, bool $storeXml = false): array
     {
         $harvestAllRecords = (bool) $harvestAllRecords;
         $hasPredefinedSets = !empty($predefinedSets);
@@ -449,7 +452,9 @@ class IndexController extends AbstractActionController
 
         $message = null;
 
+        /** @var \OaiPmhHarvester\Mvc\Controller\Plugin\OaiPmhRepository $oaiPmhRepository */
         $oaiPmhRepository = $this->oaiPmhRepository($endpoint);
+        $oaiPmhRepository->setStoreXml($storeXml);
         $repositoryName = $oaiPmhRepository->getRepositoryName()
             ?: $this->translate('[Untitled repository]'); // @translate
 

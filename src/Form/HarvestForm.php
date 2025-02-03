@@ -92,6 +92,18 @@ class HarvestForm extends Form
             ])
 
             ->add([
+                'name' => 'store_xml',
+                'type' => Element\Checkbox::class,
+                'options' => [
+                    'label' => 'Store oai-pmh xml response for list of sets', // @translate
+                    'info' => 'See log to get the url.', // @translate
+                ],
+                'attributes' => [
+                    'id' => 'store_xml',
+                ],
+            ])
+
+            ->add([
                 'type' => Element\Hidden::class,
                 'name' => 'step',
                 'attributes' => [

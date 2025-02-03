@@ -147,7 +147,13 @@ class Harvest extends AbstractJob
             }
             $this->basePath = $basePath;
             $this->baseName = $this->slugify(parse_url($args['endpoint'], PHP_URL_HOST));
-            $this->baseUri = $config['file_store']['local']['base_uri'] ?: '/files';
+            $this->baseUri = $config['file_store']['local']['base_uri'] ?: '';
+            if (empty($this->baseUri)) {
+                $helpers = $services->get('ViewHelperManager');
+                $serverUrlHelper = $helpers->get('ServerUrl');
+                $basePathHelper = $helpers->get('BasePath');
+                $this->baseUri = $serverUrlHelper($basePathHelper('files'));
+            }
         }
 
         $this->logger->notice(
@@ -470,13 +476,13 @@ class Harvest extends AbstractJob
                     );
             } else {
                 $isRecord
-                    ? $this->logger->notice(
-                        'The xml record #{page}/{index} was stored as {url}.', // @translate
-                        ['page' => $pageIndex, 'index' => $recordIndex, 'url' => $this->baseUri . '/files/oai-pmh-harvest/' . $filename]
+                    ? $this->logger->info(
+                        'Page #{page}: the xml record {index} was stored as {url}.', // @translate
+                        ['page' => $pageIndex, 'index' => $recordIndex, 'url' => $this->baseUri . '/oai-pmh-harvest/' . $filename]
                     )
-                    : $this->logger->notice(
+                    : $this->logger->info(
                         'The xml response #{page} was stored as {url}.', // @translate
-                        ['page' => $pageIndex, 'url' => $this->baseUri . '/files/oai-pmh-harvest/' . $filename]
+                        ['page' => $pageIndex, 'url' => $this->baseUri . '/oai-pmh-harvest/' . $filename]
                     );
         }
     }

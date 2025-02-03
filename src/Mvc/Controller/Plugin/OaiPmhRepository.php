@@ -2,6 +2,7 @@
 
 namespace OaiPmhHarvester\Mvc\Controller\Plugin;
 
+use Laminas\Log\Logger;
 use Laminas\Mvc\Controller\Plugin\AbstractPlugin;
 use Laminas\Mvc\I18n\Translator;
 use OaiPmhHarvester\OaiPmh\HarvesterMap\Manager as HarvesterMapManager;
@@ -17,6 +18,11 @@ class OaiPmhRepository extends AbstractPlugin
     protected $harvesterMapManager;
 
     /**
+     * @var \Laminas\Log\Logger
+     */
+    protected $logger;
+
+    /**
      * @var \Laminas\Mvc\I18n\Translator
      */
     protected $translator;
@@ -24,7 +30,22 @@ class OaiPmhRepository extends AbstractPlugin
     /**
      * @var string
      */
+    protected $basePath;
+
+    /**
+     * @var string
+     */
+    protected $baseUri;
+
+    /**
+     * @var string
+     */
     protected $endpoint;
+
+    /**
+     * @var bool
+     */
+    protected $isStoreXml = false;
 
     /**
      * List of managed metadata prefixes.
@@ -41,11 +62,19 @@ class OaiPmhRepository extends AbstractPlugin
      */
     protected $maxListSets = 1000;
 
-    public function __construct(HarvesterMapManager $harvesterMapManager, Translator $translator)
-    {
+    public function __construct(
+        HarvesterMapManager $harvesterMapManager,
+        Logger $logger,
+        Translator $translator,
+        string $basePath,
+        string $baseUri
+    ) {
         $this->harvesterMapManager = $harvesterMapManager;
+        $this->logger = $logger;
         $this->translator = $translator;
         $this->managedMetadataPrefixes = $harvesterMapManager->getRegisteredNames();
+        $this->basePath = $basePath;
+        $this->baseUri = $baseUri;
     }
 
     /**
@@ -64,6 +93,17 @@ class OaiPmhRepository extends AbstractPlugin
     public function getTranslator(): Translator
     {
         return $this->translator;
+    }
+
+    public function getStoreXml(): bool
+    {
+        return $this->isStoreXml;
+    }
+
+    public function setStoreXml(bool $storeXml): self
+    {
+        $this->isStoreXml = $storeXml;
+        return $this;
     }
 
     public function listManagedPrefixes(): array
@@ -134,6 +174,9 @@ class OaiPmhRepository extends AbstractPlugin
         $url = $endpoint . '?verb=ListMetadataFormats';
         $response = @\simplexml_load_file($url);
         if ($response) {
+            if ($response && $this->isStoreXml) {
+                $this->storeXml($response, 'ListMetadataFormats');
+            }
             foreach ($response->ListMetadataFormats->metadataFormat as $format) {
                 $prefix = (string) $format->metadataPrefix;
                 if (in_array($prefix, $this->managedMetadataPrefixes)) {
@@ -162,7 +205,9 @@ class OaiPmhRepository extends AbstractPlugin
         $baseListSetUrl = $endpoint . '?verb=ListSets';
         $resumptionToken = false;
         $totalSets = null;
+        $index = 0;
         do {
+            ++$index;
             $url = $baseListSetUrl;
             if ($resumptionToken) {
                 $url = $baseListSetUrl . '&resumptionToken=' . $resumptionToken;
@@ -172,6 +217,10 @@ class OaiPmhRepository extends AbstractPlugin
             $response = @\simplexml_load_file($url);
             if (!$response || !isset($response->ListSets)) {
                 break;
+            }
+
+            if ($this->isStoreXml) {
+                $this->storeXml($response, 'ListSets', $index);
             }
 
             if (is_null($totalSets)) {
@@ -196,5 +245,69 @@ class OaiPmhRepository extends AbstractPlugin
             'total' => $totalSets,
             'sets' => array_slice($sets, 0, $this->maxListSets, true),
         ];
+    }
+
+    protected function storeXml(\SimpleXMLElement $xml, string $part, ?int $index = null): void
+    {
+        if (!is_dir($this->basePath) || !is_readable($this->basePath) || !is_writeable($this->basePath)) {
+            $this->logger->err(
+                'The directory "{path}" is not writeable, so the oai-pmh xml responses are not storable.', // @translate
+                ['path' => $this->basePath]
+            );
+            return;
+        }
+        $dir = $this->basePath . '/oai-pmh-harvest';
+        if (!file_exists($dir)) {
+            mkdir($dir);
+        }
+
+        $baseName = $this->slugify(parse_url($this->endpoint, PHP_URL_HOST));
+        $date = (new \DateTime('now'))->format('Ymd-His');
+
+        $filename = $index === null
+            ? sprintf('%s.%s.%s.oaipmh.xml', $baseName, $part, $date)
+            : sprintf('%s.%s.%s.%04d.oaipmh.xml', $baseName, $part, $date, $index);
+
+        $filepath = $this->basePath . '/oai-pmh-harvest/' . $filename;
+        // dom_import_simplexml($response);
+        $dom = new \DOMDocument('1.0', 'UTF-8');
+        $dom->preserveWhiteSpace = false;
+        $dom->formatOutput = true;
+        $dom->loadXML($xml->asXML());
+        $resultSave = $dom->save($filepath);
+        // $resultSave = $xml->saveXML($filepath);
+        if (!$resultSave) {
+            $this->logger->err(
+                'Unable to store xml (verb {verb}).', // @translate
+                ['verb' => $part]
+            );
+        } else {
+            $this->logger->notice(
+                'The xml response (verb {verb}) was stored as {url}.', // @translate
+                ['verb' => $part, 'url' => $this->baseUri . '/oai-pmh-harvest/' . $filename]
+            );
+        }
+    }
+
+    /**
+     * Transform the given string into a valid URL slug
+     *
+     * Copy from \Omeka\Api\Adapter\SiteSlugTrait::slugify().
+     */
+    protected function slugify(string $input): string
+    {
+        if (extension_loaded('intl')) {
+            $transliterator = \Transliterator::createFromRules(':: NFD; :: [:Nonspacing Mark:] Remove; :: NFC;');
+            $slug = $transliterator->transliterate($input);
+        } elseif (extension_loaded('iconv')) {
+            $slug = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $input);
+        } else {
+            $slug = $input;
+        }
+        $slug = mb_strtolower($slug, 'UTF-8');
+        $slug = preg_replace('/[^a-z0-9-]+/u', '-', $slug);
+        $slug = preg_replace('/-{2,}/', '-', $slug);
+        $slug = preg_replace('/-*$/', '', $slug);
+        return $slug;
     }
 }
