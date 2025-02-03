@@ -14,6 +14,11 @@ $sets = $form->getOption('sets') ?: [];
 ?>
 
 <?= $this->pageTitle($translate('Prepare import'), 1, $translate('OAI-PMH Harvester')) ?>
+
+<div id="page-actions">
+    <button form="harvest-list-sets" type="submit"><?= $translate('Harvest') ?></button>
+</div>
+
 <h2><?= $repositoryName ?></h2>
 <p>
     <?php if (is_null($total)): ?>
@@ -32,9 +37,4 @@ $sets = $form->getOption('sets') ?: [];
 </p>
 <?php endif; ?>
 
-<?= $this->form()->openTag($form) ?>
-<fieldset id="page-actions">
-    <button type="submit"><?= $translate('Harvest') ?></button>
-</fieldset>
-<?= $this->formCollection($form, false) ?>
-<?= $this->form()->closeTag($form) ?>
+<?= $this->form($form) ?>
