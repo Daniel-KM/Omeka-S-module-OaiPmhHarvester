@@ -101,13 +101,10 @@ abstract class AbstractHarvesterMap implements HarvesterMapInterface
      * @param SimpleXMLIterator The record object
      * @return bool
      */
-    public function isDeletedRecord($record)
+    public function isDeletedRecord(\SimpleXMLElement $record): bool
     {
-        if (isset($record->header->attributes()->status)
-            && $record->header->attributes()->status == 'deleted') {
-            return true;
-        }
-        return false;
+        return isset($record->header->attributes()->status)
+            && $record->header->attributes()->status == 'deleted';
     }
 
     /**
@@ -186,6 +183,8 @@ abstract class AbstractHarvesterMap implements HarvesterMapInterface
      * Get all property ids by term.
      *
      * @return array Associative array of ids by term.
+     *
+     * @todo Use \Common\Stdlib\EasyMeta.
      */
     protected function getPropertyIds(): array
     {

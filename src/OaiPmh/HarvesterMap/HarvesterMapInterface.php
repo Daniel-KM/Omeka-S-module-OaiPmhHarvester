@@ -21,4 +21,9 @@ interface HarvesterMapInterface
      * Map a xml record to a list of resources for Omeka Api.
      */
     public function mapRecord(SimpleXMLElement $record): array;
+
+    /**
+     * Check if a record is marked deleted.
+     */
+    public function isDeletedRecord(SimpleXMLElement $record): bool;
 }
