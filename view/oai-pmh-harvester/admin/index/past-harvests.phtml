@@ -11,6 +11,8 @@ $assetUrl = $plugins->get('assetUrl');
 $translate = $plugins->get('translate');
 $hyperlink = $plugins->get('hyperlink');
 
+$hasModuleLog = class_exists('Log\Module', false);
+
 $this->headLink()
     ->appendStylesheet($assetUrl('css/oai-pmh-harvester.css', 'OaiPmhHarvester'));
 
@@ -49,11 +51,13 @@ $this->htmlElement('body')->appendAttribute('class', 'oai-pmh-harvester oai-pmh-
         </thead>
         <tbody>
 
-        <?php foreach ($harvests as $harvest): ?>
-        <?php $job = $harvest->job(); ?>
-        <?php $undoJob = $harvest->undoJob(); ?>
-        <?php $setSpec = $harvest->getSetSpec(); ?>
-        <?php $setName = $harvest->getSetName(); ?>
+        <?php
+        foreach ($harvests as $harvest):
+            $job = $harvest->job();
+            $undoJob = $harvest->undoJob();
+            $setSpec = $harvest->getSetSpec();
+            $setName = $harvest->getSetName();
+            ?>
         <tr class="<?= $undoJob ? 'undone' : '' ?>">
             <td>
                 <input type="checkbox" name="jobs[]" value="<?= $job->id() ?>" <?= $undoJob ? ' disabled="disabled"' : '' ?>/>
@@ -74,8 +78,6 @@ $this->htmlElement('body')->appendAttribute('class', 'oai-pmh-harvester oai-pmh-
                 <?php endif; ?>
             </td>
             <td>
-                <?php $setName = $harvest->getSetName(); ?>
-                <?php $setSpec = $harvest->getSetSpec(); ?>
                 <?php if (!$setName || $setName === $setSpec): ?>
                 [<span class="oai-pmh-set"><?= $escape($setSpec) ?></span>]
                 <?php else: ?>
@@ -115,15 +117,19 @@ $this->htmlElement('body')->appendAttribute('class', 'oai-pmh-harvester oai-pmh-
                     <span class="oai-pmh-job">
                         <?= $undoJob->link($translate('Job details')) ?>
                     </span>
-                    <?php if ($undoJob->log()): ?>
+                    <?php if ($undoJob->log() || $hasModuleLog): ?>
                     /
                     <span class="oai-pmh-log">
-                        <?= $undoJob->link($translate('Log'), 'log', ['target' => '_blank']) ?>
+                        <?= $hasModuleLog
+                            ? $hyperlink($translate('Log'), $url('admin/log/default', [], ['query' => ['job_id' => $undoJob->id()]]))
+                            : $undoJob->link($translate('Log'), 'log', ['target' => '_blank']) ?>
                     </span>
                     <?php
                     endif;
                 else:
-                    echo $escape($translate($job->status()));
+                    echo $hasModuleLog
+                        ? $hyperlink($translate($job->status()), $url('admin/log/default', [], ['query' => ['job_id' => $job->id()]]))
+                        : $escape($translate($job->status()));
                 endif;
                 ?>
             </td>
