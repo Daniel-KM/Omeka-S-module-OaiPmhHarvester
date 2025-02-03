@@ -98,18 +98,18 @@ class HarvestAdapter extends AbstractEntityAdapter
             $entity->setUndoJob($job);
         }
 
-        if (array_key_exists('o-module-oai-pmh-harvester:message', $data)) {
-            $value = (string) $data['o-module-oai-pmh-harvester:message'];
+        if (array_key_exists('o-oai-pmh:message', $data)) {
+            $value = (string) $data['o-oai-pmh:message'];
             $value = $value === '' ? null : $value;
             $entity->setMessage($value);
         }
 
-        if (array_key_exists('o-module-oai-pmh-harvester:endpoint', $data)) {
-            $entity->setEndpoint((string) $data['o-module-oai-pmh-harvester:endpoint']);
+        if (array_key_exists('o-oai-pmh:endpoint', $data)) {
+            $entity->setEndpoint((string) $data['o-oai-pmh:endpoint']);
         }
 
-        if (array_key_exists('o-module-oai-pmh-harvester:entity_name', $data)) {
-            $entity->setEntityName((string) $data['o-module-oai-pmh-harvester:entity_name']);
+        if (array_key_exists('o-oai-pmh:entity_name', $data)) {
+            $entity->setEntityName((string) $data['o-oai-pmh:entity_name']);
         }
 
         if (array_key_exists('o:item_set', $data)) {
@@ -119,38 +119,38 @@ class HarvestAdapter extends AbstractEntityAdapter
             $entity->setItemSet($itemSet);
         }
 
-        if (array_key_exists('o-module-oai-pmh-harvester:metadata_prefix', $data)) {
-            $entity->setMetadataPrefix((string) $data['o-module-oai-pmh-harvester:metadata_prefix']);
+        if (array_key_exists('o-oai-pmh:metadata_prefix', $data)) {
+            $entity->setMetadataPrefix((string) $data['o-oai-pmh:metadata_prefix']);
         }
 
-        if (array_key_exists('o-module-oai-pmh-harvester:set_spec', $data)) {
-            $value = (string) $data['o-module-oai-pmh-harvester:set_spec'];
+        if (array_key_exists('o-oai-pmh:set_spec', $data)) {
+            $value = (string) $data['o-oai-pmh:set_spec'];
             $value = $value === '' ? null : $value;
             $entity->setSetSpec($value);
         }
 
-        if (array_key_exists('o-module-oai-pmh-harvester:set_name', $data)) {
-            $value = (string) $data['o-module-oai-pmh-harvester:set_name'];
+        if (array_key_exists('o-oai-pmh:set_name', $data)) {
+            $value = (string) $data['o-oai-pmh:set_name'];
             $value = $value === '' ? null : $value;
             $entity->setSetName($value);
         }
 
-        if (array_key_exists('o-module-oai-pmh-harvester:set_description', $data)) {
-            $value = (string) $data['o-module-oai-pmh-harvester:set_description'];
+        if (array_key_exists('o-oai-pmh:set_description', $data)) {
+            $value = (string) $data['o-oai-pmh:set_description'];
             $value = $value === '' ? null : $value;
             $entity->setSetDescription($value);
         }
 
-        if (array_key_exists('o-module-oai-pmh-harvester:has_err', $data)) {
-            $entity->setHasErr((bool) $data['o-module-oai-pmh-harvester:has_err']);
+        if (array_key_exists('o-oai-pmh:has_err', $data)) {
+            $entity->setHasErr((bool) $data['o-oai-pmh:has_err']);
         }
 
-        if (array_key_exists('o-module-oai-pmh-harvester:stats', $data)) {
-            $entity->setStats($data['o-module-oai-pmh-harvester:stats'] ?: []);
+        if (array_key_exists('o-oai-pmh:stats', $data)) {
+            $entity->setStats($data['o-oai-pmh:stats'] ?: []);
         }
 
-        if (array_key_exists('o-module-oai-pmh-harvester:resumption_token', $data)) {
-            $value = (string) $data['o-module-oai-pmh-harvester:resumption_token'];
+        if (array_key_exists('o-oai-pmh:resumption_token', $data)) {
+            $value = (string) $data['o-oai-pmh:resumption_token'];
             $value = $value === '' ? null : $value;
             $entity->setResumptionToken($value);
         }

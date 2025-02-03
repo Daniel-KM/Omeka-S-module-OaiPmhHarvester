@@ -12,9 +12,9 @@ class EntityRepresentation extends AbstractEntityRepresentation
     {
         return [
             'o:job' => $this->job()->getReference(),
-            'o-module-oai-pmh-harvester:entity_id' => $this->entityId(),
-            'o-module-oai-pmh-harvester:entity_name' => $this->entityName(),
-            'o-module-oai-pmh-harvester:identifier' => $this->identifier(),
+            'o-oai-pmh:entity_id' => $this->entityId(),
+            'o-oai-pmh:entity_name' => $this->entityName(),
+            'o-oai-pmh:identifier' => $this->identifier(),
             'o:created' => [
                 '@value' => $this->getDateTime($this->created()),
                 '@type' => 'http://www.w3.org/2001/XMLSchema#dateTime',
@@ -24,7 +24,7 @@ class EntityRepresentation extends AbstractEntityRepresentation
 
     public function getJsonLdType()
     {
-        return 'o:OaiPmhHarvesterHarvesterEntity';
+        return 'o:OaiPmhHarvesterEntity';
     }
 
     public function job(): JobRepresentation

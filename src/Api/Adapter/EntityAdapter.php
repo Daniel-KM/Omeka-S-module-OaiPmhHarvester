@@ -88,16 +88,16 @@ class EntityAdapter extends AbstractEntityAdapter
             $entity->setJob($job);
         }
 
-        if (array_key_exists('o-module-oai-pmh-harvester:entity_id', $data)) {
-            $entity->setEntityId((int) $data['o-module-oai-pmh-harvester:entity_id']);
+        if (array_key_exists('o-oai-pmh:entity_id', $data)) {
+            $entity->setEntityId((int) $data['o-oai-pmh:entity_id']);
         }
 
-        if (array_key_exists('o-module-oai-pmh-harvester:entity_name', $data)) {
-            $entity->setEntityName((string) $data['o-module-oai-pmh-harvester:entity_name']);
+        if (array_key_exists('o-oai-pmh:entity_name', $data)) {
+            $entity->setEntityName((string) $data['o-oai-pmh:entity_name']);
         }
 
-        if (array_key_exists('o-module-oai-pmh-harvester:identifier', $data)) {
-            $entity->setIdentifier((string) $data['o-module-oai-pmh-harvester:identifier']);
+        if (array_key_exists('o-oai-pmh:identifier', $data)) {
+            $entity->setIdentifier((string) $data['o-oai-pmh:identifier']);
         }
 
         if (Request::CREATE === $request->getOperation()) {

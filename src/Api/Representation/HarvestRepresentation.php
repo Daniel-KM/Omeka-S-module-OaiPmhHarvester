@@ -23,23 +23,23 @@ class HarvestRepresentation extends AbstractEntityRepresentation
         return [
             'o:job' => $this->job()->getReference(),
             'o:undo_job' => $undoJob,
-            'o-module-oai-pmh-harvester:message' => $this->message(),
-            'o-module-oai-pmh-harvester:endpoint' => $this->endpoint(),
-            'o-module-oai-pmh-harvester:entity_name' => $this->entityName(),
+            'o-oai-pmh:message' => $this->message(),
+            'o-oai-pmh:endpoint' => $this->endpoint(),
+            'o-oai-pmh:entity_name' => $this->entityName(),
             'o:item_set' => $itemSet(),
-            'o-module-oai-pmh-harvester:metadata_prefix' => $this->metadataPrefix(),
-            'o-module-oai-pmh-harvester:set_spec' => $this->getSetSpec(),
-            'o-module-oai-pmh-harvester:set_name' => $this->getSetName(),
-            'o-module-oai-pmh-harvester:set_description' => $this->getSetDescription(),
-            'o-module-oai-pmh-harvester:has_err' => $this->hasErr(),
-            'o-module-oai-pmh-harvester:stats' => $this->stats(),
-            'o-module-oai-pmh-harvester:resumption_token' => $this->resumptionToken(),
+            'o-oai-pmh:metadata_prefix' => $this->metadataPrefix(),
+            'o-oai-pmh:set_spec' => $this->getSetSpec(),
+            'o-oai-pmh:set_name' => $this->getSetName(),
+            'o-oai-pmh:set_description' => $this->getSetDescription(),
+            'o-oai-pmh:has_err' => $this->hasErr(),
+            'o-oai-pmh:stats' => $this->stats(),
+            'o-oai-pmh:resumption_token' => $this->resumptionToken(),
         ];
     }
 
     public function getJsonLdType()
     {
-        return 'o:OaipmhharvesterHarvestJob';
+        return 'o:OaiPmhHarvesterHarvest';
     }
 
     public function job(): JobRepresentation
@@ -80,6 +80,9 @@ class HarvestRepresentation extends AbstractEntityRepresentation
         return $this->resource->getMetadataPrefix();
     }
 
+    /**
+     * Note: Use get to avoid issue with set.
+     */
     public function getSetSpec(): ?string
     {
         return $this->resource->getSetSpec();

@@ -74,16 +74,16 @@ class Harvest extends AbstractJob
         $harvestData = [
             'o:job' => ['o:id' => $this->job->getId()],
             'o:undo_job' => null,
-            'o-module-oai-pmh-harvester:message' => 'Harvesting started', // @translate
-            'o-module-oai-pmh-harvester:entity_name' => $this->getArg('entity_name', 'items'),
-            'o-module-oai-pmh-harvester:endpoint' => $args['endpoint'],
+            'o-oai-pmh:message' => 'Harvesting started', // @translate
+            'o-oai-pmh:entity_name' => $this->getArg('entity_name', 'items'),
+            'o-oai-pmh:endpoint' => $args['endpoint'],
             'o:item_set' => ['o:id' => $args['item_set_id']],
-            'o-module-oai-pmh-harvester:metadata_prefix' => $args['metadata_prefix'],
-            'o-module-oai-pmh-harvester:set_spec' => $args['set_spec'],
-            'o-module-oai-pmh-harvester:set_name' => $args['set_name'],
-            'o-module-oai-pmh-harvester:set_description' => $args['set_description'] ?? null,
-            'o-module-oai-pmh-harvester:has_err' => false,
-            'o-module-oai-pmh-harvester:stats' => $stats,
+            'o-oai-pmh:metadata_prefix' => $args['metadata_prefix'],
+            'o-oai-pmh:set_spec' => $args['set_spec'],
+            'o-oai-pmh:set_name' => $args['set_name'],
+            'o-oai-pmh:set_description' => $args['set_description'] ?? null,
+            'o-oai-pmh:has_err' => false,
+            'o-oai-pmh:stats' => $stats,
         ];
 
         /** @var \OaiPmhHarvester\Api\Representation\HarvestRepresentation $harvest */
@@ -97,7 +97,7 @@ class Harvest extends AbstractJob
                 'The format "{format}" is not managed by the module currently.', // @translate
                 ['format' => $metadataPrefix]
             );
-            $this->api->update('oaipmhharvester_harvests', $harvestId, ['o-module-oai-pmh-harvester:has_err' => true]);
+            $this->api->update('oaipmhharvester_harvests', $harvestId, ['o-oai-pmh:has_err' => true]);
             return false;
         }
 
@@ -256,9 +256,9 @@ class Harvest extends AbstractJob
 
             // Update job.
             $harvestData = [
-                'o-module-oai-pmh-harvester:message' => 'Processing', // @translate
-                'o-module-oai-pmh-harvester:has_err' => $this->hasErr,
-                'o-module-oai-pmh-harvester:stats' => $stats,
+                'o-oai-pmh:message' => 'Processing', // @translate
+                'o-oai-pmh:has_err' => $this->hasErr,
+                'o-oai-pmh:stats' => $stats,
             ];
             $this->api->update('oaipmhharvester_harvests', $harvestId, $harvestData);
 
@@ -276,9 +276,9 @@ class Harvest extends AbstractJob
         }
 
         $harvestData = [
-            'o-module-oai-pmh-harvester:message' => $message,
-            'o-module-oai-pmh-harvester:has_err' => $this->hasErr,
-            'o-module-oai-pmh-harvester:stats' => $stats,
+            'o-oai-pmh:message' => $message,
+            'o-oai-pmh:has_err' => $this->hasErr,
+            'o-oai-pmh:stats' => $stats,
         ];
 
         $this->api->update('oaipmhharvester_harvests', $harvestId, $harvestData);
@@ -382,9 +382,9 @@ class Harvest extends AbstractJob
     {
         return [
             'o:job' => ['o:id' => $this->job->getId()],
-            'o-module-oai-pmh-harvester:entity_id' => $resource->id(),
-            'o-module-oai-pmh-harvester:entity_name' => $this->getArg('entity_name', 'items'),
-            'o-module-oai-pmh-harvester:identifier' => (string) $identifier,
+            'o-oai-pmh:entity_id' => $resource->id(),
+            'o-oai-pmh:entity_name' => $this->getArg('entity_name', 'items'),
+            'o-oai-pmh:identifier' => (string) $identifier,
         ];
     }
 }
