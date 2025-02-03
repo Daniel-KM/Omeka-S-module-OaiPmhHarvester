@@ -74,10 +74,14 @@ class SetsForm extends Form
 
             ->add([
                 'name' => 'store_xml',
-                'type' => Element\Checkbox::class,
+                'type' => Element\MultiCheckbox::class,
                 'options' => [
                     'label' => 'Store oai-pmh xml responses', // @translate
                     'info' => 'This option allows to investigate issues. Xml files are stored in directory /files/oai-pmh-harvest.', // @translate
+                    'value_options' => [
+                        'page' => 'By page', // @translate
+                        'record' => 'By record', // @translate
+                    ],
                 ],
                 'attributes' => [
                     'id' => 'store_xml',
@@ -218,6 +222,7 @@ class SetsForm extends Form
             if (strpos($elementName, 'namespace[') === 0
                 || strpos($elementName, 'setSpec[') === 0
                 || strpos($elementName, 'harvest[') === 0
+                || $elementName === 'store_xml'
             ) {
                 $inputFilters
                     ->add([

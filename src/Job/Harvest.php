@@ -34,16 +34,39 @@ class Harvest extends AbstractJob
     protected $api;
 
     /**
+     * @var \Doctrine\ORM\EntityManager
+     */
+    protected $entityManager;
+
+    /**
      * @var \Laminas\Log\Logger
      */
     protected $logger;
 
     /**
-     * @var \Doctrine\ORM\EntityManager
+     * @var string
      */
-    protected $entityManager;
+    protected $baseName;
 
+    /**
+     * @var string
+     */
+    protected $basePath;
+
+    /**
+     * @var string
+     */
+    protected $baseUri;
+
+    /**
+     * @var bool
+     */
     protected $hasErr = false;
+
+    /**
+     * @var \OaiPmhHarvester\Api\Representation\HarvestRepresentation
+     */
+    protected $harvest;
 
     public function perform()
     {
@@ -88,6 +111,8 @@ class Harvest extends AbstractJob
 
         /** @var \OaiPmhHarvester\Api\Representation\HarvestRepresentation $harvest */
         $harvest = $this->api->create('oaipmhharvester_harvests', $harvestData)->getContent();
+        $this->harvest = $harvest;
+
         $harvestId = $harvest->id();
 
         $metadataPrefix = $args['metadata_prefix'] ?? null;
@@ -102,8 +127,10 @@ class Harvest extends AbstractJob
         }
 
         // Check directory to store xmls.
-        $storeXml = !empty($args['store_xml']);
-        if ($storeXml) {
+        $storeXml = !empty($args['store_xml']) && is_array($args['store_xml']) ? $args['store_xml'] : [];
+        $storeXmlResponse = in_array('page', $storeXml);
+        $storeXmlRecord = in_array('record', $storeXml);
+        if ($storeXmlResponse || $storeXmlRecord) {
             $config = $services->get('Config');
             $basePath = $config['file_store']['local']['base_path'] ?: (OMEKA_PATH . '/files');
             if (!is_dir($basePath) || !is_readable($basePath) || !is_writeable($basePath)) {
@@ -118,8 +145,9 @@ class Harvest extends AbstractJob
             if (!file_exists($dir)) {
                 mkdir($dir);
             }
-            $baseUri = $config['file_store']['local']['base_uri'] ?: '/files';
-            $baseName = $this->slugify(parse_url($args['endpoint'], PHP_URL_HOST));
+            $this->basePath = $basePath;
+            $this->baseName = $this->slugify(parse_url($args['endpoint'], PHP_URL_HOST));
+            $this->baseUri = $config['file_store']['local']['base_uri'] ?: '/files';
         }
 
         $this->logger->notice(
@@ -135,10 +163,10 @@ class Harvest extends AbstractJob
         ]);
 
         $resumptionToken = false;
-        $countProcessed = 0;
-        $fetch = 0;
+        $recordIndex = 0;
+        $pageIndex = 0;
         do {
-            ++$fetch;
+            ++$pageIndex;
             if ($this->shouldStop()) {
                 $this->logger->notice(
                     'Results: total records = {total}, harvested = {harvested}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, imported = {imported}, medias = {medias}, errors = {errors}.', // @translate
@@ -209,26 +237,8 @@ class Harvest extends AbstractJob
             }
 
             // @todo Store the real response, not the domified one.
-            if ($storeXml) {
-                $filename = sprintf('%s-%04d-%04d.oaipmhxml', $baseName, $harvestId, $fetch);
-                $filepath = $basePath . '/oai-pmh-harvest/' . $filename;
-                // dom_import_simplexml($response);
-                $dom = new \DOMDocument('1.0', 'UTF-8');
-                $dom->preserveWhiteSpace = false;
-                $dom->formatOutput = true;
-                $dom->loadXML($response->asXML());
-                $resultSave = $dom->save($filepath);
-                if (!$resultSave) {
-                    $this->logger->err(
-                        'Unable to store xml for page #{page}.', // @translate
-                        ['page' => $fetch]
-                    );
-                } else {
-                    $this->logger->notice(
-                        'The xml resposne #{page} was stored as {url}.', // @translate
-                        ['page' => $fetch, 'url' => $baseUri . '/files/oai-pmh-harvester/' . $filename]
-                    );
-                }
+            if ($storeXmlResponse) {
+                $this->storeXml($response, $pageIndex);
             }
 
             if (!$response->ListRecords) {
@@ -252,7 +262,10 @@ class Harvest extends AbstractJob
             $toInsert = [];
             /** @var \SimpleXMLElement $record */
             foreach ($records->record as $record) {
-                ++$countProcessed;
+                ++$recordIndex;
+                if ($storeXmlRecord) {
+                    $this->storeXml($record, $pageIndex, $recordIndex);
+                }
                 if ($harvesterMap->isDeletedRecord($record)) {
                     continue;
                 }
@@ -308,7 +321,7 @@ class Harvest extends AbstractJob
 
             $this->logger->info(
                 'Page #{index} processed ({count}/{total} records, {count_2} errors).', // @translate
-                ['index' => $fetch, 'count' => $countProcessed, 'total' => $stats['records'], 'count_2' => $stats['errors']]
+                ['index' => $pageIndex, 'count' => $recordIndex, 'total' => $stats['records'] ?: '?', 'count_2' => $stats['errors']]
             );
 
             sleep(self::REQUEST_WAIT);
@@ -379,19 +392,19 @@ class Harvest extends AbstractJob
                 if ($identifierTotal === count($resources)) {
                     if ($identifierTotal === 1) {
                         $this->logger->info(
-                            '{count} resource created from oai record {identifier}: #{ids}.', // @translate
-                            ['count' => 1, 'identifier' => $identifier, 'ids' => reset($identifierIds)]
+                            '{count} resource created from oai record {identifier}: #{resource_ids}.', // @translate
+                            ['count' => 1, 'identifier' => $identifier, 'resource_ids' => reset($identifierIds)]
                         );
                     } else {
                         $this->logger->info(
-                            '{count} resources created from oai record {identifier}: #{ids}.', // @translate
-                            ['count' => $identifierTotal, 'identifier' => $identifier, 'ids' => implode('#, ', $identifierIds)]
+                            '{count} resources created from oai record {identifier}: #{resource_ids}.', // @translate
+                            ['count' => $identifierTotal, 'identifier' => $identifier, 'resource_ids' => implode('#, ', $identifierIds)]
                         );
                     }
                 } elseif ($identifierTotal && $identifierTotal !== count($resources)) {
                     $this->logger->warn(
-                        'Only {count}/{total} resources created from oai record {identifier}: #{ids}.', // @translate
-                        ['count' => $identifierTotal, 'total' => count($resources) - $identifierTotal, 'identifier' => $identifier, 'ids' => implode('#, ', $identifierIds)]
+                        'Only {count}/{total} resources created from oai record {identifier}: #{resource_ids}.', // @translate
+                        ['count' => $identifierTotal, 'total' => count($resources) - $identifierTotal, 'identifier' => $identifier, 'resource_ids' => implode('#, ', $identifierIds)]
                     );
                 } else {
                     $this->logger->warn(
@@ -430,6 +443,42 @@ class Harvest extends AbstractJob
             'o-oai-pmh:entity_name' => $this->getArg('entity_name', 'items'),
             'o-oai-pmh:identifier' => (string) $identifier,
         ];
+    }
+
+    protected function storeXml(\SimpleXMLElement $xml, int $pageIndex, ?int $recordIndex = null): void
+    {
+            $isRecord = $recordIndex !== null;
+            $filename = $isRecord
+                ? sprintf('%s.%04d.%04d.%07d.oaipmh.xml', $this->baseName, $this->harvest->id(), $pageIndex, $recordIndex)
+                : sprintf('%s.%04d.%04d.oaipmh.xml', $this->baseName, $this->harvest->id(), $pageIndex);
+            $filepath = $this->basePath . '/oai-pmh-harvest/' . $filename;
+            // dom_import_simplexml($response);
+            $dom = new \DOMDocument('1.0', 'UTF-8');
+            $dom->preserveWhiteSpace = false;
+            $dom->formatOutput = true;
+            $dom->loadXML($xml->asXML());
+            $resultSave = $dom->save($filepath);
+            if (!$resultSave) {
+                $isRecord
+                    ? $this->logger->err(
+                        'Unable to store xml for page #{page}, record #{index}.', // @translate
+                        ['page' => $pageIndex, 'index' => $recordIndex]
+                    )
+                    : $this->logger->err(
+                        'Unable to store xml for page #{page}.', // @translate
+                        ['page' => $pageIndex]
+                    );
+            } else {
+                $isRecord
+                    ? $this->logger->notice(
+                        'The xml record #{page}/{index} was stored as {url}.', // @translate
+                        ['page' => $pageIndex, 'index' => $recordIndex, 'url' => $this->baseUri . '/files/oai-pmh-harvest/' . $filename]
+                    )
+                    : $this->logger->notice(
+                        'The xml response #{page} was stored as {url}.', // @translate
+                        ['page' => $pageIndex, 'url' => $this->baseUri . '/files/oai-pmh-harvest/' . $filename]
+                    );
+        }
     }
 
     /**
