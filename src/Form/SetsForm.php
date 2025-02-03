@@ -96,11 +96,11 @@ class SetsForm extends Form
         ?array $sets = null,
         ?bool $hasPredefinedSets = null
     ): self {
-        $harvestAllRecords = $harvestAllRecords ?? $this->getOption('harvest_all_records', false);
-        $formats = $formats ?? $this->getOption('formats', ['oai_dc']);
-        $favoriteFormat = $favoriteFormat ?? $this->getOption('favorite_format', 'oai_dc');
-        $sets = $sets ?? $this->getOption('sets', []);
-        $hasPredefinedSets = $hasPredefinedSets ?? $this->getOption('has_predefined_sets', []);
+        $harvestAllRecords ??= $this->getOption('harvest_all_records', false);
+        $formats ??= $this->getOption('formats', ['oai_dc']);
+        $favoriteFormat ??= $this->getOption('favorite_format', 'oai_dc');
+        $sets ??= $this->getOption('sets', []);
+        $hasPredefinedSets ??= $this->getOption('has_predefined_sets', []);
 
         // TODO Normalize sets form with collection, fieldsets and better names.
 

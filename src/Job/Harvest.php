@@ -4,7 +4,6 @@ namespace OaiPmhHarvester\Job;
 
 use Omeka\Api\Representation\AbstractRepresentation;
 use Omeka\Job\AbstractJob;
-use Omeka\Stdlib\Message;
 
 class Harvest extends AbstractJob
 {
@@ -319,9 +318,7 @@ class Harvest extends AbstractJob
     {
         // TODO The length should be related to the size of the repository output?
         $total = 0;
-        $getId = function ($v) {
-            return $v->id();
-        };
+        $getId = fn ($v) => $v->id();
         foreach ($toCreate as $identifier => $resources) {
             if (count($resources)) {
                 $identifierIds = [];
@@ -348,10 +345,10 @@ class Harvest extends AbstractJob
                         );
                     }
                 } elseif ($identifierTotal && $identifierTotal !== count($resources)) {
-                        $this->logger->warn(
-                            'Only {count}/{total} resources created from oai record {identifier}: #{ids}.', // @translate
-                            ['count' => $identifierTotal, 'total' => count($resources) - $identifierTotal, 'identifier' => $identifier, 'ids' => implode('#, ', $identifierIds)]
-                        );
+                    $this->logger->warn(
+                        'Only {count}/{total} resources created from oai record {identifier}: #{ids}.', // @translate
+                        ['count' => $identifierTotal, 'total' => count($resources) - $identifierTotal, 'identifier' => $identifier, 'ids' => implode('#, ', $identifierIds)]
+                    );
                 } else {
                     $this->logger->warn(
                         'No resource created from oai record {identifier}.', // @translate

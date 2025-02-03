@@ -2,8 +2,6 @@
 
 namespace OaiPmhHarvester;
 
-use Omeka\Stdlib\Message;
-
 /**
  * @var Module $this
  * @var \Laminas\ServiceManager\ServiceLocatorInterface $services

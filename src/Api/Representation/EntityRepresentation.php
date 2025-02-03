@@ -15,7 +15,7 @@ class EntityRepresentation extends AbstractEntityRepresentation
             'o-module-oai-pmh-harvester:entity_id' => $this->entityId(),
             'o-module-oai-pmh-harvester:entity_name' => $this->entityName(),
             'o-module-oai-pmh-harvester:identifier' => $this->identifier(),
-            'o:created' =>[
+            'o:created' => [
                 '@value' => $this->getDateTime($this->created()),
                 '@type' => 'http://www.w3.org/2001/XMLSchema#dateTime',
             ],

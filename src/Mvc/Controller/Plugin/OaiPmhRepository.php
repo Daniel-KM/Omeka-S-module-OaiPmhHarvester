@@ -73,7 +73,7 @@ class OaiPmhRepository extends AbstractPlugin
 
     public function hasNoQueryAndNoFragment(?string $endpoint = null): bool
     {
-        $endpoint = $endpoint ?? $this->endpoint;
+        $endpoint ??= $this->endpoint;
         if (!$endpoint) {
             return false;
         }
@@ -84,7 +84,7 @@ class OaiPmhRepository extends AbstractPlugin
 
     public function isXmlEndpoint(?string $endpoint = null): bool
     {
-        $endpoint = $endpoint ?? $this->endpoint;
+        $endpoint ??= $this->endpoint;
         if (!$endpoint) {
             return false;
         }
@@ -96,7 +96,7 @@ class OaiPmhRepository extends AbstractPlugin
 
     public function hasOaiPmhManagedFormats(?string $endpoint = null): bool
     {
-        $endpoint = $endpoint ?? $this->endpoint;
+        $endpoint ??= $this->endpoint;
         if (!$endpoint) {
             return false;
         }
@@ -105,10 +105,10 @@ class OaiPmhRepository extends AbstractPlugin
 
     public function getRepositoryName(?string $endpoint = null): ?string
     {
-        $endpoint = $endpoint ?? $this->endpoint;
+        $endpoint ??= $this->endpoint;
         if (!$endpoint) {
             return null;
-         }
+        }
         $url = $endpoint . '?verb=Identify';
         $response = @\simplexml_load_file($url);
         if (!$response) {
@@ -124,7 +124,7 @@ class OaiPmhRepository extends AbstractPlugin
      */
     public function listOaiPmhFormats(?string $endpoint = null): array
     {
-        $endpoint = $endpoint ?? $this->endpoint;
+        $endpoint ??= $this->endpoint;
         if (!$endpoint) {
             return [];
         }
@@ -152,7 +152,7 @@ class OaiPmhRepository extends AbstractPlugin
      */
     public function listOaiPmhSets(?string $endpoint = null): array
     {
-        $endpoint = $endpoint ?? $this->endpoint;
+        $endpoint ??= $this->endpoint;
         if (!$endpoint) {
             return [];
         }

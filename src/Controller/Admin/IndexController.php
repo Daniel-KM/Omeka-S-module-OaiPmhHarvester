@@ -197,7 +197,7 @@ class IndexController extends AbstractActionController
         // Pass a filtered post as params.
         $endpoint = $post['endpoint'];
         $harvestAllRecords = !empty($post['harvest_all_records']);
-        $predefinedSets  = $post['predefined_sets'] ?? [];
+        $predefinedSets = $post['predefined_sets'] ?? [];
         // In the second form, predefined sets are hdden.
         if (!is_array($predefinedSets)) {
             $predefinedSets = @json_decode($predefinedSets, true) ?: [];
@@ -483,12 +483,8 @@ class IndexController extends AbstractActionController
             }
 
             // Check if all sets have a managed format.
-            $checks = array_filter($formats, function ($v, $k) {
-                return $v === $k;
-            }, ARRAY_FILTER_USE_BOTH);
-            $unmanaged = array_filter($predefinedSets, function ($v) use ($checks) {
-                return !in_array($v, $checks);
-            });
+            $checks = array_filter($formats, fn ($v, $k) => $v === $k, ARRAY_FILTER_USE_BOTH);
+            $unmanaged = array_filter($predefinedSets, fn ($v) => !in_array($v, $checks));
             if ($unmanaged) {
                 $result['message'] = new Message(
                     $this->translate('The following formats are not managed: "%s".'), // @translate
