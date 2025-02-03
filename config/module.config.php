@@ -88,6 +88,7 @@ return [
                 'label' => 'OAI-PMH Harvester', // @translate
                 'route' => 'admin/oaipmhharvester',
                 'resource' => 'OaiPmhHarvester\Controller\Admin\Index',
+                'class' => 'o-icon- fa-seedling',
                 'pages' => [
                     [
                         'label' => 'Harvest', // @translate

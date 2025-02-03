@@ -1,0 +1,5 @@
+@media all {
+    .oai-pmh-harvester .subhead::before {
+        content: "";
+    }
+}

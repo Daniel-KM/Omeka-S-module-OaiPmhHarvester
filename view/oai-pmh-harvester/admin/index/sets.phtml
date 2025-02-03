@@ -8,7 +8,14 @@
  * @var bool $harvestAllRecords
  */
 
-$translate = $this->plugin('translate');
+$plugins = $this->getHelperPluginManager();
+$assetUrl = $plugins->get('assetUrl');
+$translate = $plugins->get('translate');
+
+$this->headLink()
+    ->appendStylesheet($assetUrl('css/oai-pmh-harvester.css', 'OaiPmhHarvester'));
+
+$this->htmlElement('body')->appendAttribute('class', 'oai-pmh-harvester oai-pmh-harvester-sets');
 
 $sets = $form->getOption('sets') ?: [];
 ?>

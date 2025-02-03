@@ -7,10 +7,14 @@
 $plugins = $this->getHelperPluginManager();
 $url = $plugins->get('url');
 $escape = $plugins->get('escapeHtml');
-$hyperlink = $plugins->get('hyperlink');
+$assetUrl = $plugins->get('assetUrl');
 $translate = $plugins->get('translate');
+$hyperlink = $plugins->get('hyperlink');
 
-$this->htmlElement('body')->appendAttribute('class', 'oaipmhharvester jobs harvests undo');
+$this->headLink()
+    ->appendStylesheet($assetUrl('css/oai-pmh-harvester.css', 'OaiPmhHarvester'));
+
+$this->htmlElement('body')->appendAttribute('class', 'oai-pmh-harvester oai-pmh-harvester-index jobs harvests undo');
 ?>
 
 <?= $this->pageTitle($translate('Past Imports'), 1, $translate('OAI-PMH Harvester')) ?>
