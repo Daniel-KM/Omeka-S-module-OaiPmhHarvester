@@ -6,6 +6,7 @@ use Laminas\EventManager\Event;
 use Laminas\EventManager\SharedEventManagerInterface;
 use Laminas\ServiceManager\ServiceLocatorInterface;
 use Omeka\Module\AbstractModule;
+use Omeka\Stdlib\Message;
 
 class Module extends AbstractModule
 {
@@ -16,8 +17,26 @@ class Module extends AbstractModule
 
     public function install(ServiceLocatorInterface $services): void
     {
+        $services = $this->getServiceLocator();
+        $plugins = $services->get('ControllerPluginManager');
+        $messenger = $plugins->get('messenger');
+
         $this->setServiceLocator($services);
         $this->execSqlFromFile(__DIR__ . '/data/install/schema.sql');
+
+        $config = $services->get('Config');
+        $basePath = $config['file_store']['local']['base_path'] ?: (OMEKA_PATH . '/files');
+        if (!is_dir($basePath) || !is_readable($basePath) || !is_writeable($basePath)) {
+            $message = new Message(
+                'The directory "%s" is not writeable, so the oai-pmh xml responses won’t be storable.', // @translate
+                $basePath
+            );
+            $messenger->addWarning($message);
+        }
+        $dir = $basePath . '/oai-pmh-harvest';
+        if (!file_exists($dir)) {
+            mkdir($dir);
+        }
     }
 
     public function uninstall(ServiceLocatorInterface $services): void

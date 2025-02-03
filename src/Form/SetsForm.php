@@ -73,6 +73,18 @@ class SetsForm extends Form
             ])
 
             ->add([
+                'name' => 'store_xml',
+                'type' => Element\Checkbox::class,
+                'options' => [
+                    'label' => 'Store oai-pmh xml responses', // @translate
+                    'info' => 'This option allows to investigate issues. Xml files are stored in directory /files/oai-pmh-harvest.', // @translate
+                ],
+                'attributes' => [
+                    'id' => 'store_xml',
+                ],
+            ])
+
+            ->add([
                 'type' => Element\Hidden::class,
                 'name' => 'step',
                 'attributes' => [

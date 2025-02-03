@@ -101,6 +101,27 @@ class Harvest extends AbstractJob
             return false;
         }
 
+        // Check directory to store xmls.
+        $storeXml = !empty($args['store_xml']);
+        if ($storeXml) {
+            $config = $services->get('Config');
+            $basePath = $config['file_store']['local']['base_path'] ?: (OMEKA_PATH . '/files');
+            if (!is_dir($basePath) || !is_readable($basePath) || !is_writeable($basePath)) {
+                $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
+                $this->logger->err(
+                    'The directory "{path}" is not writeable, so the oai-pmh xml responses are not storable.', // @translate
+                    ['path' => $basePath]
+                );
+                return false;
+            }
+            $dir = $basePath . '/oai-pmh-harvest';
+            if (!file_exists($dir)) {
+                mkdir($dir);
+            }
+            $baseUri = $config['file_store']['local']['base_uri'] ?: '/files';
+            $baseName = $this->slugify(parse_url($args['endpoint'], PHP_URL_HOST));
+        }
+
         $this->logger->notice(
             'Start harvesting {url}, format {format}.', // @translate
             ['url' => $args['endpoint'], 'format' => $metadataPrefix]
@@ -187,11 +208,34 @@ class Harvest extends AbstractJob
                 }
             }
 
+            // @todo Store the real response, not the domified one.
+            if ($storeXml) {
+                $filename = sprintf('%s-%04d-%04d.oaipmhxml', $baseName, $harvestId, $fetch);
+                $filepath = $basePath . '/oai-pmh-harvest/' . $filename;
+                // dom_import_simplexml($response);
+                $dom = new \DOMDocument('1.0', 'UTF-8');
+                $dom->preserveWhiteSpace = false;
+                $dom->formatOutput = true;
+                $dom->loadXML($response->asXML());
+                $resultSave = $dom->save($filepath);
+                if (!$resultSave) {
+                    $this->logger->err(
+                        'Unable to store xml for page #{page}.', // @translate
+                        ['page' => $fetch]
+                    );
+                } else {
+                    $this->logger->notice(
+                        'The xml resposne #{page} was stored as {url}.', // @translate
+                        ['page' => $fetch, 'url' => $baseUri . '/files/oai-pmh-harvester/' . $filename]
+                    );
+                }
+            }
+
             if (!$response->ListRecords) {
                 $this->hasErr = true;
                 $message = 'Error.'; // @translate
                 $this->logger->err(
-                    'Error: the harvester does not list records with url {url}.', // @translate
+                    'The harvester does not list records with url {url}.', // @translate
                     ['url' => $url]
                 );
                 break;
@@ -250,7 +294,7 @@ class Harvest extends AbstractJob
             $totalCreated = $this->createItems($toInsert);
             $stats['errors'] += count($toInsert) - $totalCreated;
 
-            $resumptionToken = isset($response->ListRecords->resumptionToken) && $response->ListRecords->resumptionToken <> ''
+            $resumptionToken = isset($response->ListRecords->resumptionToken) && $response->ListRecords->resumptionToken !== ''
                 ? $response->ListRecords->resumptionToken
                 : false;
 
@@ -386,5 +430,27 @@ class Harvest extends AbstractJob
             'o-oai-pmh:entity_name' => $this->getArg('entity_name', 'items'),
             'o-oai-pmh:identifier' => (string) $identifier,
         ];
+    }
+
+    /**
+     * Transform the given string into a valid URL slug
+     *
+     * Copy from \Omeka\Api\Adapter\SiteSlugTrait::slugify().
+     */
+    protected function slugify(string $input): string
+    {
+        if (extension_loaded('intl')) {
+            $transliterator = \Transliterator::createFromRules(':: NFD; :: [:Nonspacing Mark:] Remove; :: NFC;');
+            $slug = $transliterator->transliterate($input);
+        } elseif (extension_loaded('iconv')) {
+            $slug = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $input);
+        } else {
+            $slug = $input;
+        }
+        $slug = mb_strtolower($slug, 'UTF-8');
+        $slug = preg_replace('/[^a-z0-9-]+/u', '-', $slug);
+        $slug = preg_replace('/-{2,}/', '-', $slug);
+        $slug = preg_replace('/-*$/', '', $slug);
+        return $slug;
     }
 }

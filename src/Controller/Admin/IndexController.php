@@ -343,6 +343,7 @@ class IndexController extends AbstractActionController
                 'metadata_prefix' => $set['metadata_prefix'],
                 'entity_name' => 'items',
                 'filters' => $filters,
+                'store_xml' => !empty($data['store_xml']),
             ] + $set;
             $job = $this->jobDispatcher()->dispatch(\OaiPmhHarvester\Job\Harvest::class, $args);
 
