@@ -210,7 +210,7 @@ class OaiPmhRepository extends AbstractPlugin
             ++$index;
             $url = $baseListSetUrl;
             if ($resumptionToken) {
-                $url = $baseListSetUrl . '&resumptionToken=' . $resumptionToken;
+                $url = $baseListSetUrl . '&resumptionToken=' . rawurlencode($resumptionToken);
             }
 
             /** @var \SimpleXMLElement $response */

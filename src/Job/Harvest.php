@@ -193,11 +193,11 @@ class Harvest extends AbstractJob
             }
 
             if ($resumptionToken) {
-                $url = $args['endpoint'] . "?verb=ListRecords&resumptionToken=$resumptionToken";
+                $url = $args['endpoint'] . '?verb=ListRecords&resumptionToken=' . rawurlencode($resumptionToken);
             } else {
                 $url = $args['endpoint'] . '?verb=ListRecords'
-                    . (isset($args['set_spec']) && strlen((string) $args['set_spec']) ? '&set=' . $args['set_spec'] : '')
-                    . "&metadataPrefix=$metadataPrefix";
+                    . (isset($args['set_spec']) && strlen((string) $args['set_spec']) ? '&set=' . rawurlencode($args['set_spec']) : '')
+                    . '&metadataPrefix=' . rawurlencode($metadataPrefix);
             }
 
             /** @var \SimpleXMLElement $response */
@@ -314,7 +314,7 @@ class Harvest extends AbstractJob
             $stats['errors'] += count($toInsert) - $totalCreated;
 
             $resumptionToken = isset($response->ListRecords->resumptionToken) && $response->ListRecords->resumptionToken !== ''
-                ? $response->ListRecords->resumptionToken
+                ? (string) $response->ListRecords->resumptionToken
                 : false;
 
             // Update job.

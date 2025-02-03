@@ -251,7 +251,7 @@ class IndexController extends AbstractActionController
         if ($harvestAllRecords) {
             $prefix = $data['namespace'][0];
             $message .= $repositoryName;
-            $uniqueUri = $data['endpoint'] . "?verb=ListRecords&metadataPrefix=$prefix";
+            $uniqueUri = $data['endpoint'] . '?verb=ListRecords&metadataPrefix=' . rawurlencode($prefix);
             $itemSet = $api->searchOne('item_sets', ['property' => [['property' => 37, 'type' => 'eq', 'text' => $uniqueUri]]])->getContent();
             if (!$itemSet) {
                 $toCreate = [
@@ -278,6 +278,7 @@ class IndexController extends AbstractActionController
             ];
         } else {
             foreach (array_keys($data['harvest'] ?? []) as $setSpec) {
+                $setSpec = (string) $setSpec;
                 $prefix = $data['namespace'][$setSpec];
                 $label = $data['setSpec'][$setSpec];
                 $message .= sprintf(
@@ -285,7 +286,7 @@ class IndexController extends AbstractActionController
                     $label,
                     $prefix
                 ) . ' | ';
-                $uniqueUri = $data['endpoint'] . "?verb=ListRecords&set=$setSpec&metadataPrefix=$prefix";
+                $uniqueUri = $data['endpoint'] . '?verb=ListRecords&set=' . rawurlencode($setSpec) . '&metadataPrefix=' . rawurlencode($prefix);
                 $itemSet = $api->searchOne('item_sets', ['property' => [['property' => 37, 'type' => 'eq', 'text' => $uniqueUri]]])->getContent();
                 if (!$itemSet) {
                     $toCreate = [
@@ -340,7 +341,7 @@ class IndexController extends AbstractActionController
             $args = [
                 'repository_name' => $repositoryName,
                 'endpoint' => $endpoint,
-                'set_spec' => $setSpec,
+                'set_spec' => (string) $setSpec,
                 'item_set_id' => $set['item_set_id'],
                 'has_err' => false,
                 'metadata_prefix' => $set['metadata_prefix'],
