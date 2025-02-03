@@ -93,6 +93,7 @@ class Harvest extends AbstractJob
 
         $metadataPrefix = $args['metadata_prefix'] ?? null;
         if (!$metadataPrefix || !$harvesterMapManager->has($metadataPrefix)) {
+            $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
             $this->logger->err(
                 'The format "{format}" is not managed by the module currently.', // @translate
                 ['format' => $metadataPrefix]
@@ -100,6 +101,11 @@ class Harvest extends AbstractJob
             $this->api->update('oaipmhharvester_harvests', $harvestId, ['o-module-oai-pmh-harvester:has_err' => true]);
             return false;
         }
+
+        $this->logger->notice(
+            'Start harvesting {url}, format {format}.', // @translate
+            ['url' => $args['endpoint'], 'format' => $metadataPrefix]
+        );
 
         /** @var \OaiPmhHarvester\OaiPmh\HarvesterMap\HarvesterMapInterface $harvesterMap */
         $harvesterMap = $harvesterMapManager->get($metadataPrefix);
@@ -109,7 +115,10 @@ class Harvest extends AbstractJob
         ]);
 
         $resumptionToken = false;
+        $countProcessed = 0;
+        $fetch = 0;
         do {
+            ++$fetch;
             if ($this->shouldStop()) {
                 $this->logger->notice(
                     'Results: total records = {total}, harvested = {harvested}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, imported = {imported}, medias = {medias}, errors = {errors}.', // @translate
@@ -200,6 +209,7 @@ class Harvest extends AbstractJob
             $toInsert = [];
             /** @var \SimpleXMLElement $record */
             foreach ($records->record as $record) {
+                ++$countProcessed;
                 if ($harvesterMap->isDeletedRecord($record)) {
                     continue;
                 }
@@ -252,6 +262,11 @@ class Harvest extends AbstractJob
                 'o-module-oai-pmh-harvester:stats' => $stats,
             ];
             $this->api->update('oaipmhharvester_harvests', $harvestId, $harvestData);
+
+            $this->logger->info(
+                'Page #{index} processed ({count}/{total} records, {count_2} errors).', // @translate
+                ['index' => $fetch, 'count' => $countProcessed, 'total' => $stats['records'], 'count_2' => $stats['errors']]
+            );
 
             sleep(self::REQUEST_WAIT);
         } while ($resumptionToken);
