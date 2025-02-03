@@ -4,7 +4,7 @@ namespace OaiPmhHarvester\Mvc\Controller\Plugin;
 
 use Laminas\Mvc\Controller\Plugin\AbstractPlugin;
 use Laminas\Mvc\I18n\Translator;
-use OaiPmhHarvester\OaiPmh\HarvesterMapManager;
+use OaiPmhHarvester\OaiPmh\HarvesterMap\Manager as HarvesterMapManager;
 
 /**
  * Get infos about an OAI-PMH repository.
@@ -12,7 +12,7 @@ use OaiPmhHarvester\OaiPmh\HarvesterMapManager;
 class OaiPmhRepository extends AbstractPlugin
 {
     /**
-     * @var \OaiPmhHarvester\OaiPmh\HarvesterMapManager
+     * @var \OaiPmhHarvester\OaiPmh\HarvesterMap\Manager
      */
     protected $harvesterMapManager;
 

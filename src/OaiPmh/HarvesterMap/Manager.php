@@ -1,11 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace OaiPmhHarvester\OaiPmh;
+namespace OaiPmhHarvester\OaiPmh\HarvesterMap;
 
-use OaiPmhHarvester\OaiPmh\HarvesterMap\HarvesterMapInterface;
 use Omeka\ServiceManager\AbstractPluginManager;
 
-class HarvesterMapManager extends AbstractPluginManager
+class Manager extends AbstractPluginManager
 {
     /**
      * Keep oai dc first.

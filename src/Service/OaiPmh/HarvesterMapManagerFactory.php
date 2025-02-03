@@ -4,22 +4,20 @@ namespace OaiPmhHarvester\Service\OaiPmh;
 
 use Interop\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
-use OaiPmhHarvester\OaiPmh\HarvesterMapManager;
+use OaiPmhHarvester\OaiPmh\HarvesterMap\Manager;
 use Omeka\Service\Exception\ConfigException;
 
 class HarvesterMapManagerFactory implements FactoryInterface
 {
     /**
      * Create the oai metadata format manager service.
-     *
-     * @return HarvesterMapManager
      */
-    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
+    public function __invoke(ContainerInterface $services, $requestedName, array $options = null)
     {
-        $config = $container->get('Config');
+        $config = $services->get('Config');
         if (empty($config['oaipmh_harvester_maps'])) {
-            throw new ConfigException('Missing harvest configuration'); // @translate
+            throw new ConfigException('Missing OAI-PMH Harvester configuration'); // @translate
         }
-        return new HarvesterMapManager($container, $config['oaipmh_harvester_maps']);
+        return new Manager($services, $config['oaipmh_harvester_maps']);
     }
 }

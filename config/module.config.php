@@ -5,7 +5,10 @@ namespace OaiPmhHarvester;
 return [
     'service_manager' => [
         'factories' => [
-            OaiPmh\HarvesterMapManager::class => Service\OaiPmh\HarvesterMapManagerFactory::class,
+            OaiPmh\HarvesterMap\Manager::class => Service\OaiPmh\HarvesterMapManagerFactory::class,
+        ],
+        'aliases' => [
+            'OaiPmh\HarvesterMapManager' => OaiPmh\HarvesterMap\Manager::class,
         ],
     ],
     'api_adapters' => [

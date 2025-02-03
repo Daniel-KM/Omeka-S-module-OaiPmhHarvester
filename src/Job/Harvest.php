@@ -53,7 +53,8 @@ class Harvest extends AbstractJob
         $this->logger = $services->get('Omeka\Logger');
         $this->entityManager = $services->get('Omeka\EntityManager');
 
-        $harvesterMapManager = $services->get(\OaiPmhHarvester\OaiPmh\HarvesterMapManager::class);
+        /** @var \OaiPmhHarvester\OaiPmh\HarvesterMap\Manager $harvesterMapManager */
+        $harvesterMapManager = $services->get(\OaiPmhHarvester\OaiPmh\HarvesterMap\Manager::class);
 
         $args = $this->job->getArgs();
         $itemSetId = empty($args['item_set_id']) ? null : (int) $args['item_set_id'];
