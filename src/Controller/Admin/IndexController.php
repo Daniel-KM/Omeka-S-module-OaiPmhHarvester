@@ -454,8 +454,15 @@ class IndexController extends AbstractActionController
 
         $formats = $oaiPmhRepository->listOaiPmhFormats();
 
-        $favoriteFormat = array_intersect($oaiPmhRepository->listManagedPrefixes(), $formats);
-        $favoriteFormat = reset($favoriteFormat) ?: 'oai_dc';
+        // Set oai_dc and oai_dcterms first if available.
+        if (isset($formats['oai_dcterms'])) {
+            $formats = ['oai_dcterms' => 'oai_dcterms'] + $formats;
+        }
+        if (isset($formats['oai_dc'])) {
+            $formats = ['oai_dc' => 'oai_dc'] + $formats;
+        }
+
+        $favoriteFormat = isset($formats['oai_dcterms']) ? 'oai_dcterms' : 'oai_dc';
 
         // TODO Move the next checks of oai-pmh sets to the helper.
 
