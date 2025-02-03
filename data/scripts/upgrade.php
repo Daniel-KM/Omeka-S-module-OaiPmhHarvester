@@ -2,6 +2,8 @@
 
 namespace OaiPmhHarvester;
 
+use Omeka\Stdlib\Message;
+
 /**
  * @var Module $this
  * @var \Laminas\ServiceManager\ServiceLocatorInterface $services
@@ -189,4 +191,25 @@ if (version_compare($oldVersion, '3.3.0.12', '<')) {
         CREATE INDEX identifier_idx ON `oaipmhharvester_entity` (`identifier`(767));
         SQL;
     $connection->executeStatement($sql);
+}
+
+if (version_compare($oldVersion, '3.4.17', '<')) {
+    $config = $services->get('Config');
+    $basePath = $config['file_store']['local']['base_path'] ?: (OMEKA_PATH . '/files');
+    if (!is_dir($basePath) || !is_readable($basePath) || !is_writeable($basePath)) {
+        $message = new Message(
+            'The directory "%s" is not writeable, so the oai-pmh xml responses won’t be storable.', // @translate
+            $basePath
+        );
+        $messenger->addWarning($message);
+    }
+    $dir = $basePath . '/oai-pmh-harvest';
+    if (!file_exists($dir)) {
+        mkdir($dir);
+    }
+
+    $message = new Message(
+        'It is now possible to store the oai-pmh xml files received from the repository, in particular to check filters.' // @translate
+    );
+    $messenger->addSuccess($message);
 }
