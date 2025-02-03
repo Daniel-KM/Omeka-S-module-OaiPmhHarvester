@@ -214,9 +214,9 @@ class IndexController extends AbstractActionController
         $data = $form->getData();
 
         // TODO Fix get data for namespace. Use fieldset/collection.
-        $data['namespace'] = $post['namespace'];
-        $data['setSpec'] = $post['setSpec'];
-        $data['harvest'] = $post['harvest'];
+        $data['namespace'] = $post['namespace'] ?? [];
+        $data['setSpec'] = $post['setSpec'] ?? [];
+        $data['harvest'] = $post['harvest'] ?? [];
         foreach (array_keys($data) as $k) {
             if (strpos($k, 'namespace[') === 0
                 || strpos($k, 'setSpec[') === 0
