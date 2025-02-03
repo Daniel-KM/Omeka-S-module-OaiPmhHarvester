@@ -18,11 +18,17 @@ $this->htmlElement('body')->appendAttribute('class', 'oai-pmh-harvester oai-pmh-
 ?>
 
 <?= $this->pageTitle($translate('Past Imports'), 1, $translate('OAI-PMH Harvester')) ?>
+
+<nav class="section-nav">
+    <?= $this->navigation('Laminas\Navigation\OaiPmhHarvester')->menu() ?>
+</nav>
+
 <?php if (empty($harvests)): ?>
 
 <?= $translate('There are no harvests currently.') ?>
 
 <?php else: ?>
+
 <?= $this->pagination() ?>
 
 <form method='POST'>
@@ -129,4 +135,5 @@ $this->htmlElement('body')->appendAttribute('class', 'oai-pmh-harvester oai-pmh-
         </tbody>
     </table>
 </form>
+
 <?php endif; ?>

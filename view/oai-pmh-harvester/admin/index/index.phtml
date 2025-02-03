@@ -20,6 +20,10 @@ $this->htmlElement('body')->appendAttribute('class', 'oai-pmh-harvester oai-pmh-
     <button form="harvest-repository" type="submit" class="button"><?= $translate('View sets') ?></button>
 </div>
 
+<nav class="section-nav">
+    <?= $this->navigation('Laminas\Navigation\OaiPmhHarvester')->menu() ?>
+</nav>
+
 <h3><?= $translate('Set repository to harvest') ?></h3>
 
 <?= $this->form($form) ?>

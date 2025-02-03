@@ -26,6 +26,10 @@ $sets = $form->getOption('sets') ?: [];
     <button form="harvest-list-sets" type="submit" class="button"><?= $translate('Harvest') ?></button>
 </div>
 
+<nav class="section-nav">
+    <?= $this->navigation('Laminas\Navigation\OaiPmhHarvester')->menu() ?>
+</nav>
+
 <h2><?= $repositoryName ?></h2>
 <p>
     <?php if (is_null($total)): ?>

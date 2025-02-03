@@ -91,28 +91,28 @@ return [
                 'class' => 'o-icon- fa-seedling',
                 'pages' => [
                     [
-                        'label' => 'Harvest', // @translate
                         'route' => 'admin/oaipmhharvester/default',
-                        'action' => 'index',
-                    ],
-                    [
-                        'label' => 'Sets', // @translate
-                        'route' => 'admin/oaipmhharvester/default',
-                        'action' => 'sets',
                         'visible' => false,
-                    ],
-                    [
-                        'label' => 'Harvest', // @translate
-                        'route' => 'admin/oaipmhharvester/default',
-                        'action' => 'harvest',
-                        'visible' => false,
-                    ],
-                    [
-                        'label' => 'Past Harvests', // @translate
-                        'route' => 'admin/oaipmhharvester/default',
-                        'action' => 'past-harvests',
                     ],
                 ],
+            ],
+        ],
+        'OaiPmhHarvester' => [
+            [
+                'label' => 'Harvest', // @translate
+                'route' => 'admin/oaipmhharvester',
+                'resource' => 'OaiPmhHarvester\Controller\Admin\Index',
+                'action' => 'index',
+                'privilege' => 'edit',
+                'useRouteMatch' => true,
+            ],
+            [
+                'label' => 'Past Harvests', // @translate
+                'route' => 'admin/oaipmhharvester/default',
+                'resource' => 'OaiPmhHarvester\Controller\Admin\Index',
+                'action' => 'past-harvests',
+                'privilege' => 'view',
+                'useRouteMatch' => true,
             ],
         ],
     ],
