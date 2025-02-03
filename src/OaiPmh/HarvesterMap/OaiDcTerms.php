@@ -12,7 +12,7 @@ use SimpleXMLElement;
 /**
  * Metadata format map for the common oai_dcterms Dublin Core format
  */
-class OaiDcterms extends OaiDc
+class OaiDcTerms extends OaiDc
 {
     // And many other non-unofficial prefixes and fake oai schema.
     const METADATA_PREFIX = 'oai_dcterms';
