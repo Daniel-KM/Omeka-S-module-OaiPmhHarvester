@@ -326,8 +326,17 @@ class Harvest extends AbstractJob
             $this->api->update('oaipmhharvester_harvests', $harvestId, $harvestData);
 
             $this->logger->info(
-                'Page #{index} processed ({count}/{total} records, {count_2} errors).', // @translate
-                ['index' => $pageIndex, 'count' => $recordIndex, 'total' => $stats['records'] ?: '?', 'count_2' => $stats['errors']]
+                'Page #{page} processed: total records = {total}, harvested = {harvested}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, imported = {imported}, medias = {medias}, errors = {errors}.', // @translate
+                [
+                    'page' => $pageIndex,
+                    'total' => $stats['records'] ?: '?',
+                    'harvested' => $stats['harvested'],
+                    'whitelisted' => $stats['whitelisted'],
+                    'blacklisted' => $stats['blacklisted'],
+                    'imported' => $stats['imported'],
+                    'medias' => $stats['medias'],
+                    'errors' => $stats['errors'],
+                ]
             );
 
             sleep(self::REQUEST_WAIT);
@@ -455,8 +464,8 @@ class Harvest extends AbstractJob
     {
             $isRecord = $recordIndex !== null;
             $filename = $isRecord
-                ? sprintf('%s.%04d.%04d.%07d.oaipmh.xml', $this->baseName, $this->harvest->id(), $pageIndex, $recordIndex)
-                : sprintf('%s.%04d.%04d.oaipmh.xml', $this->baseName, $this->harvest->id(), $pageIndex);
+                ? sprintf('%s.h%04d.p%04d.r%07d.oaipmh.xml', $this->baseName, $this->harvest->id(), $pageIndex, $recordIndex)
+                : sprintf('%s.h%04d.p%04d.oaipmh.xml', $this->baseName, $this->harvest->id(), $pageIndex);
             $filepath = $this->basePath . '/oai-pmh-harvest/' . $filename;
             // dom_import_simplexml($response);
             $dom = new \DOMDocument('1.0', 'UTF-8');
