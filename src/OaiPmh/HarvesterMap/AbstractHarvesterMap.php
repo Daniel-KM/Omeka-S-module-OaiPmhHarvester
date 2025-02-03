@@ -119,7 +119,14 @@ abstract class AbstractHarvesterMap implements HarvesterMapInterface
     {
         $values = [];
 
-        $localName = substr($term, strpos($term, ':') + 1);
+        $localName = strtok($term, ':');
+        $localName = strtok(':');
+
+        // The first check avoids an xml issue "Node no longer exists".
+        if (!strlen((string) $localName) || !isset($metadata->$localName)) {
+            return [];
+        }
+
         $propertyId = $this->getPropertyIds()[$term];
 
         $defaultValue = [

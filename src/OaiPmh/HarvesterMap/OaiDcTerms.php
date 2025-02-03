@@ -29,7 +29,9 @@ class OaiDcTerms extends OaiDc
                 ->children($namespace)
                 ->children(self::NAMESPACE_DCTERMS);
             foreach ($this->getLocalNamesByIdForVocabulary('dcterms') as $localName) {
-                if (isset($metadata->$localName)) {
+                // The first check avoids an xml issue "Node no longer exists".
+                // TODO Check if this issue is still present.
+                if (strlen((string) $localName) && isset($metadata->$localName)) {
                     $resource["dcterms:$localName"] = $this->extractValues($metadata, "dcterms:$localName");
                 }
             }

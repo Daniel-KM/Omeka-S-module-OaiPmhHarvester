@@ -160,7 +160,8 @@ class Mets extends AbstractHarvesterMap
                 }
 
                 foreach ($localNames as $localName) {
-                    if (isset($metadata->$localName)) {
+                    // The first check avoids an xml issue "Node no longer exists".
+                    if (strlen((string) $localName) && isset($metadata->$localName)) {
                         $extractedValues["dcterms:$localName"] = $this->extractValues($metadata, "dcterms:$localName");
                     }
                 }

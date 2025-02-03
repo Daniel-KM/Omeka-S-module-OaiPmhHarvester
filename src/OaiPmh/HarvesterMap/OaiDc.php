@@ -52,7 +52,8 @@ class OaiDc extends AbstractHarvesterMap
             ->children(self::NAMESPACE_DUBLIN_CORE);
 
         foreach (self::DUBLIN_CORE_ELEMENTS as $localName) {
-            if (isset($metadata->$localName)) {
+            // The first check avoids an xml issue "Node no longer exists".
+            if (strlen((string) $localName) && isset($metadata->$localName)) {
                 $resource["dcterms:$localName"] = $this->extractValues($metadata, "dcterms:$localName");
             }
         }
