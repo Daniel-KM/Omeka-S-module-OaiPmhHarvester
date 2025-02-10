@@ -2,6 +2,7 @@
 
 namespace OaiPmhHarvester\Entity;
 
+use DateTime;
 use Omeka\Entity\AbstractEntity;
 use Omeka\Entity\ItemSet;
 use Omeka\Entity\Job;
@@ -104,6 +105,28 @@ class Harvest extends AbstractEntity
      * )
      */
     protected $metadataPrefix;
+
+    /**
+     * @var DateTime
+     *
+     * @Column(
+     *     name="`from`",
+     *     type="datetime",
+     *     nullable=true
+     * )
+     */
+    protected $from;
+
+    /**
+     * @var DateTime
+     *
+     * @Column(
+     *     name="`until`",
+     *     type="datetime",
+     *     nullable=true
+     * )
+     */
+    protected $until;
 
     /**
      * @var string
@@ -246,6 +269,28 @@ class Harvest extends AbstractEntity
     public function getMetadataPrefix(): string
     {
         return $this->metadataPrefix;
+    }
+
+    public function setFrom(?DateTime $from): self
+    {
+        $this->from = $from;
+        return $this;
+    }
+
+    public function getFrom(): ?DateTime
+    {
+        return $this->from;
+    }
+
+    public function setUntil(?DateTime $until): self
+    {
+        $this->until = $until;
+        return $this;
+    }
+
+    public function getUntil(): ?DateTime
+    {
+        return $this->until;
     }
 
     public function setSetSpec(?string $setSpec): self

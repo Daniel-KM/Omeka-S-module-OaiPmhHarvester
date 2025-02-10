@@ -2,6 +2,7 @@
 
 namespace OaiPmhHarvester\Api\Representation;
 
+use DateTime;
 use Omeka\Api\Representation\AbstractEntityRepresentation;
 use Omeka\Api\Representation\ItemSetRepresentation;
 use Omeka\Api\Representation\JobRepresentation;
@@ -28,6 +29,8 @@ class HarvestRepresentation extends AbstractEntityRepresentation
             'o-oai-pmh:entity_name' => $this->entityName(),
             'o:item_set' => $itemSet(),
             'o-oai-pmh:metadata_prefix' => $this->metadataPrefix(),
+            'o-oai-pmh:from' => $this->from(),
+            'o-oai-pmh:until' => $this->until(),
             'o-oai-pmh:set_spec' => $this->getSetSpec(),
             'o-oai-pmh:set_name' => $this->getSetName(),
             'o-oai-pmh:set_description' => $this->getSetDescription(),
@@ -78,6 +81,16 @@ class HarvestRepresentation extends AbstractEntityRepresentation
     public function metadataPrefix(): string
     {
         return $this->resource->getMetadataPrefix();
+    }
+
+    public function from(): ?DateTime
+    {
+        return $this->resource->getFrom();
+    }
+
+    public function until(): ?DateTime
+    {
+        return $this->resource->getUntil();
     }
 
     /**

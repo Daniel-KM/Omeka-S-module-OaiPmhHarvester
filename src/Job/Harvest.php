@@ -79,6 +79,35 @@ class Harvest extends AbstractJob
         $harvesterMapManager = $services->get(\OaiPmhHarvester\OaiPmh\HarvesterMap\Manager::class);
 
         $args = $this->job->getArgs();
+
+        $from = empty($args['from']) ? null : (string) $args['from'];
+        $until = empty($args['until']) ? null : (string) $args['until'];
+        $iso8601Regex = '~\d\d\d\d-\d\d-\d\d(?:T\d\d:\d\d:\d\dZ)?~';
+        if ($from && !preg_match($iso8601Regex, $from)) {
+            $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
+            $this->logger->err(
+                'The date "from" {date} is invalid.', // @translate
+                ['date' => $from]
+            );
+        }
+        if ($until && !preg_match($iso8601Regex, $until)) {
+            $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
+            $this->logger->err(
+                'The date "until" {date} is invalid.', // @translate
+                ['date' => $until]
+            );
+        }
+        if ($from && $until && $from > $until) {
+            $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
+            $this->logger->err(
+                'The date "from" {date_1} cannot be after the date "until" {date_2}.', // @translate
+                ['date_1' => $from, 'date_2' => $until]
+            );
+        }
+        if ($this->job->getStatus() === \Omeka\Entity\Job::STATUS_ERROR) {
+            return false;
+        }
+
         $itemSetId = empty($args['item_set_id']) ? null : (int) $args['item_set_id'];
         $whitelist = $args['filters']['whitelist'] ?? [];
         $blacklist = $args['filters']['blacklist'] ?? [];
@@ -102,6 +131,8 @@ class Harvest extends AbstractJob
             'o-oai-pmh:endpoint' => $args['endpoint'],
             'o:item_set' => ['o:id' => $args['item_set_id']],
             'o-oai-pmh:metadata_prefix' => $args['metadata_prefix'],
+            'o-oai-pmh:from' => $from,
+            'o-oai-pmh:until' => $until,
             'o-oai-pmh:set_spec' => $args['set_spec'],
             'o-oai-pmh:set_name' => $args['set_name'],
             'o-oai-pmh:set_description' => $args['set_description'] ?? null,
@@ -156,10 +187,27 @@ class Harvest extends AbstractJob
             }
         }
 
-        $this->logger->notice(
-            'Start harvesting {url}, format {format}.', // @translate
-            ['url' => $args['endpoint'], 'format' => $metadataPrefix]
-        );
+        if ($from && $until) {
+            $this->logger->notice(
+                'Start harvesting {url}, format {format}, from {from} until {until}.', // @translate
+                ['url' => $args['endpoint'], 'format' => $metadataPrefix, 'from' => $from, 'until' => $until]
+            );
+        } elseif ($from) {
+            $this->logger->notice(
+                'Start harvesting {url}, format {format}, from {from}.', // @translate
+                ['url' => $args['endpoint'], 'format' => $metadataPrefix, 'from' => $from]
+            );
+        } elseif ($from && $until) {
+            $this->logger->notice(
+                'Start harvesting {url}, format {format}, until {until}.', // @translate
+                ['url' => $args['endpoint'], 'format' => $metadataPrefix, 'until' => $until]
+            );
+        } else {
+            $this->logger->notice(
+                'Start harvesting {url}, format {format}.', // @translate
+                ['url' => $args['endpoint'], 'format' => $metadataPrefix]
+            );
+        }
 
         /** @var \OaiPmhHarvester\OaiPmh\HarvesterMap\HarvesterMapInterface $harvesterMap */
         $harvesterMap = $harvesterMapManager->get($metadataPrefix);
@@ -198,6 +246,12 @@ class Harvest extends AbstractJob
                 $url = $args['endpoint'] . '?verb=ListRecords'
                     . (isset($args['set_spec']) && strlen((string) $args['set_spec']) ? '&set=' . rawurlencode($args['set_spec']) : '')
                     . '&metadataPrefix=' . rawurlencode($metadataPrefix);
+                if ($from) {
+                    $url .= '&from=' . rawurlencode($from);
+                }
+                if ($until) {
+                    $url .= '&until=' . rawurlencode($until);
+                }
             }
 
             /** @var \SimpleXMLElement $response */

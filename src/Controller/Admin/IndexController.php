@@ -2,6 +2,7 @@
 
 namespace OaiPmhHarvester\Controller\Admin;
 
+use Common\Stdlib\PsrMessage;
 use Laminas\Mvc\Controller\AbstractActionController;
 use Laminas\View\Model\ViewModel;
 use OaiPmhHarvester\Form\HarvestForm;
@@ -229,6 +230,15 @@ class IndexController extends AbstractActionController
             }
         }
 
+        $from = $data['from'] ?? null;
+        if ($from && !empty($data['from_time'])) {
+            $from = $from . 'T' . $data['from_time'] . 'Z';
+        }
+        $until = $data['until'] ?? null;
+        if ($until && !empty($until['until_time'])) {
+            $until = $until . 'T' . $data['until_time'] . 'Z';
+        }
+
         $filters = [
             'whitelist' => $data['filters_whitelist'] ?? [],
             'blacklist' => $data['filters_blacklist'] ?? [],
@@ -317,6 +327,26 @@ class IndexController extends AbstractActionController
         $message = trim($message, ':| ') . '.';
         $this->messenger()->addSuccess($message);
 
+        if ($from && $until) {
+            $message = new PsrMessage(
+                $this->translate('The harvesting will be limited to period from {from} until {until}.'), // @translate
+                ['from' => $from, 'until' => $until]
+            );
+            $this->messenger()->addSuccess($message);
+        } elseif ($from) {
+            $message = new PsrMessage(
+                $this->translate('The harvesting will be limited to period from {from}.'), // @translate
+                ['from' => $from]
+            );
+            $this->messenger()->addSuccess($message);
+        } elseif ($until) {
+            $message = new PsrMessage(
+                $this->translate('The harvesting will be limited to period until {until}.'), // @translate
+                ['until' => $until]
+            );
+            $this->messenger()->addSuccess($message);
+        }
+
         if ($filters['whitelist']) {
             $message = new Message(
                 $this->translate('These whitelist filters are used: "%s".'), // @translate
@@ -342,6 +372,8 @@ class IndexController extends AbstractActionController
                 'repository_name' => $repositoryName,
                 'endpoint' => $endpoint,
                 'set_spec' => (string) $setSpec,
+                'from' => $from,
+                'until' => $until,
                 'item_set_id' => $set['item_set_id'],
                 'has_err' => false,
                 'metadata_prefix' => $set['metadata_prefix'],

@@ -8,10 +8,13 @@ $plugins = $this->getHelperPluginManager();
 $assetUrl = $plugins->get('assetUrl');
 $translate = $plugins->get('translate');
 
+$this->htmlElement('body')
+    ->appendAttribute('class', 'oai-pmh-harvester oai-pmh-harvester-index');
+
 $this->headLink()
     ->appendStylesheet($assetUrl('css/oai-pmh-harvester.css', 'OaiPmhHarvester'));
-
-$this->htmlElement('body')->appendAttribute('class', 'oai-pmh-harvester oai-pmh-harvester-index');
+$this->headScript()
+    ->appendFile($assetUrl('js/oai-pmh-harvester.js', 'OaiPmhHarvester'));
 ?>
 
 <?= $this->pageTitle($translate('Harvester'), 1, $translate('OAI-PMH')) ?>

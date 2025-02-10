@@ -13,10 +13,11 @@ $hyperlink = $plugins->get('hyperlink');
 
 $hasModuleLog = class_exists('Log\Module', false);
 
+$this->htmlElement('body')
+    ->appendAttribute('class', 'oai-pmh-harvester oai-pmh-harvester-index jobs harvests undo');
+
 $this->headLink()
     ->appendStylesheet($assetUrl('css/oai-pmh-harvester.css', 'OaiPmhHarvester'));
-
-$this->htmlElement('body')->appendAttribute('class', 'oai-pmh-harvester oai-pmh-harvester-index jobs harvests undo');
 ?>
 
 <?= $this->pageTitle($translate('Past Imports'), 1, $translate('OAI-PMH Harvester')) ?>

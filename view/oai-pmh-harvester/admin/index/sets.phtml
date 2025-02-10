@@ -12,10 +12,13 @@ $plugins = $this->getHelperPluginManager();
 $assetUrl = $plugins->get('assetUrl');
 $translate = $plugins->get('translate');
 
+$this->htmlElement('body')
+    ->appendAttribute('class', 'oai-pmh-harvester oai-pmh-harvester-sets');
+
 $this->headLink()
     ->appendStylesheet($assetUrl('css/oai-pmh-harvester.css', 'OaiPmhHarvester'));
-
-$this->htmlElement('body')->appendAttribute('class', 'oai-pmh-harvester oai-pmh-harvester-sets');
+$this->headScript()
+    ->appendFile($assetUrl('js/oai-pmh-harvester.js', 'OaiPmhHarvester'));
 
 $sets = $form->getOption('sets') ?: [];
 ?>

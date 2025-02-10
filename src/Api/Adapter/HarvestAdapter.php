@@ -2,6 +2,7 @@
 
 namespace OaiPmhHarvester\Api\Adapter;
 
+use DateTime;
 use Doctrine\ORM\QueryBuilder;
 use Omeka\Api\Adapter\AbstractEntityAdapter;
 use Omeka\Api\Request;
@@ -19,6 +20,8 @@ class HarvestAdapter extends AbstractEntityAdapter
         'entity_name' => 'entityName',
         'item_set' => 'itemSet',
         'metadata_prefix' => 'metadataPrefix',
+        'from' => 'from',
+        'until' => 'until',
         'set_spec' => 'setSpec',
         'set_name' => 'setName',
         'set_description' => 'setDescription',
@@ -36,6 +39,8 @@ class HarvestAdapter extends AbstractEntityAdapter
         'entity_name' => 'entityName',
         'item_set' => 'itemSet',
         'metadata_prefix' => 'metadataPrefix',
+        'from' => 'from',
+        'until' => 'until',
         'set_spec' => 'setSpec',
         'set_name' => 'setName',
         'set_description' => 'setDescription',
@@ -121,6 +126,26 @@ class HarvestAdapter extends AbstractEntityAdapter
 
         if (array_key_exists('o-oai-pmh:metadata_prefix', $data)) {
             $entity->setMetadataPrefix((string) $data['o-oai-pmh:metadata_prefix']);
+        }
+
+        if (array_key_exists('o-oai-pmh:from', $data)) {
+            $value = $data['o-oai-pmh:from'];
+            if (empty($value)) {
+                $value = null;
+            } elseif (!is_object($value)) {
+                $value = new DateTime($value);
+            }
+            $entity->setFrom($value);
+        }
+
+        if (array_key_exists('o-oai-pmh:until', $data)) {
+            $value = $data['o-oai-pmh:until'];
+            if (empty($value)) {
+                $value = null;
+            } elseif (!is_object($value)) {
+                $value = new DateTime($value);
+            }
+            $entity->setUntil($value);
         }
 
         if (array_key_exists('o-oai-pmh:set_spec', $data)) {
