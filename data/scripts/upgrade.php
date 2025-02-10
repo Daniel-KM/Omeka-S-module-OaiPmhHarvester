@@ -103,9 +103,9 @@ if (version_compare($oldVersion, '3.0.6', '<')) {
     $sql = <<<'SQL'
         SET FOREIGN_KEY_CHECKS=0;
         INSERT INTO oaipmhharvester_harvest
-        (id, job_id, undo_job_id, item_set_id, `comment`, endpoint, resource_type, metadata_prefix, set_spec, set_name, set_description, has_err, resumption_token)
+           (id, job_id, undo_job_id, item_set_id, `comment`, endpoint, resource_type, metadata_prefix, set_spec, set_name, set_description, has_err, resumption_token)
         SELECT id, job_id, undo_job_id, collection_id, `comment`, base_url, resource_type, metadata_prefix, set_spec, set_name, set_description, has_err, resumption_token
-        FROM oai_pmh_harvester_harvest_job;
+            FROM oai_pmh_harvester_harvest_job;
         SET FOREIGN_KEY_CHECKS=1;
         SQL;
     $connection->executeStatement($sql);
@@ -113,9 +113,9 @@ if (version_compare($oldVersion, '3.0.6', '<')) {
     $sql = <<<'SQL'
         SET FOREIGN_KEY_CHECKS=0;
         INSERT INTO oaipmhharvester_entity
-        (id, job_id, entity_id, resource_type)
+            (id, job_id, entity_id, resource_type)
         SELECT id, job_id, entity_id, resource_type
-        FROM oai_pmh_harvester_entity;
+            FROM oai_pmh_harvester_entity;
         SET FOREIGN_KEY_CHECKS=1;
         SQL;
     $connection->executeStatement($sql);
@@ -130,8 +130,8 @@ if (version_compare($oldVersion, '3.0.6', '<')) {
 
     $sql = <<<'SQL'
         UPDATE job
-        SET class="OaiPmhHarvester\\Job\\Harvest"
-        WHERE class="OaiPmhHarvester\\Job\\HarvestJob";
+            SET class="OaiPmhHarvester\\Job\\Harvest"
+            WHERE class="OaiPmhHarvester\\Job\\HarvestJob";
         SQL;
     $connection->executeStatement($sql);
 }
@@ -145,7 +145,7 @@ if (version_compare($oldVersion, '3.0.6.1', '<')) {
 
     $sql = <<<'SQL'
         UPDATE oaipmhharvester_harvest
-        SET stats = "{}";
+            SET stats = "{}";
         SQL;
     $connection->executeStatement($sql);
 }
@@ -153,7 +153,7 @@ if (version_compare($oldVersion, '3.0.6.1', '<')) {
 if (version_compare($oldVersion, '3.3.0.7', '<')) {
     $sql = <<<'SQL'
         ALTER TABLE `oaipmhharvester_harvest`
-        CHANGE `stats` `stats` LONGTEXT NOT NULL COMMENT '(DC2Type:json)';
+            CHANGE `stats` `stats` LONGTEXT NOT NULL COMMENT '(DC2Type:json)';
         SQL;
     $connection->executeStatement($sql);
 }
@@ -210,6 +210,65 @@ if (version_compare($oldVersion, '3.4.17', '<')) {
 
     $message = new Message(
         'It is now possible to store the oai-pmh xml files received from the repository, in particular to check filters.' // @translate
+    );
+    $messenger->addSuccess($message);
+}
+
+if (version_compare($oldVersion, '3.4.18', '<')) {
+    $sql = <<<'SQL'
+        ALTER TABLE `oaipmhharvester_harvest`
+            ADD `from` DATETIME DEFAULT NULL AFTER `metadata_prefix`,
+            ADD `until` DATETIME DEFAULT NULL AFTER `from`;
+        SQL;
+    try {
+        $connection->executeStatement($sql);
+    } catch (\Exception $e) {
+        // Already updated.
+    }
+
+    try {
+        $sql = <<<'SQL'
+            ALTER TABLE `oaipmhharvester_entity`
+                ADD `harvest_id` INT DEFAULT NULL AFTER `id`;
+            UPDATE `oaipmhharvester_entity`
+                INNER JOIN `oaipmhharvester_harvest` ON `oaipmhharvester_harvest`.`job_id` = `oaipmhharvester_entity`.`job_id`
+                SET `harvest_id` = `oaipmhharvester_harvest`.`id`;
+            ALTER TABLE `oaipmhharvester_entity`
+                CHANGE `harvest_id` `harvest_id` INT NOT NULL AFTER `id`;
+            SQL;
+        $connection->executeStatement($sql);
+    } catch (\Exception $e) {
+        // Already updated.
+    }
+
+    try {
+        $sql = <<<'SQL'
+            ALTER TABLE `oaipmhharvester_entity`
+                DROP FOREIGN KEY `FK_FE902C0EBE04EA9`;
+        SQL;
+        $connection->executeStatement($sql);
+    } catch (\Exception $e) {
+        // Already updated.
+    }
+
+    try {
+        $sql = <<<'SQL'
+            ALTER TABLE `oaipmhharvester_entity`
+                DROP `job_id`,
+                ADD CONSTRAINT FK_FE902C0E9079E5F6 FOREIGN KEY (`harvest_id`) REFERENCES `oaipmhharvester_harvest` (`id`) ON DELETE CASCADE;
+            SQL;
+        $connection->executeStatement($sql);
+    } catch (\Exception $e) {
+        // Already updated.
+    }
+
+    $message = new Message(
+        'It is now possible to set the period (date from/until) to harvest, when supported by the repository.' // @translate
+    );
+    $messenger->addSuccess($message);
+
+    $message = new Message(
+        'Harvests are now run sequencially when there are multiple sets.' // @translate
     );
     $messenger->addSuccess($message);
 }
