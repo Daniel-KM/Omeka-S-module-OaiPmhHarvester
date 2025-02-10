@@ -32,14 +32,14 @@ class Entity extends AbstractEntity
      * @var Job
      *
      * @ManyToOne(
-     *     targetEntity=\Omeka\Entity\Job::class
+     *     targetEntity=\OaiPmhHarvester\Entity\Harvest::class
      * )
      * @JoinColumn(
      *     nullable=false,
      *     onDelete="CASCADE"
      * )
      */
-    protected $job;
+    protected $harvest;
 
     /**
      * API resource id (not necessarily an Omeka main Resource).
@@ -88,15 +88,15 @@ class Entity extends AbstractEntity
         return $this->id;
     }
 
-    public function setJob(Job $job): self
+    public function setHarvest(Harvest $harvest): self
     {
-        $this->job = $job;
+        $this->harvest = $harvest;
         return $this;
     }
 
-    public function getJob(): Job
+    public function getHarvest(): Harvest
     {
-        return $this->job;
+        return $this->harvest;
     }
 
     public function setEntityId(int $entityId): self

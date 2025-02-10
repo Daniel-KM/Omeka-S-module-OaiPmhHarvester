@@ -560,7 +560,7 @@ class Harvest extends AbstractJob
     protected function buildImportEntity(AbstractRepresentation $resource, $identifier): array
     {
         return [
-            'o:job' => ['o:id' => $this->job->getId()],
+            'o-oai-pmh:harvest' => ['o:id' => $this->harvest->id()],
             'o-oai-pmh:entity_id' => $resource->id(),
             'o-oai-pmh:entity_name' => $this->getArg('entity_name', 'items'),
             'o-oai-pmh:identifier' => (string) $identifier,

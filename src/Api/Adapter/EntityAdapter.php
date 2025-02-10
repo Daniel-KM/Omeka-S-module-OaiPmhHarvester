@@ -12,7 +12,7 @@ class EntityAdapter extends AbstractEntityAdapter
 {
     protected $sortFields = [
         'id' => 'id',
-        'job_id' => 'job',
+        'harvest_id' => 'harvest',
         'entity_id' => 'entityId',
         'entity_name' => 'entityName',
         'identifier' => 'identifier',
@@ -21,7 +21,7 @@ class EntityAdapter extends AbstractEntityAdapter
 
     protected $scalarFields = [
         'id' => 'id',
-        'job_id' => 'job',
+        'harvest_id' => 'harvest',
         'entity_id' => 'entityId',
         'entity_name' => 'entityName',
         'identifier' => 'identifier',
@@ -47,12 +47,25 @@ class EntityAdapter extends AbstractEntityAdapter
     {
         $expr = $qb->expr();
 
-        if (isset($query['job_id'])) {
+        if (isset($query['harvest_id'])) {
             $qb->andWhere($expr->eq(
-                'omeka_root.job',
-                $this->createNamedParameter($qb, $query['job_id']))
+                'omeka_root.harvest',
+                $this->createNamedParameter($qb, $query['harvest_id']))
             );
         }
+
+        if (isset($query['job_id'])) {
+            $harvestAlias = $this->createAlias();
+            $qb
+                ->innerJoin(
+                    'omeka_root.harvest', $harvestAlias
+                )
+                ->andWhere($expr->eq(
+                    "$harvestAlias.job",
+                    $this->createNamedParameter($qb, $query['job_id']))
+                );
+        }
+
         if (isset($query['entity_id'])) {
             $qb->andWhere($expr->eq(
                 'omeka_root.entity_id',
@@ -81,11 +94,11 @@ class EntityAdapter extends AbstractEntityAdapter
 
         $data = $request->getContent();
 
-        if (array_key_exists('o:job', $data)) {
-            $job = isset($data['o:job']['o:id'])
-                ? $this->getAdapter('jobs')->findEntity($data['o:job']['o:id'])
+        if (array_key_exists('o-oai-pmh:harvest', $data)) {
+            $harvest = isset($data['o-oai-pmh:harvest']['o:id'])
+                ? $this->getAdapter('oaipmhharvester_harvests')->findEntity($data['o-oai-pmh:harvest']['o:id'])
                 : null;
-            $entity->setJob($job);
+            $entity->setHarvest($harvest);
         }
 
         if (array_key_exists('o-oai-pmh:entity_id', $data)) {

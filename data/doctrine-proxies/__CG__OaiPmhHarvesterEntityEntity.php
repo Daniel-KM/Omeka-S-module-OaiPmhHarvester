@@ -67,10 +67,10 @@ class Entity extends \OaiPmhHarvester\Entity\Entity implements \Doctrine\ORM\Pro
     public function __sleep()
     {
         if ($this->__isInitialized__) {
-            return ['__isInitialized__', 'id', 'job', 'entityId', 'entityName', 'identifier', 'created'];
+            return ['__isInitialized__', 'id', 'harvest', 'entityId', 'entityName', 'identifier', 'created'];
         }
 
-        return ['__isInitialized__', 'id', 'job', 'entityId', 'entityName', 'identifier', 'created'];
+        return ['__isInitialized__', 'id', 'harvest', 'entityId', 'entityName', 'identifier', 'created'];
     }
 
     /**
@@ -195,23 +195,23 @@ class Entity extends \OaiPmhHarvester\Entity\Entity implements \Doctrine\ORM\Pro
     /**
      * {@inheritDoc}
      */
-    public function setJob(\Omeka\Entity\Job $job): \OaiPmhHarvester\Entity\Entity
+    public function setHarvest(\OaiPmhHarvester\Entity\Harvest $harvest): \OaiPmhHarvester\Entity\Entity
     {
 
-        $this->__initializer__ && $this->__initializer__->__invoke($this, 'setJob', [$job]);
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'setHarvest', [$harvest]);
 
-        return parent::setJob($job);
+        return parent::setHarvest($harvest);
     }
 
     /**
      * {@inheritDoc}
      */
-    public function getJob(): \Omeka\Entity\Job
+    public function getHarvest(): \OaiPmhHarvester\Entity\Harvest
     {
 
-        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getJob', []);
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getHarvest', []);
 
-        return parent::getJob();
+        return parent::getHarvest();
     }
 
     /**

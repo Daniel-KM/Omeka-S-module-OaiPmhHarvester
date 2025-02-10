@@ -11,7 +11,7 @@ class EntityRepresentation extends AbstractEntityRepresentation
     public function getJsonLd()
     {
         return [
-            'o:job' => $this->job()->getReference(),
+            'o-oai-pmh:harvest' => $this->harvest()->getReference(),
             'o-oai-pmh:entity_id' => $this->entityId(),
             'o-oai-pmh:entity_name' => $this->entityName(),
             'o-oai-pmh:identifier' => $this->identifier(),
@@ -27,10 +27,15 @@ class EntityRepresentation extends AbstractEntityRepresentation
         return 'o:OaiPmhHarvesterEntity';
     }
 
+    public function harvest(): HarvestRepresentation
+    {
+        return $this->getAdapter('oaipmhharvester_harvests')
+            ->getRepresentation($this->resource->getHarvest());
+    }
+
     public function job(): JobRepresentation
     {
-        return $this->getAdapter('jobs')
-            ->getRepresentation($this->resource->getJob());
+        return $this->harvest()->job();
     }
 
     public function entityId(): int
