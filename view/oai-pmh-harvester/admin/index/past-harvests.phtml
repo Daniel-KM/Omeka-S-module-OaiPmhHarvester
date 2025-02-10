@@ -61,7 +61,7 @@ $this->headLink()
             ?>
         <tr class="<?= $undoJob ? 'undone' : '' ?>">
             <td>
-                <input type="checkbox" name="jobs[]" value="<?= $job->id() ?>" <?= $undoJob ? ' disabled="disabled"' : '' ?>/>
+                <input type="checkbox" name="harvest_id[]" value="<?= $harvest->id() ?>" <?= $undoJob ? ' disabled="disabled"' : '' ?>/>
             </td>
             <td>
                 <span class="oai-pmh-date">

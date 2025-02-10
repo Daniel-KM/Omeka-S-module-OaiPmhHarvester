@@ -417,8 +417,8 @@ class IndexController extends AbstractActionController
         if ($this->getRequest()->isPost()) {
             $data = $this->params()->fromPost();
             $undoJobIds = [];
-            foreach ($data['jobs'] ?? [] as $jobId) {
-                $undoJob = $this->undoJob($jobId);
+            foreach ($data['harvest_id'] ?? [] as $harvestId) {
+                $undoJob = $this->undoJob($harvestId);
                 $undoJobIds[] = $undoJob->getId();
             }
             $this->messenger()->addSuccess(new Message(
@@ -442,20 +442,16 @@ class IndexController extends AbstractActionController
         ]);
     }
 
-    protected function undoJob($jobId): Job
+    protected function undoHarvest($harvestId): Job
     {
-        $harvest = $this->api()->read('oaipmhharvester_harvests', ['job' => $jobId])->getContent();
+        $harvest = $this->api()->read('oaipmhharvester_harvests', ['id' => $harvestId])->getContent();
 
-        $args = ['jobId' => $jobId];
+        $args = ['harvestId' => $harvestId];
         $job = $this->jobDispatcher()->dispatch(\OaiPmhHarvester\Job\Undo::class, $args);
 
-        $this->api()->update(
-            'oaipmhharvester_harvests',
-            $harvest->id(),
-            [
-                'o:undo_job' => ['o:id' => $job->getId() ],
-            ]
-        );
+        $this->api()->update('oaipmhharvester_harvests', $harvest->id(),[
+            'o:undo_job' => ['o:id' => $job->getId() ],
+        ]);
 
         return $job;
     }
