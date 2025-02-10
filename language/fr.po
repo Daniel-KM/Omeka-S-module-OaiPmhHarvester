@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OaipmhHarvester\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-04 00:00+0000\n"
-"PO-Revision-Date: 2023-12-04 00:00+0000\n"
+"POT-Creation-Date: 2025-02-10 00:00+0000\n"
+"PO-Revision-Date: 2025-02-10 00:00+0000\n"
 "Last-Translator: Daniel Berthereau <Daniel.fr@Berthereau.net>\n"
 "Language-Team: French <kde-i18n-doc@kde.org>\n"
 "Language: fr\n"
@@ -19,257 +19,346 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.2.2\n"
 
-#: src/Controller/Admin/IndexController.php:235
+#: src/Controller/Admin/IndexController.php:250
 #, php-format
 msgid "Harvesting from \"%s\" sets"
 msgstr "Moissonnage des lots de \"%s\""
 
-#: src/Controller/Admin/IndexController.php:281
+#: src/Controller/Admin/IndexController.php:298
 #, php-format
 msgid "%s as %s"
 msgstr "%s en %s"
 
-#: src/Controller/Admin/IndexController.php:318
-#, php-format
-msgid "These whitelist filters are used: \"%s\"."
-msgstr "Ces filtres en liste blanche sont utilisés : \"%s\"."
+#: src/Controller/Admin/IndexController.php:336
+msgid "The harvesting will be limited to period from {from} until {until}."
+msgstr ""
 
-#: src/Controller/Admin/IndexController.php:326
-#, php-format
-msgid "These blacklist filters are used: \"%s\"."
-msgstr "Ces filtres en liste noire sont utilisés : \"%s\"."
+#: src/Controller/Admin/IndexController.php:342
+msgid "The harvesting will be limited to period from {from}."
+msgstr ""
 
-#: src/Controller/Admin/IndexController.php:445
+#: src/Controller/Admin/IndexController.php:348
+msgid "The harvesting will be limited to period until {until}."
+msgstr ""
+
+#: src/Controller/Admin/IndexController.php:356
+#, php-format
+msgid "These whitelist filters are used: %s."
+msgstr "Ces filtres en liste blanche sont utilisés : %s."
+
+#: src/Controller/Admin/IndexController.php:364
+#, php-format
+msgid "These blacklist filters are used: %s."
+msgstr "Ces filtres en liste noire sont utilisés : %s."
+
+#: src/Controller/Admin/IndexController.php:483
 msgid "Missing endpoint."
 msgstr "Point d’accès manquant."
 
-#: src/Controller/Admin/IndexController.php:453
+#: src/Controller/Admin/IndexController.php:493
 msgid "[Untitled repository]"
-msgstr "[Dépot sans nom]"
+msgstr "[Entrepôt sans nom]"
 
-#: src/Controller/Admin/IndexController.php:473
+#: src/Controller/Admin/IndexController.php:520
 msgid "The sets you specified are not correctly formatted."
 msgstr "Les lots que vous avez indiqués ne sont pas correctement formattés."
 
-#: src/Controller/Admin/IndexController.php:487
+#: src/Controller/Admin/IndexController.php:530
 #, php-format
 msgid "The following formats are not managed: \"%s\"."
 msgstr "Les formats suivants ne sont pas gérés : \"%s\"."
 
-#: src/Form/HarvestForm.php:113
-msgid "The endpoint \"%value%\" should not have a query."
-msgstr "Le point d’accès « %value% » ne doit pas avoir une requête."
-
-#: src/Form/HarvestForm.php:122
-msgid "The endpoint \"%value%\" does not return xml."
-msgstr "Le point d’accès  %value% » ne retourne pas de xml."
-
-#: src/Form/HarvestForm.php:131
-msgid "The endpoint \"%value%\" does not manage any format."
-msgstr "Le point d’accès  %value% » ne gère aucun format."
-
-#: src/Mvc/Controller/Plugin/OaiPmhRepository.php:142
+#: src/Mvc/Controller/Plugin/OaiPmhRepository.php:185
 #, php-format
 msgid "%s [unmanaged]"
 msgstr "%s [non géré]"
 
-#: view/oai-pmh-harvester/admin/index/index.phtml:10
+#: view/oai-pmh-harvester/admin/index/index.phtml:20
 msgid "Harvester"
-msgstr "Moisson"
+msgstr "Moissonneur"
 
-#: view/oai-pmh-harvester/admin/index/index.phtml:10
+#: view/oai-pmh-harvester/admin/index/index.phtml:20
 msgid "OAI-PMH"
 msgstr "OAI-PMH"
 
-#: view/oai-pmh-harvester/admin/index/index.phtml:12
-msgid "Set repository to harvest"
-msgstr "Indiquer le dépôt à moissonner"
-
-#: view/oai-pmh-harvester/admin/index/index.phtml:15
+#: view/oai-pmh-harvester/admin/index/index.phtml:23
 msgid "View sets"
 msgstr "Voir les lots"
 
-#: view/oai-pmh-harvester/admin/index/past-harvests.phtml:16
+#: view/oai-pmh-harvester/admin/index/index.phtml:30
+msgid "Set repository to harvest"
+msgstr "Indiquer le dépôt à moissonner"
+
+#: view/oai-pmh-harvester/admin/index/past-harvests.phtml:23
 msgid "Past Imports"
 msgstr "Précédents imports"
 
-#: view/oai-pmh-harvester/admin/index/past-harvests.phtml:16
-#: view/oai-pmh-harvester/admin/index/sets.phtml:16
+#: view/oai-pmh-harvester/admin/index/past-harvests.phtml:23
+#: view/oai-pmh-harvester/admin/index/sets.phtml:26
 msgid "OAI-PMH Harvester"
 msgstr "Moissonneur OAI-PMH"
 
-#: view/oai-pmh-harvester/admin/index/past-harvests.phtml:19
+#: view/oai-pmh-harvester/admin/index/past-harvests.phtml:31
 msgid "There are no harvests currently."
 msgstr "Aucune moisson actuellement."
 
-#: view/oai-pmh-harvester/admin/index/past-harvests.phtml:31
+#: view/oai-pmh-harvester/admin/index/past-harvests.phtml:44
 msgid "Undo?"
 msgstr "Défaire ?"
 
-#: view/oai-pmh-harvester/admin/index/past-harvests.phtml:34
-msgid "Message"
-msgstr "Message"
+#: view/oai-pmh-harvester/admin/index/past-harvests.phtml:47
+msgid "Last message"
+msgstr "Dernier message"
 
-#: view/oai-pmh-harvester/admin/index/past-harvests.phtml:35
+#: view/oai-pmh-harvester/admin/index/past-harvests.phtml:48
 msgid "Results"
 msgstr "Résultats"
 
-#: view/oai-pmh-harvester/admin/index/past-harvests.phtml:57
-#: view/oai-pmh-harvester/admin/index/past-harvests.phtml:106
+#: view/oai-pmh-harvester/admin/index/past-harvests.phtml:72
+#: view/oai-pmh-harvester/admin/index/past-harvests.phtml:121
 msgid "Job details"
 msgstr "Détails de la tâche"
 
-#: view/oai-pmh-harvester/admin/index/past-harvests.phtml:81
+#: view/oai-pmh-harvester/admin/index/past-harvests.phtml:94
 msgid ""
 "Problems were detected with the import. Check the job’s log for details."
 msgstr ""
 "Des problèmes ont été détectés lors de l’import. Vérifiez les journaux de la "
 "tâche pour davantage de détails."
 
-#: view/oai-pmh-harvester/admin/index/past-harvests.phtml:88
+#: view/oai-pmh-harvester/admin/index/past-harvests.phtml:103
 #, php-format
 msgid "%s: %s"
 msgstr "%s : %s"
 
-#: view/oai-pmh-harvester/admin/index/past-harvests.phtml:93
+#: view/oai-pmh-harvester/admin/index/past-harvests.phtml:108
 #, php-format
 msgid "Imported: %d %s"
 msgstr "Importés : %d %s"
 
-#: view/oai-pmh-harvester/admin/index/past-harvests.phtml:93
+#: view/oai-pmh-harvester/admin/index/past-harvests.phtml:108
 msgid "items"
 msgstr "contenus"
 
-#: view/oai-pmh-harvester/admin/index/past-harvests.phtml:100
+#: view/oai-pmh-harvester/admin/index/past-harvests.phtml:115
 msgid "Undone"
 msgstr "Défait"
 
-#: view/oai-pmh-harvester/admin/index/past-harvests.phtml:102
+#: view/oai-pmh-harvester/admin/index/past-harvests.phtml:117
 msgid "Undo in progress"
 msgstr "Annulation en cours"
 
-#: view/oai-pmh-harvester/admin/index/sets.phtml:16
+#: view/oai-pmh-harvester/admin/index/sets.phtml:26
 msgid "Prepare import"
 msgstr "Prépare l’import"
 
-#: view/oai-pmh-harvester/admin/index/sets.phtml:20
+#: view/oai-pmh-harvester/admin/index/sets.phtml:29
+msgid "Harvest"
+msgstr "Moisson"
+
+#: view/oai-pmh-harvester/admin/index/sets.phtml:39
 #, php-format
 msgid "The repository %1$s (%2$s) has an undefined number of sets."
 msgstr "Le nombre de lots du dépôt %1$s (%2$s) est indéterminé."
 
-#: view/oai-pmh-harvester/admin/index/sets.phtml:22
+#: view/oai-pmh-harvester/admin/index/sets.phtml:41
 #, php-format
 msgid "The repository %1$s (%2$s) has %3$d sets."
 msgstr "Le dépôt %1$s (%2$s) dispose de %3$d lots."
 
-#: view/oai-pmh-harvester/admin/index/sets.phtml:24
+#: view/oai-pmh-harvester/admin/index/sets.phtml:43
 #, php-format
 msgid "Only the first %d are displayed."
 msgstr "Seuls les %d premiers sont affichés."
 
-#: view/oai-pmh-harvester/admin/index/sets.phtml:31
+#: view/oai-pmh-harvester/admin/index/sets.phtml:50
 msgid "Please choose a set to import."
 msgstr "Merci de choisir un lot à importer."
 
-#: view/oai-pmh-harvester/admin/index/sets.phtml:37
-msgid "Harvest"
-msgstr "Moisson"
-
-#: src/Job/Undo.php:29
+#: data/scripts/upgrade.php:201 Module.php:31
 #, php-format
-msgid "The job \"Undo\" was stopped: %d/%d resources processed."
-msgstr "La tâche \"Défaire\" a été arrêtée : %d/%d notices traitées."
+msgid ""
+"The directory \"%s\" is not writeable, so the oai-pmh xml responses won’t be "
+"storable."
+msgstr ""
 
-#: src/Job/Harvest.php:65
+#: data/scripts/upgrade.php:212
+msgid ""
+"It is now possible to store the oai-pmh xml files received from the "
+"repository, in particular to check filters."
+msgstr ""
+"Il est désormais possible d’enregistrer les fichiers oai-pmh xml reçus de "
+"l’entrepôt, en particulier pour analyser les filtres."
+
+#: data/scripts/upgrade.php:266
+msgid ""
+"It is now possible to set the period (date from/until) to harvest, when "
+"supported by the repository."
+msgstr ""
+"Il est désormais possible de définir une période (date de/à) à moissonner, "
+"si l’entrepôt le gère."
+
+#: data/scripts/upgrade.php:271
+msgid "Harvests are now run sequencially when there are multiple sets."
+msgstr ""
+"Les moissons sont désormais réalisées en séquence lorsqu’il y a plusieurs "
+"lots."
+
+#: view/oai-pmh-harvester/admin/index/past-harvests.phtml:100
+msgid "not whitelisted"
+msgstr "pas en liste blanche"
+
+#: src/Mvc/Controller/Plugin/OaiPmhRepository.php:254 src/Job/Harvest.php:165
+msgid ""
+"The directory \"{path}\" is not writeable, so the oai-pmh xml responses are "
+"not storable."
+msgstr ""
+
+#: src/Mvc/Controller/Plugin/OaiPmhRepository.php:281
+msgid "Unable to store xml (verb {verb})."
+msgstr ""
+
+#: src/Mvc/Controller/Plugin/OaiPmhRepository.php:286
+msgid "The xml response (verb {verb}) was stored as {url}."
+msgstr ""
+
+#: src/Job/Undo.php:28
+msgid "The job \"Undo\" was stopped: {count}/{total} resources processed."
+msgstr "La tâche \"Défaire\" a été arrêtée : {count}/{total} notices traitées."
+
+#: src/Job/Harvest.php:106
+msgid "The date \"from\" {date} is invalid."
+msgstr ""
+
+#: src/Job/Harvest.php:113
+msgid "The date \"until\" {date} is invalid."
+msgstr ""
+
+#: src/Job/Harvest.php:120
+msgid "The date \"from\" {date_1} cannot be after the date \"until\" {date_2}."
+msgstr ""
+
+#: src/Job/Harvest.php:129
+msgid "No set defined."
+msgstr "Aucun lot défini."
+
+#: src/Job/Harvest.php:143
+msgid "The format {format} is not managed by the module currently."
+msgstr "Le format {format} n’est pas géré par le module actuellement."
+
+#: src/Job/Harvest.php:148
+msgid "The formats {formats} are not managed by the module currently."
+msgstr "Les formats {formats} ne sont pas gérés par le module actuellement."
+
+#: src/Job/Harvest.php:214
 msgid "records"
 msgstr "notices"
 
-#: src/Job/Harvest.php:66
+#: src/Job/Harvest.php:215
 msgid "harvested"
 msgstr "moissonnées"
 
-#: src/Job/Harvest.php:67
+#: src/Job/Harvest.php:216
 msgid "whitelisted"
 msgstr "en liste blanche"
 
-#: src/Job/Harvest.php:68
+#: src/Job/Harvest.php:217
 msgid "blacklisted"
 msgstr "en liste noire"
 
-#: src/Job/Harvest.php:69
+#: src/Job/Harvest.php:218
 msgid "medias"
 msgstr "médias"
 
-#: src/Job/Harvest.php:70
+#: src/Job/Harvest.php:219
 msgid "imported"
 msgstr "importées"
 
-#: src/Job/Harvest.php:71
+#: src/Job/Harvest.php:220
 msgid "errors"
 msgstr "erreurs"
 
-#: src/Job/Harvest.php:77
+#: src/Job/Harvest.php:226
 msgid "Harvesting started"
-msgstr "Moisson lancée"
+msgstr "Moissonnage lancé"
 
-#: src/Job/Harvest.php:96
-#, php-format
-msgid "The format \"%s\" is not managed by the module currently."
-msgstr "Le format « %s » n’'est pas géré par le module actuellement."
-
-#: src/Job/Harvest.php:114 src/Job/Harvest.php:264
-#, php-format
-msgid ""
-"Results: total records = %1$s, harvested = %2$d, not in whitelist = %3$d, "
-"blacklisted = %4$d, imported = %5$d, medias = %6$d, errors = %7$d."
+#: src/Job/Harvest.php:248
+msgid "Start harvesting {url}, format {format}, from {from} until {until}."
 msgstr ""
-"Résultats : total des notices = %1$s, moissonnées = %2$d, en liste blanche = "
-"%3$d, en liste noire = %4$d, importées = %5$d, médias = %6$d, erreurs = %7$d."
 
-#: src/Job/Harvest.php:118
+#: src/Job/Harvest.php:253
+msgid "Start harvesting {url}, format {format}, from {from}."
+msgstr ""
+
+#: src/Job/Harvest.php:258
+msgid "Start harvesting {url}, format {format}, until {until}."
+msgstr ""
+
+#: src/Job/Harvest.php:263
+msgid "Start harvesting {url}, format {format}."
+msgstr ""
+
+#: src/Job/Harvest.php:281 src/Job/Harvest.php:469
+msgid ""
+"Results: total records = {total}, harvested = {harvested}, not in whitelist "
+"= {whitelisted}, blacklisted = {blacklisted}, imported = {imported}, medias "
+"= {medias}, errors = {errors}."
+msgstr ""
+"Résultats : total des notices = {total}, moissonnées = {harvested}, en liste "
+"blanche = {whitelisted}, en liste noire = {blacklisted}, importées = "
+"{imported}, médias = {medias}, erreurs = {errors}."
+
+#: src/Job/Harvest.php:293
 msgid "The job was stopped."
 msgstr "La tâche a été arrêtée."
 
-#: src/Job/Harvest.php:134 src/Job/Harvest.php:143 src/Job/Harvest.php:152
+#: src/Job/Harvest.php:316 src/Job/Harvest.php:325 src/Job/Harvest.php:334
 msgid "Server unavailable. Retrying."
 msgstr "Serveur indisponible. Nouvel essai."
 
-#: src/Job/Harvest.php:136 src/Job/Harvest.php:145 src/Job/Harvest.php:154
-#, php-format
+#: src/Job/Harvest.php:318 src/Job/Harvest.php:327 src/Job/Harvest.php:336
 msgid ""
-"Error: the harvester does not list records with url %1$s. Retrying %2$d/%3$d "
-"times in %4$d seconds"
+"Error: the harvester does not list records with url {url}. Retrying {count}/"
+"{total} times in {seconds} seconds"
 msgstr ""
-"Erreur : le moissonneur n’a trouvé aucune notice avec l’url %s. Nouvel essai "
-"%2$d/%3$d dans %4$d secondes"
+"Erreur : le moissonneur n’a trouvé aucune notice avec l’url {url}. Nouvel "
+"essai {count}/{total} dans {seconds} secondes"
 
-#: src/Job/Harvest.php:162 src/Job/Harvest.php:175
+#: src/Job/Harvest.php:344 src/Job/Harvest.php:362
 msgid "Error."
 msgstr "Erreur."
 
-#: src/Job/Harvest.php:164
-#, php-format
-msgid "Error: the harvester does not list records with url %1$s."
-msgstr "Erreur : le moissonneur n’a trouvé aucune notice avec l’url %s."
+#: src/Job/Harvest.php:346
+msgid "Error: the harvester does not list records with url {url}."
+msgstr "Erreur : le moissonneur n’a trouvé aucune notice avec l’url {url}."
 
-#: src/Job/Harvest.php:177
-#, php-format
-msgid "Error: the harvester does not list records with url %s."
-msgstr "Erreur : le moissonneur n’a trouvé aucune notice avec l’url %s."
+#: src/Job/Harvest.php:364
+msgid "The harvester does not list records with url {url}."
+msgstr "Erreur : le moissonneur n’a trouvé aucune notice avec l’url {url}."
 
-#: src/Job/Harvest.php:241
+#: src/Job/Harvest.php:432
 msgid "Processing"
 msgstr "En traitement"
 
-#: src/Job/Harvest.php:252
+#: src/Job/Harvest.php:439
+msgid ""
+"Page #{page} processed: total records = {total}, harvested = {harvested}, "
+"not in whitelist = {whitelisted}, blacklisted = {blacklisted}, imported = "
+"{imported}, medias = {medias}, errors = {errors}."
+msgstr ""
+"Page #{page} traitée : total des notices = {total}, moissonnées = "
+"{harvested}, en liste blanche = {whitelisted}, en liste noire = "
+"{blacklisted}, importées = {imported}, médias = {medias}, erreurs = {errors}."
+
+#: src/Job/Harvest.php:457
 msgid "Harvest ended."
 msgstr "Moisson terminée."
 
-#: src/Job/Harvest.php:270
+#: src/Job/Harvest.php:483
 msgid "Imports of medias should be checked separately."
 msgstr "Les imports des médias doivent être vérifiées séparément."
 
-#: src/Job/Harvest.php:276
+#: src/Job/Harvest.php:489
 msgid ""
 "Some records were not imported, probably related to issue on media. You may "
 "check the main logs."
@@ -277,41 +366,87 @@ msgstr ""
 "Certaines notices n’ont pas été importées, probablement en raison de "
 "problèmes sur les médias. Vous pouvez vérifier les journaux."
 
-#: src/Job/Harvest.php:310
-#, php-format
-msgid "%1$d resource created from oai record %2$s: #%3$s."
-msgstr "%1$d ressource créée à partir de la notice oai %2$s : #%3$s."
-
-#: src/Job/Harvest.php:315
-#, php-format
-msgid "%1$d resources created from oai record %2$s: #%3$s."
-msgstr "%1$d ressources créées à partir de la notice oai  %2$s : #%3$s."
-
-#: src/Job/Harvest.php:321
-#, php-format
-msgid "Only %1$d/%2$d resources created from oai record %3$s: #%4$s."
+#: src/Job/Harvest.php:520
+msgid "{count} resource created from oai record {identifier}: #{resource_ids}."
 msgstr ""
-"Seules %1$d/%2$d notices ont été créées à partir de la notice oai %3$s : "
-"#%4$s."
+"{count} ressource créée à partir de la notice oai {identifier} : "
+"#{resource_ids}."
 
-#: src/Job/Harvest.php:326
-#, php-format
-msgid "No resource created from oai record %s."
-msgstr "Aucune ressource créée à partir de la notice oai %s."
-
-#: src/Job/Harvest.php:332
-#, php-format
-msgid "No resource created from oai record %s, according to its metadata."
+#: src/Job/Harvest.php:525
+msgid ""
+"{count} resources created from oai record {identifier}: #{resource_ids}."
 msgstr ""
-"Aucune ressource créée à partir de la notice oai %s, conformément à ses "
-"métadonnées."
+"{count} ressources créées à partir de la notice oai {identifier} : "
+"#{resource_ids}."
 
-#: src/Form/SetsForm.php:56
+#: src/Job/Harvest.php:531
+msgid ""
+"Only {count}/{total} resources created from oai record {identifier}: "
+"#{resource_ids}."
+msgstr ""
+"Seules {count}/{total} ressources ont été créées à partir de la notice oai "
+"{identifier} : #{resource_ids}."
+
+#: src/Job/Harvest.php:536
+msgid "No resource created from oai record {identifier}."
+msgstr "Aucune ressource créée à partir de la notice oai {identifier}."
+
+#: src/Job/Harvest.php:542
+msgid ""
+"No resource created from oai record {identifier}, according to its metadata."
+msgstr ""
+"Aucune ressource créée à partir de la notice oai {identifier}, conformément "
+"à ses métadonnées."
+
+#: src/Job/Harvest.php:589
+msgid "Unable to store xml for page #{page}, record #{index}."
+msgstr ""
+
+#: src/Job/Harvest.php:593
+msgid "Unable to store xml for page #{page}."
+msgstr ""
+
+#: src/Job/Harvest.php:599
+msgid "Page #{page}: the xml record {index} was stored as {url}."
+msgstr ""
+
+#: src/Job/Harvest.php:603
+msgid "The xml response #{page} was stored as {url}."
+msgstr ""
+
+#: src/Form/SetsForm.php:58 src/Form/SetsForm.php:88
+#: src/Form/HarvestForm.php:79 src/Form/HarvestForm.php:109
+msgid "From date"
+msgstr "Depuis la date"
+
+#: src/Form/SetsForm.php:59 src/Form/HarvestForm.php:80
+msgid "Date should be UTC. Time is optional. Value is included (≥)."
+msgstr ""
+"La date doit être en UTC. L’heure est facultative. La valeur est incluse (≤)."
+
+#: src/Form/SetsForm.php:73 src/Form/HarvestForm.php:94
+msgid "Optional from time"
+msgstr "Depuis l’heure (facultatif)"
+
+#: src/Form/SetsForm.php:89 src/Form/HarvestForm.php:110
+msgid "Until date"
+msgstr "Jusqu’à la date"
+
+#: src/Form/SetsForm.php:90 src/Form/HarvestForm.php:111
+msgid "Date should be UTC. Time is optional. Value is included (≤)."
+msgstr ""
+"La date doit être en UTC. L’heure est facultative. La valeur est incluse (≤)."
+
+#: src/Form/SetsForm.php:104 src/Form/HarvestForm.php:125
+msgid "Optional until time"
+msgstr "Jusqu’à l’heure (facultatif)"
+
+#: src/Form/SetsForm.php:119
 msgid "Filters (whitelist)"
 msgstr "Filtres (liste blanche)"
 
-#: src/Form/SetsForm.php:57 src/Form/SetsForm.php:68
-#: src/Form/HarvestForm.php:74 src/Form/HarvestForm.php:85
+#: src/Form/SetsForm.php:120 src/Form/SetsForm.php:131
+#: src/Form/HarvestForm.php:141 src/Form/HarvestForm.php:152
 msgid ""
 "Add strings to filter the input, for example to import only some articles of "
 "a journal."
@@ -319,39 +454,57 @@ msgstr ""
 "Ajouter des chaînes pour filtrer les entrées, par exemple pour importer "
 "seulement certains articles d’une revue."
 
-#: src/Form/SetsForm.php:67
+#: src/Form/SetsForm.php:130
 msgid "Filters (blacklist)"
 msgstr "Filtres (liste noire)"
 
-#: src/Form/SetsForm.php:135
+#: src/Form/SetsForm.php:142
+msgid "Store oai-pmh xml responses"
+msgstr "Enregistrer les réponses oai-pmh xml"
+
+#: src/Form/SetsForm.php:143
+msgid ""
+"This option allows to investigate issues. Xml files are stored in directory /"
+"files/oai-pmh-harvest."
+msgstr ""
+
+#: src/Form/SetsForm.php:145
+msgid "By page"
+msgstr "Par page"
+
+#: src/Form/SetsForm.php:146
+msgid "By record"
+msgstr "Par notice"
+
+#: src/Form/SetsForm.php:236
 msgid "Harvest this set?"
 msgstr "Moissonner ce set ?"
 
-#: src/Form/SetsForm.php:172
+#: src/Form/SetsForm.php:273
 msgid "Harvest this set"
 msgstr "Moissonner ce set"
 
-#: src/Form/SetsForm.php:186
+#: src/Form/SetsForm.php:287
 msgid "Whole repository"
 msgstr "Dépôt entier"
 
-#: src/Form/HarvestForm.php:29
+#: src/Form/HarvestForm.php:30
 msgid "OAI-PMH endpoint"
 msgstr "Point d’accès OAI-PMH"
 
-#: src/Form/HarvestForm.php:30
+#: src/Form/HarvestForm.php:31
 msgid "The base URL of the OAI-PMH data provider."
 msgstr "L’URL de base du dépôt OAI-PMH."
 
-#: src/Form/HarvestForm.php:46
+#: src/Form/HarvestForm.php:47
 msgid "Skip listing of sets and harvest all records"
 msgstr "Ignorer la liste des lots et moissonner toutes les notices"
 
-#: src/Form/HarvestForm.php:57
+#: src/Form/HarvestForm.php:58
 msgid "Skip listing of sets and harvest only these sets"
 msgstr "Ignorer la liste des lots et moissonner seulement ces lots"
 
-#: src/Form/HarvestForm.php:58
+#: src/Form/HarvestForm.php:59
 msgid ""
 "Set one set identifier and a metadata prefix by line. Separate the set and "
 "the prefix by \"=\". If no prefix is set, \"dcterms\" or \"oai_dc\" will be "
@@ -361,15 +514,39 @@ msgstr ""
 "Séparer le lot et le préfixe par \"=\". Si aucun préfixe n’est indiqué, "
 "\"dcterms\" ou \"oai_dc\" seront utilisés."
 
-#: src/Form/HarvestForm.php:73
+#: src/Form/HarvestForm.php:140
 msgid "Filters on each record (whitelist)"
 msgstr "Filtres pour chaque notice (liste blanche)"
 
-#: src/Form/HarvestForm.php:84
+#: src/Form/HarvestForm.php:151
 msgid "Filters on each record (blacklist)"
 msgstr "Filtres pour chaque notice (liste noire)"
 
-#: src/Controller/Admin/IndexController.php:135
+#: src/Form/HarvestForm.php:163
+msgid "Store oai-pmh xml response for list of sets"
+msgstr "Enregistrer les réponses oai-pmh xml pour la liste des lots"
+
+#: src/Form/HarvestForm.php:164
+msgid "See log to get the url."
+msgstr "Consulter les journaux pour avoir l’url."
+
+#: src/Form/HarvestForm.php:192
+msgid "The endpoint \"%value%\" should not have a query."
+msgstr "Le point d’accès « %value% » ne doit pas avoir une requête."
+
+#: src/Form/HarvestForm.php:201
+msgid "The endpoint \"%value%\" does not return xml."
+msgstr "Le point d’accès  %value% » ne retourne pas de xml."
+
+#: src/Form/HarvestForm.php:210
+msgid "The endpoint \"%value%\" does not manage any format."
+msgstr "Le point d’accès  %value% » ne gère aucun format."
+
+#: src/Form/HarvestForm.php:249
+msgid "When set, the \"from\" date must be before the \"until\" date."
+msgstr ""
+
+#: src/Controller/Admin/IndexController.php:140
 msgid ""
 "This repository has duplicate identifiers for sets, so they are not all "
 "displayed. You may warn the admin of the repository."
@@ -377,34 +554,46 @@ msgstr ""
 "Ce dépôt a des identifiants en doublon pour les lots et ils ne peuvent pas "
 "être tous affichés. Vous pouvez avertir son gestionnaire."
 
-#: src/Controller/Admin/IndexController.php:150
+#: src/Controller/Admin/IndexController.php:155
 msgid "At least one repository should be selected."
 msgstr "Au moins un dépôt doit être sélectionné."
 
-#: src/Controller/Admin/IndexController.php:352
+#: src/Controller/Admin/IndexController.php:396
 #, php-format
 msgid ""
-"Harvesting %1$s started in background (job %2$s#%3$d%4$s, %5$slogs%4$s). "
-"This may take a while."
+"Harvesting started in background (job %1$s#%2$d%3$s, %4$slogs%3$s). This may "
+"take a while."
 msgstr ""
-"Moisson %1$s lancée en arrière-plan (tâche %2$s#%3$d%4$s, %5$sjournaux%4$s)."
+"Moissonnage lancé en arrière-plan (tâche %1$s#%2$d%3$s, %4$sjournaux%3$s). "
+"Cela peut prendre un moment."
 
-#: src/Controller/Admin/IndexController.php:385
+#: src/Controller/Admin/IndexController.php:427
 #, php-format
 msgid "Undo in progress in the following jobs: %s"
 msgstr "Annulations en cours pour les tâches suivantes : %s"
 
-#: src/Service/OaiPmh/HarvesterMapManagerFactory.php:21
-msgid "Missing harvest configuration"
-msgstr "Configuration de la moisson manquante"
+#: src/Service/OaiPmh/HarvesterMapManagerFactory.php:19
+msgid "Missing OAI-PMH Harvester configuration"
+msgstr "Configuration de la moisson indisponible"
 
-#: config/module.config.php:95
-msgid "Sets"
-msgstr "Lots"
-
-#: config/module.config.php:107
+#: config/module.config.php:110
 msgid "Past Harvests"
-msgstr "Moissons réalisées"
+msgstr "Historique des moissons"
+
+#, php-format
+#~ msgid "Error: the harvester does not list records with url %1$s."
+#~ msgstr "Erreur : le moissonneur n’a trouvé aucune notice avec l’url %s."
+
+#, php-format
+#~ msgid "%1$d resource created from oai record %2$s: #%3$s."
+#~ msgstr "%1$d ressource créée à partir de la notice oai %2$s : #%3$s."
+
+#, php-format
+#~ msgid "%1$d resources created from oai record %2$s: #%3$s."
+#~ msgstr "%1$d ressources créées à partir de la notice oai  %2$s : #%3$s."
+
+#~ msgid "Sets"
+#~ msgstr "Lots"
 
 #~ msgid "OAI-PMH Base Page"
 #~ msgstr "Page de base OAI-PMH"
