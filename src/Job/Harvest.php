@@ -104,6 +104,49 @@ class Harvest extends AbstractJob
                 ['date_1' => $from, 'date_2' => $until]
             );
         }
+
+        $metadataPrefix = $args['metadata_prefix'] ?? null;
+        if (!$metadataPrefix || !$harvesterMapManager->has($metadataPrefix)) {
+            $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
+            $this->logger->err(
+                'The format "{format}" is not managed by the module currently.', // @translate
+                ['format' => $metadataPrefix]
+            );
+        }
+
+        // Check directory to store xmls.
+        $storeXml = !empty($args['store_xml']) && is_array($args['store_xml']) ? $args['store_xml'] : [];
+        $storeXmlResponse = in_array('page', $storeXml);
+        $storeXmlRecord = in_array('record', $storeXml);
+        if ($storeXmlResponse || $storeXmlRecord) {
+            $config = $services->get('Config');
+            $basePath = $config['file_store']['local']['base_path'] ?: (OMEKA_PATH . '/files');
+            if (!is_dir($basePath) || !is_readable($basePath) || !is_writeable($basePath)) {
+                $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
+                $this->logger->err(
+                    'The directory "{path}" is not writeable, so the oai-pmh xml responses are not storable.', // @translate
+                    ['path' => $basePath]
+                );
+            } else {
+                $dir = $basePath . '/oai-pmh-harvest';
+                if (!file_exists($dir)) {
+                    mkdir($dir);
+                }
+                $this->basePath = $basePath;
+                $this->baseName = $this->slugify(parse_url($args['endpoint'], PHP_URL_HOST));
+                $this->baseUri = $config['file_store']['local']['base_uri'] ?: '';
+                if (empty($this->baseUri)) {
+                    $helpers = $services->get('ViewHelperManager');
+                    $serverUrlHelper = $helpers->get('ServerUrl');
+                    $basePathHelper = $helpers->get('BasePath');
+                    $this->baseUri = $serverUrlHelper($basePathHelper('files'));
+                }
+            }
+        }
+
+        // Early return on any issue without creating the harvest entity.
+        // Anyway, normally, the checks are done in controller.
+
         if ($this->job->getStatus() === \Omeka\Entity\Job::STATUS_ERROR) {
             return false;
         }
@@ -145,47 +188,6 @@ class Harvest extends AbstractJob
         $this->harvest = $harvest;
 
         $harvestId = $harvest->id();
-
-        $metadataPrefix = $args['metadata_prefix'] ?? null;
-        if (!$metadataPrefix || !$harvesterMapManager->has($metadataPrefix)) {
-            $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
-            $this->logger->err(
-                'The format "{format}" is not managed by the module currently.', // @translate
-                ['format' => $metadataPrefix]
-            );
-            $this->api->update('oaipmhharvester_harvests', $harvestId, ['o-oai-pmh:has_err' => true]);
-            return false;
-        }
-
-        // Check directory to store xmls.
-        $storeXml = !empty($args['store_xml']) && is_array($args['store_xml']) ? $args['store_xml'] : [];
-        $storeXmlResponse = in_array('page', $storeXml);
-        $storeXmlRecord = in_array('record', $storeXml);
-        if ($storeXmlResponse || $storeXmlRecord) {
-            $config = $services->get('Config');
-            $basePath = $config['file_store']['local']['base_path'] ?: (OMEKA_PATH . '/files');
-            if (!is_dir($basePath) || !is_readable($basePath) || !is_writeable($basePath)) {
-                $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
-                $this->logger->err(
-                    'The directory "{path}" is not writeable, so the oai-pmh xml responses are not storable.', // @translate
-                    ['path' => $basePath]
-                );
-                return false;
-            }
-            $dir = $basePath . '/oai-pmh-harvest';
-            if (!file_exists($dir)) {
-                mkdir($dir);
-            }
-            $this->basePath = $basePath;
-            $this->baseName = $this->slugify(parse_url($args['endpoint'], PHP_URL_HOST));
-            $this->baseUri = $config['file_store']['local']['base_uri'] ?: '';
-            if (empty($this->baseUri)) {
-                $helpers = $services->get('ViewHelperManager');
-                $serverUrlHelper = $helpers->get('ServerUrl');
-                $basePathHelper = $helpers->get('BasePath');
-                $this->baseUri = $serverUrlHelper($basePathHelper('files'));
-            }
-        }
 
         if ($from && $until) {
             $this->logger->notice(
