@@ -44,7 +44,7 @@ $this->headLink()
                 <th><?= $escape($translate('Undo?')) ?></th>
                 <th><?= $escape($translate('Date')) ?></th>
                 <th><?= $escape($translate('Label')) ?></th>
-                <th><?= $escape($translate('Message')) ?></th>
+                <th><?= $escape($translate('Last message')) ?></th>
                 <th><?= $escape($translate('Results')) ?></th>
                 <th><?= $escape($translate('Status')) ?></th>
                 <th><?= $escape($translate('Owner')) ?></th>
@@ -96,7 +96,9 @@ $this->headLink()
             </td>
             <td>
                 <?php if ($stats = $harvest->stats()): ?>
-                <?php foreach ($stats as $statKey => $statValue): ?>
+                <?php foreach ($stats as $statKey => $statValue):
+                    if ($statKey === 'whitelisted') $statKey = 'not whitelisted'; // @translate
+                    ?>
                 <span class="oai-pmh-stat">
                     <?= sprintf($translate('%s: %s'), $translate($statKey), $statValue) ?>
                 </span>
