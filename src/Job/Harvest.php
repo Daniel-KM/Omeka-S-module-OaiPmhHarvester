@@ -2,6 +2,8 @@
 
 namespace OaiPmhHarvester\Job;
 
+use DateTime;
+use DateTimeZone;
 use Omeka\Api\Representation\AbstractRepresentation;
 use Omeka\Job\AbstractJob;
 
@@ -226,8 +228,8 @@ class Harvest extends AbstractJob
             'o-oai-pmh:endpoint' => $args['endpoint'],
             'o:item_set' => ['o:id' => $args['item_set_id']],
             'o-oai-pmh:metadata_prefix' => $args['metadata_prefix'],
-            'o-oai-pmh:from' => $from,
-            'o-oai-pmh:until' => $until,
+            'o-oai-pmh:from' => $from ? new DateTime($from, new DateTimeZone('UTC')) : null,
+            'o-oai-pmh:until' => $until ? new DateTime($until, new DateTimeZone('UTC')) : null,
             'o-oai-pmh:set_spec' => $args['set_spec'],
             'o-oai-pmh:set_name' => $args['set_name'],
             'o-oai-pmh:set_description' => $args['set_description'] ?? null,
@@ -299,6 +301,7 @@ class Harvest extends AbstractJob
                 $url = $args['endpoint'] . '?verb=ListRecords'
                     . (isset($args['set_spec']) && strlen((string) $args['set_spec']) ? '&set=' . rawurlencode($args['set_spec']) : '')
                     . '&metadataPrefix=' . rawurlencode($metadataPrefix);
+                // Here, the from/until dates may be a date or a date with time.
                 if ($from) {
                     $url .= '&from=' . rawurlencode($from);
                 }

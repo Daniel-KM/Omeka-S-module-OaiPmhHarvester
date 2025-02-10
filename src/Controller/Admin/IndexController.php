@@ -69,6 +69,8 @@ class IndexController extends AbstractActionController
         $params = $this->params()->fromRoute();
         $post = $this->params()->fromPost();
 
+        // TODO Check granularity early.
+
         $step = $post['step'] ?? 'harvest-repository';
         $prevAction = $params['prev_action'] ?? null;
         $hasError = !empty($params['has_error']);
