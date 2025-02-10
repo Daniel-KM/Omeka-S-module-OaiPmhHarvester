@@ -237,8 +237,8 @@ class IndexController extends AbstractActionController
             $from = $from . 'T' . $data['from_time'] . 'Z';
         }
         $until = $data['until'] ?? null;
-        if ($until && !empty($until['until_time'])) {
-            $until = $until . 'T' . $data['until_time'] . 'Z';
+        if ($until) {
+            $until = $until . 'T' .  (empty($until['until_time']) ? '23:59:59' : $data['until_time']) . 'Z';
         }
 
         $filters = [
