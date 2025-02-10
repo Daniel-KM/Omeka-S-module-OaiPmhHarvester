@@ -46,8 +46,8 @@ class IndexController extends AbstractActionController
                     $params['prev_action'] = 'index';
                     return $this->forward()->dispatch(__CLASS__, $params);
                 }
-                $this->messenger()->addFormErrors($form);
             }
+            $this->messenger()->addFormErrors($form);
         }
 
         return new ViewModel([
@@ -282,6 +282,7 @@ class IndexController extends AbstractActionController
                 $itemSet = $api->create('item_sets', $toCreate)->getContent();
             }
             $sets[''] = [
+                'set_spec' => '',
                 'set_name' => $repositoryName,
                 'metadata_prefix' => $prefix,
                 'item_set_id' => $itemSet->id(),
@@ -317,6 +318,7 @@ class IndexController extends AbstractActionController
                     $itemSet = $api->create('item_sets', $toCreate)->getContent();
                 }
                 $sets[$setSpec] = [
+                    'set_spec' => $setSpec,
                     'set_name' => $label,
                     'metadata_prefix' => $prefix,
                     'item_set_id' => $itemSet->id(),
@@ -363,48 +365,49 @@ class IndexController extends AbstractActionController
             $this->messenger()->addSuccess($message);
         }
 
-        $urlPlugin = $this->url();
-        foreach ($sets as $setSpec => $set) {
-            $endpoint = $data['endpoint'];
-            // TODO : job harvest / job item creation ?
-            // TODO : toutes les propriétés (prefix, resumption, etc.)
-            $args = [
-                'repository_name' => $repositoryName,
-                'endpoint' => $endpoint,
-                'set_spec' => (string) $setSpec,
-                'from' => $from,
-                'until' => $until,
-                'item_set_id' => $set['item_set_id'],
-                'has_err' => false,
-                'metadata_prefix' => $set['metadata_prefix'],
-                'entity_name' => 'items',
-                'filters' => $filters,
-                'store_xml' => $data['store_xml'] ?? [],
-            ] + $set;
-            $job = $this->jobDispatcher()->dispatch(\OaiPmhHarvester\Job\Harvest::class, $args);
+        // Prepare the lists of harvests to process all of them in a single job.
+        $args = [
+            'repository_name' => $repositoryName,
+            'endpoint' => $data['endpoint'],
+            'from' => $from,
+            'until' => $until,
+            'has_err' => false,
+            'entity_name' => 'items',
+            'filters' => $filters,
+            'store_xml' => $data['store_xml'] ?? [],
+            'sets' => $sets,
+        ];
 
-            $urlPlugin = $this->url();
-            // TODO Don't use PsrMessage for now to fix issues with Doctrine and inexisting file to remove.
-            $message = new Message(
-                'Harvesting %1$s started in background (job %2$s#%3$d%4$s, %5$slogs%4$s). This may take a while.', // @translate
-                $set['set_name'],
-                sprintf(
-                    '<a href="%s">',
-                    htmlspecialchars($urlPlugin->fromRoute('admin/id', ['controller' => 'job', 'id' => $job->getId()]))
-                ),
-                $job->getId(),
-                '</a>',
-                sprintf(
-                    '<a href="%s">',
-                    // Check if module Log is enabled (avoid issue when disabled).
-                    htmlspecialchars(class_exists(\Log\Module::class, false)
-                        ? $urlPlugin->fromRoute('admin/log/default', [], ['query' => ['job_id' => $job->getId()]])
-                        : $urlPlugin->fromRoute('admin/id', ['controller' => 'job', 'id' => $job->getId(), 'action' => 'log'])
-                ))
-            );
-            $message->setEscapeHtml(false);
-            $this->messenger()->addSuccess($message);
-        }
+        // For testing purpose.
+        // Use synchronous dispatcher for quick testing purpose.
+        $strategy = null;
+        // $strategy = 'synchronous';
+        $strategy = $strategy === 'synchronous'
+            ? $this->getServiceLocator()->get(\Omeka\Job\DispatchStrategy\Synchronous::class)
+            : null;
+
+        $job = $this->jobDispatcher()->dispatch(\OaiPmhHarvester\Job\Harvest::class, $args, $strategy);
+
+        $urlPlugin = $this->url();
+        // TODO Don't use PsrMessage for now to fix issues with Doctrine and inexisting file to remove.
+        $message = new Message(
+            'Harvesting started in background (job %1$s#%2$d%3$s, %4$slogs%3$s). This may take a while.', // @translate
+            sprintf(
+                '<a href="%s">',
+                htmlspecialchars($urlPlugin->fromRoute('admin/id', ['controller' => 'job', 'id' => $job->getId()]))
+            ),
+            $job->getId(),
+            '</a>',
+            sprintf(
+                '<a href="%s">',
+                // Check if module Log is enabled (avoid issue when disabled).
+                htmlspecialchars(class_exists(\Log\Module::class, false)
+                    ? $urlPlugin->fromRoute('admin/log/default', [], ['query' => ['job_id' => $job->getId()]])
+                    : $urlPlugin->fromRoute('admin/id', ['controller' => 'job', 'id' => $job->getId(), 'action' => 'log'])
+            ))
+        );
+        $message->setEscapeHtml(false);
+        $this->messenger()->addSuccess($message);
 
         return $this->redirect()->toRoute('admin/default', ['controller' => 'oai-pmh-harvester', 'action' => 'past-harvests']);
     }

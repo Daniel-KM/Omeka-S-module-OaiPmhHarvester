@@ -39,6 +39,11 @@ class Harvest extends AbstractJob
     protected $entityManager;
 
     /**
+     * @var \OaiPmhHarvester\OaiPmh\HarvesterMap\Manager
+     */
+    protected $harvesterMapManager;
+
+    /**
      * @var \Laminas\Log\Logger
      */
     protected $logger;
@@ -68,17 +73,27 @@ class Harvest extends AbstractJob
      */
     protected $harvest;
 
+    /**
+     * @var bool
+     */
+    protected $storeRecord = false;
+
+    /**
+     * @var bool
+     */
+    protected $storeResponse = false;
+
     public function perform()
     {
         $services = $this->getServiceLocator();
         $this->api = $services->get('Omeka\ApiManager');
         $this->logger = $services->get('Omeka\Logger');
         $this->entityManager = $services->get('Omeka\EntityManager');
-
-        /** @var \OaiPmhHarvester\OaiPmh\HarvesterMap\Manager $harvesterMapManager */
-        $harvesterMapManager = $services->get(\OaiPmhHarvester\OaiPmh\HarvesterMap\Manager::class);
+        $this->harvesterMapManager = $services->get(\OaiPmhHarvester\OaiPmh\HarvesterMap\Manager::class);
 
         $args = $this->job->getArgs();
+
+        // Early checks.
 
         $from = empty($args['from']) ? null : (string) $args['from'];
         $until = empty($args['until']) ? null : (string) $args['until'];
@@ -105,20 +120,41 @@ class Harvest extends AbstractJob
             );
         }
 
-        $metadataPrefix = $args['metadata_prefix'] ?? null;
-        if (!$metadataPrefix || !$harvesterMapManager->has($metadataPrefix)) {
+        $sets = $args['sets'] ?? [];
+        if (!$sets) {
             $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
             $this->logger->err(
-                'The format "{format}" is not managed by the module currently.', // @translate
-                ['format' => $metadataPrefix]
+                'No set defined.' // @translate
             );
+        } else {
+            $unmanagedPrefixes = [];
+            foreach ($sets as $set) {
+                $metadataPrefix = $set['metadata_prefix'] ?? null;
+                if (!$metadataPrefix || !$this->harvesterMapManager->has($metadataPrefix)) {
+                    $unmanagedPrefixes[] = $metadataPrefix;
+                }
+            }
+            if ($unmanagedPrefixes) {
+                $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
+                if (count($unmanagedPrefixes) <= 1) {
+                    $this->logger->err(
+                        'The format {format} is not managed by the module currently.', // @translate
+                        ['format' => reset($unmanagedPrefixes)]
+                    );
+                } else {
+                    $this->logger->err(
+                        'The formats {formats} are not managed by the module currently.', // @translate
+                        ['formats' => implode(', ', $unmanagedPrefixes)]
+                    );
+                }
+            }
         }
 
         // Check directory to store xmls.
         $storeXml = !empty($args['store_xml']) && is_array($args['store_xml']) ? $args['store_xml'] : [];
-        $storeXmlResponse = in_array('page', $storeXml);
-        $storeXmlRecord = in_array('record', $storeXml);
-        if ($storeXmlResponse || $storeXmlRecord) {
+        $this->storeXmlResponse = in_array('page', $storeXml);
+        $this->storeXmlRecord = in_array('record', $storeXml);
+        if ($this->storeXmlResponse || $this->storeXmlRecord) {
             $config = $services->get('Config');
             $basePath = $config['file_store']['local']['base_path'] ?: (OMEKA_PATH . '/files');
             if (!is_dir($basePath) || !is_readable($basePath) || !is_writeable($basePath)) {
@@ -151,6 +187,22 @@ class Harvest extends AbstractJob
             return false;
         }
 
+        // Loop all sets.
+
+        $defaultArgs = $args;
+        unset($defaultArgs['sets']);
+        foreach ($sets as $set) {
+            $this->processSet($defaultArgs + $set);
+        }
+    }
+
+    protected function processSet(array $args)
+    {
+        $services = $this->getServiceLocator();
+
+        $metadataPrefix = $args['metadata_prefix'] ?? null;
+        $from = $args['from'] ?? null;
+        $until = $args['until'] ?? null;
         $itemSetId = empty($args['item_set_id']) ? null : (int) $args['item_set_id'];
         $whitelist = $args['filters']['whitelist'] ?? [];
         $blacklist = $args['filters']['blacklist'] ?? [];
@@ -211,8 +263,7 @@ class Harvest extends AbstractJob
             );
         }
 
-        /** @var \OaiPmhHarvester\OaiPmh\HarvesterMap\HarvesterMapInterface $harvesterMap */
-        $harvesterMap = $harvesterMapManager->get($metadataPrefix);
+        $harvesterMap = $this->harvesterMapManager->get($metadataPrefix);
         $harvesterMap->setOptions([
             'o:is_public' => !$services->get('Omeka\Settings')->get('default_to_private', false),
             'o:item_set' => $itemSetId ? [['o:id' => $itemSetId]] : [],
@@ -227,7 +278,7 @@ class Harvest extends AbstractJob
                 $this->logger->notice(
                     'Results: total records = {total}, harvested = {harvested}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, imported = {imported}, medias = {medias}, errors = {errors}.', // @translate
                     [
-                        'total' => $stats['records'],
+                        'total' => $stats['records'] ?: '?',
                         'harvested' => $stats['harvested'],
                         'whitelisted' => $stats['whitelisted'],
                         'blacklisted' => $stats['blacklisted'],
@@ -299,7 +350,7 @@ class Harvest extends AbstractJob
             }
 
             // @todo Store the real response, not the domified one.
-            if ($storeXmlResponse) {
+            if ($this->storeXmlResponse) {
                 $this->storeXml($response, $pageIndex);
             }
 
@@ -325,7 +376,7 @@ class Harvest extends AbstractJob
             /** @var \SimpleXMLElement $record */
             foreach ($records->record as $record) {
                 ++$recordIndex;
-                if ($storeXmlRecord) {
+                if ($this->storeXmlRecord) {
                     $this->storeXml($record, $pageIndex, $recordIndex);
                 }
                 if ($harvesterMap->isDeletedRecord($record)) {
@@ -414,7 +465,7 @@ class Harvest extends AbstractJob
         $this->logger->notice(
             'Results: total records = {total}, harvested = {harvested}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, imported = {imported}, medias = {medias}, errors = {errors}.', // @translate
             [
-                'total' => $stats['records'],
+                'total' => $stats['records'] ?: '?',
                 'harvested' => $stats['harvested'],
                 'whitelisted' => $stats['whitelisted'],
                 'blacklisted' => $stats['blacklisted'],
