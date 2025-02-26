@@ -23,6 +23,7 @@ class OaiPmhRepositoryFactory implements FactoryInterface
 
         return new OaiPmhRepository(
             $services->get(\OaiPmhHarvester\OaiPmh\HarvesterMap\Manager::class),
+            $services->get('OaiPmhHarvester\Client'),
             $services->get('Omeka\Logger'),
             $services->get('MvcTranslator'),
             $basePath,

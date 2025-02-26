@@ -5,6 +5,8 @@ namespace OaiPmhHarvester;
 return [
     'service_manager' => [
         'factories' => [
+            'OaiPmhHarvester\Client' => Service\ClientFactory::class,
+            'OaiPmhHarvester\ConverterManager' => Service\ConverterManagerFactory::class,
             OaiPmh\HarvesterMap\Manager::class => Service\OaiPmh\HarvesterMapManagerFactory::class,
         ],
         'aliases' => [
@@ -15,6 +17,9 @@ return [
         'invokables' => [
             'oaipmhharvester_entities' => Api\Adapter\EntityAdapter::class,
             'oaipmhharvester_harvests' => Api\Adapter\HarvestAdapter::class,
+            'oaipmhharvester_sources' => Api\Adapter\SourceAdapter::class,
+            'oaipmhharvester_source_records' => Api\Adapter\SourceRecordAdapter::class,
+            'oaipmhharvester_configurations' => Api\Adapter\ConfigurationAdapter::class,
         ],
     ],
     'entity_manager' => [
@@ -29,18 +34,41 @@ return [
         'template_path_stack' => [
             dirname(__DIR__) . '/view',
         ],
+        'strategies' => [
+            'ViewJsonStrategy',
+        ],
+    ],
+    'view_helpers' => [
+        'invokables' => [
+            'oaipmhharvesterFormSetsTextarea' => Form\View\Helper\FormSetsTextarea::class,
+            'oaipmhharvesterFormFields' => Form\View\Helper\FormFields::class,
+        ],
+        'delegators' => [
+            'Laminas\Form\View\Helper\FormElement' => [
+                Service\Delegator\FormElementDelegatorFactory::class,
+            ],
+        ],
     ],
     'form_elements' => [
         'invokables' => [
+            Form\Element\Fields::class => Form\Element\Fields::class,
+            Form\Element\SetsTextarea::class => Form\Element\SetsTextarea::class,
+            Form\MappingForm::class => Form\MappingForm::class,
             Form\SetsForm::class => Form\SetsForm::class,
         ],
         'factories' => [
             Form\HarvestForm::class => Service\Form\HarvestFormFactory::class,
+            Form\ConfigurationAddForm::class => Service\Form\ConfigurationAddFormFactory::class,
+            Form\SourceAddForm::class => Service\Form\SourceAddFormFactory::class,
+            Form\SourceEditForm::class => Service\Form\SourceEditFormFactory::class,
         ],
     ],
     'controllers' => [
         'invokables' => [
             'OaiPmhHarvester\Controller\Admin\Index' => Controller\Admin\IndexController::class,
+            'OaiPmhHarvester\Controller\Admin\Source' => Controller\Admin\SourceController::class,
+            'OaiPmhHarvester\Controller\Admin\Configuration' => Controller\Admin\ConfigurationController::class,
+            'OaiPmhHarvester\Controller\Admin\Mappings' => Controller\Admin\MappingsController::class,
         ],
     ],
     'controller_plugins' => [
@@ -76,6 +104,61 @@ return [
                                     ],
                                 ],
                             ],
+                            'source' => [
+                                'type' => \Laminas\Router\Http\Segment::class,
+                                'options' => [
+                                    'route' => '/source[/:action]',
+                                    'defaults' => [
+                                        'controller' => 'source',
+                                        'action' => 'browse',
+                                    ],
+                                ],
+                            ],
+                            'source-id' => [
+                                'type' => \Laminas\Router\Http\Segment::class,
+                                'options' => [
+                                    'route' => '/source/:id[/:action]',
+                                    'constraints' => [
+                                        'id' => '\d+',
+                                    ],
+                                    'defaults' => [
+                                        'controller' => 'source',
+                                        'action' => 'show',
+                                    ],
+                                ],
+                            ],
+                            'configuration' => [
+                                'type' => \Laminas\Router\Http\Segment::class,
+                                'options' => [
+                                    'route' => '/configuration[/:action]',
+                                    'defaults' => [
+                                        'controller' => 'configuration',
+                                        'action' => 'browse',
+                                    ],
+                                ],
+                            ],
+                            'configuration-id' => [
+                                'type' => \Laminas\Router\Http\Segment::class,
+                                'options' => [
+                                    'route' => '/configuration/:id[/:action]',
+                                    'constraints' => [
+                                        'id' => '\d+',
+                                    ],
+                                    'defaults' => [
+                                        'controller' => 'configuration',
+                                        'action' => 'show',
+                                    ],
+                                ],
+                            ],
+                            'mappings' => [
+                                'type' => 'Segment',
+                                'options' => [
+                                    'route' => '/mappings/:action',
+                                    'defaults' => [
+                                        'controller' => 'mappings',
+                                    ],
+                                ],
+                            ],
                         ],
                     ],
                 ],
@@ -91,15 +174,45 @@ return [
                 'class' => 'o-icon- fa-seedling',
                 'pages' => [
                     [
-                        'route' => 'admin/oaipmhharvester/default',
-                        'visible' => false,
+                        'label' => 'One-off harvests', // @translate
+                        'route' => 'admin/oaipmhharvester',
+                        'pages' => [
+                            [
+                                'route' => 'admin/oaipmhharvester/default',
+                                'visible' => false,
+                            ],
+                        ],
+                    ],
+                    [
+                        'label' => 'Sources', // @translate
+                        'route' => 'admin/oaipmhharvester/source',
+                        'resource' => 'OaiPmhHarvester\Controller\Admin\Source',
+                        'privilege' => 'browse',
+                        'pages' => [
+                            [
+                                'route' => 'admin/oaipmhharvester/source-id',
+                                'visible' => false,
+                            ],
+                        ],
+                    ],
+                    [
+                        'label' => 'Configurations', // @translate
+                        'route' => 'admin/oaipmhharvester/configuration',
+                        'resource' => 'OaiPmhHarvester\Controller\Admin\Configuration',
+                        'privilege' => 'browse',
+                        'pages' => [
+                            [
+                                'route' => 'admin/oaipmhharvester/configuration-id',
+                                'visible' => false,
+                            ],
+                        ],
                     ],
                 ],
             ],
         ],
         'OaiPmhHarvester' => [
             [
-                'label' => 'Harvest', // @translate
+                'label' => 'One-off harvest', // @translate
                 'route' => 'admin/oaipmhharvester',
                 'resource' => 'OaiPmhHarvester\Controller\Admin\Index',
                 'action' => 'index',
@@ -107,7 +220,7 @@ return [
                 'useRouteMatch' => true,
             ],
             [
-                'label' => 'Past Harvests', // @translate
+                'label' => 'Past one-off harvests', // @translate
                 'route' => 'admin/oaipmhharvester/default',
                 'resource' => 'OaiPmhHarvester\Controller\Admin\Index',
                 'action' => 'past-harvests',
@@ -125,6 +238,9 @@ return [
                 'text_domain' => null,
             ],
         ],
+    ],
+    'js_translate_strings' => [
+        'add set', // @translate
     ],
     'oaipmh_harvester_maps' => [
         'invokables' => [
@@ -153,6 +269,36 @@ return [
                 'default_admin' => true,
                 'default_site' => false,
             ],
+        ],
+    ],
+    'browse_defaults' => [
+        'admin' => [
+            'oaipmhharvester_sources' => [
+                'sort_by' => 'name',
+                'sort_order' => 'asc',
+            ],
+            'oaipmhharvester_configurations' => [
+                'sort_by' => 'name',
+                'sort_order' => 'asc',
+            ],
+        ],
+    ],
+    'sort_defaults' => [
+        'admin' => [
+            'oaipmhharvester_sources' => [
+                'name' => 'Name', // @translate
+            ],
+            'oaipmhharvester_configurations' => [
+                'name' => 'Name', // @translate
+            ],
+        ],
+    ],
+    'oaipmhharvester_converters' => [
+        'factories' => [
+            'xpath' => Service\Converter\XPathConverterFactory::class,
+            'oai_dc' => Service\Converter\HarvesterMapConverterFactory::class,
+            'oai_dcterms' => Service\Converter\HarvesterMapConverterFactory::class,
+            'mets' => Service\Converter\HarvesterMapConverterFactory::class,
         ],
     ],
 ];

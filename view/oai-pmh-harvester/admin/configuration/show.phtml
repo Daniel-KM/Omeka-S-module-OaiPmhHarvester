@@ -1,0 +1,27 @@
+<?php
+$translate = $this->plugin('translate');
+$this->htmlElement('body')->appendAttribute('class', 'show oaipmhharvester-configuration');
+?>
+
+<?php echo $this->pageTitle($configuration->name(), 1, $translate('OAI-PMH')); ?>
+
+<div id="page-actions">
+    <?= $this->hyperlink($translate('Edit this configuration'), $configuration->url('edit'), ['class' => 'button']) ?>
+</div>
+
+<?php echo $this->trigger('view.show.before'); ?>
+
+<?php $converter = $configuration->converter(); ?>
+
+<dl>
+    <div class="property">
+        <dt><?= $translate('Converter') ?></dt>
+        <dd><?= $translate($converter->getLabel()) ?></dd>
+    </div>
+</dl>
+
+<?php if ($converter instanceof \OaiPmhHarvester\Converter\ConfigurableConverterInterface): ?>
+    <?= $configuration->converter()->getConfigurationDetailsFull($this, $configuration->settings()) ?>
+<?php endif; ?>
+
+<?php $this->trigger('view.show.after'); ?>
