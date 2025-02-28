@@ -463,8 +463,10 @@ class Harvest extends AbstractJob
 
     /**
      * Try to load XML from specified URL and handle network issues by retrying several times
-     * @param string $url
-     * @return false|SimpleXMLElement
+     * @param string $url The URL to load
+     * @param int $retry The maximum number of retries
+     * @param int $timeToWaitBeforeRetry The initial wait time before the first retry. This time will be multiplied by 2 for each subsequent retry.
+     * @return false|SimpleXMLElement Returns a SimpleXMLElement on success, or false on failure.
      */
     private function tryToLoadXml(string $url, int $retry = self::REQUEST_MAX_RETRY, int $timeToWaitBeforeRetry = self::REQUEST_WAIT * 3): false|SimpleXMLElement
     {
