@@ -70,7 +70,7 @@ class Mets extends AbstractHarvesterMap
 
             $href = (string) $file['href'];
             $title = !isset($file['title']) || !strlen((string) $file['title']) ? null : [
-                'type' => 'lieral',
+                'type' => 'literal',
                 'property_id' => 1,
                 '@value' => (string) $file['title'],
             ];
