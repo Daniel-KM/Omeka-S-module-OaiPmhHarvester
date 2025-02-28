@@ -128,7 +128,7 @@ class Mets extends AbstractHarvesterMap
 
         $dublinCores = [
             'dc' => OaiDc::NAMESPACE_DUBLIN_CORE,
-            'dcterms' => OaiDcterms::NAMESPACE_DCTERMS,
+            'dcterms' => OaiDcTerms::NAMESPACE_DCTERMS,
         ];
 
         foreach ($mets->dmdSec as $k) {
