@@ -6,6 +6,7 @@ use DateTime;
 use DateTimeZone;
 use Omeka\Api\Representation\AbstractRepresentation;
 use Omeka\Job\AbstractJob;
+use SimpleXMLElement;
 
 class Harvest extends AbstractJob
 {
@@ -310,46 +311,15 @@ class Harvest extends AbstractJob
                 }
             }
 
-            /** @var \SimpleXMLElement $response */
-            $response = simplexml_load_file($url);
+            $response = $this->tryToLoadXml($url);
             if (!$response) {
-                $message = 'Server unavailable. Retrying.'; // @translate
-                $this->logger->warn(
-                    'Error: the harvester does not list records with url {url}. Retrying {count}/{total} times in {seconds} seconds', // @translate
-                    ['url' => $url, 'count' => 1, 'total' => self::REQUEST_MAX_RETRY, 'seconds' => self::REQUEST_WAIT * 3]
+                $this->hasErr = true;
+                $message = 'Error: Server unavailable.'; // @translate
+                $this->logger->err(
+                    'Error: the harvester does not list records with url {url}.', // @translate
+                    ['url' => $url]
                 );
-
-                sleep(self::REQUEST_WAIT * 3);
-                $response = simplexml_load_file($url);
-                if (!$response) {
-                    $message = 'Server unavailable. Retrying.'; // @translate
-                    $this->logger->warn(
-                        'Error: the harvester does not list records with url {url}. Retrying {count}/{total} times in {seconds} seconds', // @translate
-                        ['url' => $url, 'count' => 2, 'total' => self::REQUEST_MAX_RETRY, 'seconds' => self::REQUEST_WAIT * 6]
-                    );
-
-                    sleep(self::REQUEST_WAIT * 6);
-                    $response = simplexml_load_file($url);
-                    if (!$response) {
-                        $message = 'Server unavailable. Retrying.'; // @translate
-                        $this->logger->warn(
-                            'Error: the harvester does not list records with url {url}. Retrying {count}/{total} times in {seconds} seconds', // @translate
-                            ['url' => $url, 'count' => 3, 'total' => self::REQUEST_MAX_RETRY, 'seconds' => self::REQUEST_WAIT * 10]
-                        );
-
-                        sleep(self::REQUEST_WAIT * 10);
-                        $response = simplexml_load_file($url);
-                        if (!$response) {
-                            $this->hasErr = true;
-                            $message = 'Error.'; // @translate
-                            $this->logger->err(
-                                'Error: the harvester does not list records with url {url}.', // @translate
-                                ['url' => $url]
-                            );
-                            break;
-                        }
-                    }
-                }
+                break;
             }
 
             // @todo Store the real response, not the domified one.
@@ -489,6 +459,31 @@ class Harvest extends AbstractJob
                 'Some records were not imported, probably related to issue on media. You may check the main logs.' // @translate
             );
         }
+    }
+
+    /**
+     * Try to load XML from specified URL and handle network issues by retrying several times
+     * @param string $url The URL to load
+     * @param int $retry The maximum number of retries
+     * @param int $timeToWaitBeforeRetry The initial wait time before the first retry. This time will be multiplied by 2 for each subsequent retry.
+     * @return false|SimpleXMLElement Returns a SimpleXMLElement on success, or false on failure.
+     */
+    private function tryToLoadXml(string $url, int $retry = self::REQUEST_MAX_RETRY, int $timeToWaitBeforeRetry = self::REQUEST_WAIT * 3): false|SimpleXMLElement
+    {
+        /** @var \SimpleXMLElement $response */
+        $response = simplexml_load_file($url);
+        if (!$response && $retry > 0) {
+            $retry -= 1;
+            $this->logger->warn(
+                'Error: the harvester does not list records with url {url}. Retrying {count}/{total} times in {seconds} seconds', // @translate
+                ['url' => $url, 'count' => self::REQUEST_MAX_RETRY - $retry, 'total' => self::REQUEST_MAX_RETRY, 'seconds' => self::REQUEST_WAIT * 3]
+            );
+
+            sleep($timeToWaitBeforeRetry);
+            $response = $this->tryToLoadXml($url, $retry, $timeToWaitBeforeRetry * 2);
+        }
+
+        return $response;
     }
 
     /**
