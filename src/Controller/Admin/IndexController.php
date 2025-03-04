@@ -7,6 +7,7 @@ use Laminas\Mvc\Controller\AbstractActionController;
 use Laminas\View\Model\ViewModel;
 use OaiPmhHarvester\Form\HarvestForm;
 use OaiPmhHarvester\Form\SetsForm;
+use Omeka\Api\Representation\ItemSetRepresentation;
 use Omeka\Entity\Job;
 use Omeka\Stdlib\Message;
 
@@ -264,25 +265,7 @@ class IndexController extends AbstractActionController
             $prefix = $data['namespace'][0];
             $message .= $repositoryName;
             $uniqueUri = $data['endpoint'] . '?verb=ListRecords&metadataPrefix=' . rawurlencode($prefix);
-            $itemSet = $api->searchOne('item_sets', ['property' => [['property' => 37, 'type' => 'eq', 'text' => $uniqueUri]]])->getContent();
-            if (!$itemSet) {
-                $toCreate = [
-                    // dctype:Collection.
-                    'o:resource_class' => ['o:id' => 23],
-                    'dcterms:title' => [[
-                        'type' => 'literal',
-                        'property_id' => 1,
-                        '@value' => $repositoryName,
-                    ]],
-                    'dcterms:isFormatOf' => [[
-                        'type' => 'uri',
-                        'property_id' => 37,
-                        '@id' => $uniqueUri,
-                        'o:label' => 'OAI-PMH repository',
-                    ]],
-                ];
-                $itemSet = $api->create('item_sets', $toCreate)->getContent();
-            }
+            $itemSet = $this->searchOrCreateItemSet($uniqueUri, $repositoryName);
             $sets[''] = [
                 'set_spec' => '',
                 'set_name' => $repositoryName,
@@ -300,25 +283,7 @@ class IndexController extends AbstractActionController
                     $prefix
                 ) . ' | ';
                 $uniqueUri = $data['endpoint'] . '?verb=ListRecords&set=' . rawurlencode($setSpec) . '&metadataPrefix=' . rawurlencode($prefix);
-                $itemSet = $api->searchOne('item_sets', ['property' => [['property' => 37, 'type' => 'eq', 'text' => $uniqueUri]]])->getContent();
-                if (!$itemSet) {
-                    $toCreate = [
-                        // dctype:Collection.
-                        'o:resource_class' => ['o:id' => 23],
-                        'dcterms:title' => [[
-                            '@value' => $label,
-                            'type' => 'literal',
-                            'property_id' => 1,
-                        ]],
-                        'dcterms:isFormatOf' => [[
-                            'type' => 'uri',
-                            'property_id' => 37,
-                            '@id' => $uniqueUri,
-                            'o:label' => 'OAI-PMH repository',
-                        ]],
-                    ];
-                    $itemSet = $api->create('item_sets', $toCreate)->getContent();
-                }
+                $itemSet = $this->searchOrCreateItemSet($uniqueUri, $label);
                 $sets[$setSpec] = [
                     'set_spec' => $setSpec,
                     'set_name' => $label,
@@ -556,5 +521,34 @@ class IndexController extends AbstractActionController
             'total' => $total,
             'message' => $message,
         ];
+    }
+
+    /**
+     * @param string $uri The URI to search in dcterms:isFormatOf (property 37)
+     * @param string $title The title to use in case of creation
+     * @return ItemSetRepresentation The ItemSetRepresentation of the found or created ItemSet
+     */
+    protected function searchOrCreateItemSet(string $uri, string $title): ItemSetRepresentation
+    {
+        $itemSet = $this->api()->searchOne('item_sets', ['property' => [['property' => 37, 'type' => 'eq', 'text' => $uri]]])->getContent();
+        if (!$itemSet) {
+            $toCreate = [
+                // dctype:Collection.
+                'o:resource_class' => ['o:id' => 23],
+                'dcterms:title' => [[
+                    '@value' => $title,
+                    'type' => 'literal',
+                    'property_id' => 1,
+                ]],
+                'dcterms:isFormatOf' => [[
+                    'type' => 'uri',
+                    'property_id' => 37,
+                    '@id' => $uri,
+                    'o:label' => 'OAI-PMH repository',
+                ]],
+            ];
+            $itemSet = $this->api()->create('item_sets', $toCreate)->getContent();
+        }
+        return $itemSet;
     }
 }
