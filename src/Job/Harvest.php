@@ -466,9 +466,9 @@ class Harvest extends AbstractJob
      * @param string $url The URL to load
      * @param int $retry The maximum number of retries
      * @param int $timeToWaitBeforeRetry The initial wait time before the first retry. This time will be multiplied by 2 for each subsequent retry.
-     * @return false|SimpleXMLElement Returns a SimpleXMLElement on success, or false on failure.
+     * @return null|SimpleXMLElement Returns a SimpleXMLElement on success, or null on failure.
      */
-    private function tryToLoadXml(string $url, int $retry = self::REQUEST_MAX_RETRY, int $timeToWaitBeforeRetry = self::REQUEST_WAIT * 3): false|SimpleXMLElement
+    private function tryToLoadXml(string $url, int $retry = self::REQUEST_MAX_RETRY, int $timeToWaitBeforeRetry = self::REQUEST_WAIT * 3): ?SimpleXMLElement
     {
         /** @var \SimpleXMLElement $response */
         $response = simplexml_load_file($url);
