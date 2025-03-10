@@ -17,11 +17,10 @@ class Module extends AbstractModule
 
     public function install(ServiceLocatorInterface $services): void
     {
-        $services = $this->getServiceLocator();
+        $this->setServiceLocator($services);
         $plugins = $services->get('ControllerPluginManager');
         $messenger = $plugins->get('messenger');
 
-        $this->setServiceLocator($services);
         $this->execSqlFromFile(__DIR__ . '/data/install/schema.sql');
 
         $config = $services->get('Config');
