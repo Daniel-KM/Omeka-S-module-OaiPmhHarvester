@@ -272,3 +272,80 @@ if (version_compare($oldVersion, '3.4.18', '<')) {
     );
     $messenger->addSuccess($message);
 }
+
+if (version_compare($oldVersion, '3.4.19', '<')) {
+    // Old mode was duplicate. New one should be set manually and is "skip".
+    $sql = <<<'SQL'
+        ALTER TABLE `oaipmhharvester_harvest`
+            ADD `mode_harvest` VARCHAR(190) NOT NULL DEFAULT "duplicate" AFTER `metadata_prefix`;
+        ALTER TABLE `oaipmhharvester_harvest`
+            CHANGE `mode_harvest` `mode_harvest` VARCHAR(190) NOT NULL AFTER `metadata_prefix`;
+        SQL;
+    try {
+        $connection->executeStatement($sql);
+    } catch (\Exception $e) {
+        // Already updated.
+    }
+
+    $sql = <<<'SQL'
+        ALTER TABLE `oaipmhharvester_harvest`
+            ADD `mode_delete` VARCHAR(190) NOT NULL DEFAULT "skip" AFTER `mode_harvest`;
+        ALTER TABLE `oaipmhharvester_harvest`
+            CHANGE `mode_delete` `mode_delete` VARCHAR(190) NOT NULL AFTER `mode_harvest`;
+        SQL;
+    try {
+        $connection->executeStatement($sql);
+    } catch (\Exception $e) {
+        // Already updated.
+    }
+
+    // Module resources are not available during upgrade.
+    // Clean existing stats (remove empty data).
+    $qb = $connection->createQueryBuilder();
+    $qb
+        ->select('id', 'stats')
+        ->from('oaipmhharvester_harvest', 'oaipmhharvester_harvest')
+        ->where('stats IS NOT NULL')
+        ->andWhere('stats != "[]"')
+        ->andWhere('stats != "{}"')
+        ->orderBy('id', 'asc');
+    $harvestStats = $connection->executeQuery($qb)->fetchAllKeyValue();
+    foreach ($harvestStats as $id => $stats) {
+        $stats = json_decode($stats, true) ?: [];
+        $stats = array_filter($stats);
+        $connection->update(
+            '`oaipmhharvester_harvest`',
+            ['`stats`' => json_encode($stats, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)],
+            ['`id`' => $id]
+        );
+    }
+
+    $connection->update(
+        '`job`',
+        ['`class`' => 'OaiPmhHarvester\Job\DeleteHarvestedEntities'],
+        ['`class`' => 'OaiPmhHarvester\Job\Undo']
+    );
+
+    $advancedSearchFields = $settings->get('advancedsearch_search_fields', []) ?: [];
+    $advancedSearchFields[] = 'common/advanced-search/harvests';
+    $settings->set('advancedsearch_search_fields', $advancedSearchFields);
+
+    $message = new Message(
+        'It is now possible to search items by harvest.' // @translate
+    );
+    $messenger->addSuccess($message);
+
+    $message = new Message(
+        'It is now possible to define the item set for harvested resources. It may be an existing one, a new one or none.' // @translate
+    );
+    $messenger->addSuccess($message);
+
+    $message = new Message(
+        'It is now possible to define the harvest mode (skip, append, update, replace, duplicate) instead of always duplicating resources when a harvest is run a second time.' // @translate
+    );
+    $messenger->addSuccess($message);
+    $message = new Message(
+        'The new default harvest mode is "skip", no more "duplicate".' // @translate
+    );
+    $messenger->addWarning($message);
+}
