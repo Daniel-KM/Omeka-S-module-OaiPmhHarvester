@@ -68,14 +68,14 @@ class EntityAdapter extends AbstractEntityAdapter
 
         if (isset($query['entity_id'])) {
             $qb->andWhere($expr->eq(
-                'omeka_root.entity_id',
+                'omeka_root.entityId',
                 $this->createNamedParameter($qb, $query['entity_id']))
             );
         }
 
         if (isset($query['entity_name'])) {
             $qb->andWhere($expr->eq(
-                'omeka_root.entity_name',
+                'omeka_root.entityName',
                 $this->createNamedParameter($qb, $query['entity_name']))
             );
         }
