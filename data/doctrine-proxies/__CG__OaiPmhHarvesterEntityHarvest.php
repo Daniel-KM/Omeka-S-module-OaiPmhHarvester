@@ -67,10 +67,10 @@ class Harvest extends \OaiPmhHarvester\Entity\Harvest implements \Doctrine\ORM\P
     public function __sleep()
     {
         if ($this->__isInitialized__) {
-            return ['__isInitialized__', 'id', 'job', 'undoJob', 'message', 'endpoint', 'entityName', 'itemSet', 'metadataPrefix', 'from', 'until', 'setSpec', 'setName', 'setDescription', 'hasErr', 'stats', 'resumptionToken'];
+            return ['__isInitialized__', 'id', 'job', 'undoJob', 'message', 'endpoint', 'entityName', 'itemSet', 'metadataPrefix', 'modeHarvest', 'from', 'until', 'setSpec', 'setName', 'setDescription', 'hasErr', 'stats', 'resumptionToken'];
         }
 
-        return ['__isInitialized__', 'id', 'job', 'undoJob', 'message', 'endpoint', 'entityName', 'itemSet', 'metadataPrefix', 'from', 'until', 'setSpec', 'setName', 'setDescription', 'hasErr', 'stats', 'resumptionToken'];
+        return ['__isInitialized__', 'id', 'job', 'undoJob', 'message', 'endpoint', 'entityName', 'itemSet', 'metadataPrefix', 'modeHarvest', 'from', 'until', 'setSpec', 'setName', 'setDescription', 'hasErr', 'stats', 'resumptionToken'];
     }
 
     /**
@@ -344,6 +344,28 @@ class Harvest extends \OaiPmhHarvester\Entity\Harvest implements \Doctrine\ORM\P
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'getMetadataPrefix', []);
 
         return parent::getMetadataPrefix();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setModeHarvest(string $modeHarvest): \OaiPmhHarvester\Entity\Harvest
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'setModeHarvest', [$modeHarvest]);
+
+        return parent::setModeHarvest($modeHarvest);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getModeHarvest(): string
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getModeHarvest', []);
+
+        return parent::getModeHarvest();
     }
 
     /**

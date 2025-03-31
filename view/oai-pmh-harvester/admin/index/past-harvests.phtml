@@ -44,6 +44,7 @@ $this->headLink()
                 <th><?= $escape($translate('Undo?')) ?></th>
                 <th><?= $escape($translate('Date')) ?></th>
                 <th><?= $escape($translate('Label')) ?></th>
+                <th><?= $escape($translate('Mode')) ?></th>
                 <th><?= $escape($translate('Last message')) ?></th>
                 <th><?= $escape($translate('Results')) ?></th>
                 <th><?= $escape($translate('Status')) ?></th>
@@ -87,6 +88,9 @@ $this->headLink()
                 [<span class="oai-pmh-set"><?= $escape($setSpec) ?></span>]
                     <?php endif; ?>
                 <?php endif; ?>
+            </td>
+            <td>
+                <?= $translate($harvest->modeHarvest()) ?>
             </td>
             <td>
                 <?= $translate($harvest->message()) ?>

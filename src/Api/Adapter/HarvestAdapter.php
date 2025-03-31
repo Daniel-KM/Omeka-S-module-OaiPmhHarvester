@@ -20,6 +20,7 @@ class HarvestAdapter extends AbstractEntityAdapter
         'entity_name' => 'entityName',
         'item_set' => 'itemSet',
         'metadata_prefix' => 'metadataPrefix',
+        'mode_harvest' => 'modeHarvest',
         'from' => 'from',
         'until' => 'until',
         'set_spec' => 'setSpec',
@@ -39,6 +40,7 @@ class HarvestAdapter extends AbstractEntityAdapter
         'entity_name' => 'entityName',
         'item_set' => 'itemSet',
         'metadata_prefix' => 'metadataPrefix',
+        'mode_harvest' => 'modeHarvest',
         'from' => 'from',
         'until' => 'until',
         'set_spec' => 'setSpec',
@@ -126,6 +128,10 @@ class HarvestAdapter extends AbstractEntityAdapter
 
         if (array_key_exists('o-oai-pmh:metadata_prefix', $data)) {
             $entity->setMetadataPrefix((string) $data['o-oai-pmh:metadata_prefix']);
+        }
+
+        if (array_key_exists('o-oai-pmh:mode_harvest', $data)) {
+            $entity->setModeHarvest((string) $data['o-oai-pmh:mode_harvest']);
         }
 
         if (array_key_exists('o-oai-pmh:from', $data)) {

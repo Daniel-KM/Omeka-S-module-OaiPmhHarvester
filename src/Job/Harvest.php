@@ -4,6 +4,7 @@ namespace OaiPmhHarvester\Job;
 
 use DateTime;
 use DateTimeZone;
+use OaiPmhHarvester\Entity\Harvest as EntityHarvest;
 use Omeka\Api\Representation\AbstractRepresentation;
 use Omeka\Job\AbstractJob;
 use SimpleXMLElement;
@@ -47,6 +48,11 @@ class Harvest extends AbstractJob
     protected $harvesterMapManager;
 
     /**
+     * @var array
+     */
+    protected $harvestedResourceIdentifiers = [];
+
+    /**
      * @var \Laminas\Log\Logger
      */
     protected $logger;
@@ -75,6 +81,11 @@ class Harvest extends AbstractJob
      * @var \OaiPmhHarvester\Api\Representation\HarvestRepresentation
      */
     protected $harvest;
+
+    /**
+     * @var string
+     */
+    protected $modeHarvest = EntityHarvest::MODE_SKIP;
 
     /**
      * @var bool
@@ -153,6 +164,20 @@ class Harvest extends AbstractJob
             }
         }
 
+        // Check harvest mode.
+        $modeHarvests = [
+            EntityHarvest::MODE_SKIP,
+            EntityHarvest::MODE_DUPLICATE,
+        ];
+        $this->modeHarvest = ($args['mode_harvest'] ?? EntityHarvest::MODE_SKIP) ?: EntityHarvest::MODE_SKIP;
+        if (!in_array($this->modeHarvest, $modeHarvests)) {
+            $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
+            $this->logger->err(
+                'The harvest mode "{mode}" is not supported.', // @translate
+                ['mode' => $this->modeHarvest]
+            );
+        }
+
         // Check directory to store xmls.
         $storeXml = !empty($args['store_xml']) && is_array($args['store_xml']) ? $args['store_xml'] : [];
         $this->storeXmlResponse = in_array('page', $storeXml);
@@ -190,6 +215,32 @@ class Harvest extends AbstractJob
             return false;
         }
 
+        // Get an array of all harvested items to avoid to check them each time.
+        // Note: there may be issue in the table. The same oai identifier may be
+        // imported or updated multiple times. The oai identifier may be used
+        // for multiple resources (ead). But a resource has always a single oai
+        // identifier.
+        // Futhermore, keep only existing resource ids.
+        /*
+        $ids = $this->api->search('oaipmhharvester_entities', [], ['returnScalar' => 'entity_id'])->getContent();
+        $identifiers = $this->api->search('oaipmhharvester_entities', [], ['returnScalar' => 'identifier'])->getContent();
+        $this->harvestedResourceIdentifiers = array_combine($ids, $identifiers);
+        unset($ids, $identifiers);
+        */
+        /** @var \Doctrine\DBAL\Connection $connection */
+        $connection = $services->get('Omeka\Connection');
+        $qb = $connection->createQueryBuilder();
+        $qb
+            ->select(
+                'entity_id',
+                'identifier',
+            )
+            ->from('oaipmhharvester_entity', 'oaipmhharvester_entity')
+            ->innerJoin('oaipmhharvester_entity', 'resource', 'resource', 'resource.id = oaipmhharvester_entity.entity_id')
+            ->orderBy('entity_id', 'asc')
+        ;
+        $this->harvestedResourceIdentifiers = $connection->executeQuery($qb)->fetchAllKeyValue();
+
         // Loop all sets.
 
         $defaultArgs = $args;
@@ -212,13 +263,15 @@ class Harvest extends AbstractJob
 
         $message = null;
         $stats = [
-            'records' => null, // @translate
-            'harvested' => 0, // @translate
-            'whitelisted' => 0, // @translate
-            'blacklisted' => 0, // @translate
-            'medias' => 0, // @translate
-            'imported' => 0, // @translate
-            'errors' => 0, // @translate
+            'records' => null,
+            'harvested' => 0,
+            'whitelisted' => 0,
+            'blacklisted' => 0,
+            'skipped' => 0,
+            'imported' => 0,
+            'duplicated' => 0,
+            'medias' => 0,
+            'errors' => 0,
         ];
 
         $harvestData = [
@@ -229,6 +282,7 @@ class Harvest extends AbstractJob
             'o-oai-pmh:endpoint' => $args['endpoint'],
             'o:item_set' => ['o:id' => $args['item_set_id']],
             'o-oai-pmh:metadata_prefix' => $args['metadata_prefix'],
+            'o-oai-pmh:mode_harvest' => $this->modeHarvest,
             'o-oai-pmh:from' => $from ? new DateTime($from, new DateTimeZone('UTC')) : null,
             'o-oai-pmh:until' => $until ? new DateTime($until, new DateTimeZone('UTC')) : null,
             'o-oai-pmh:set_spec' => $args['set_spec'],
@@ -266,9 +320,11 @@ class Harvest extends AbstractJob
             );
         }
 
+        /** @var \OaiPmhHarvester\OaiPmh\HarvesterMap\HarvesterMapInterface $harvesterMap */
         $harvesterMap = $this->harvesterMapManager->get($metadataPrefix);
         $harvesterMap->setOptions([
             'o:is_public' => !$services->get('Omeka\Settings')->get('default_to_private', false),
+            // There may be multiple item sets in map, but not managed here for now.
             'o:item_set' => $itemSetId ? [['o:id' => $itemSetId]] : [],
         ]);
 
@@ -279,13 +335,15 @@ class Harvest extends AbstractJob
             ++$pageIndex;
             if ($this->shouldStop()) {
                 $this->logger->notice(
-                    'Results: total records = {total}, harvested = {harvested}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, imported = {imported}, medias = {medias}, errors = {errors}.', // @translate
+                    'Results: total records = {total}, harvested = {harvested}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, skipped = {skipped}, imported = {imported}, duplicated = {duplicated}, medias = {medias}, errors = {errors}.', // @translate
                     [
                         'total' => $stats['records'] ?: '?',
                         'harvested' => $stats['harvested'],
                         'whitelisted' => $stats['whitelisted'],
                         'blacklisted' => $stats['blacklisted'],
+                        'skipped' => $stats['skipped'],
                         'imported' => $stats['imported'],
+                        'duplicated' => $stats['duplicated'],
                         'medias' => $stats['medias'],
                         'errors' => $stats['errors'],
                     ]
@@ -374,6 +432,7 @@ class Harvest extends AbstractJob
                         }
                     }
                 }
+
                 // The oai identifier is not part of the resource.
                 // The oai identifier should not be included in the resource.
                 // The oai identifier does not depend on the metadata prefix.
@@ -381,6 +440,35 @@ class Harvest extends AbstractJob
                 // harvest may be used.
                 // A record can be mapped to multiple resources: cf. ead.
                 $identifier = (string) $record->header->identifier;
+
+                if ($identifier
+                    && in_array($identifier, $this->harvestedResourceIdentifiers)
+                ) {
+                    // Only atomic values are managed. Records for other formats
+                    // are duplicated.
+                    $harvestedResourceIds = array_keys($this->harvestedResourceIdentifiers, $identifier, true);
+                    if (count($harvestedResourceIds) === 1) {
+                        $harvestedResourceId = reset($harvestedResourceIds);
+                        switch ($this->modeHarvest) {
+                            default:
+                            case EntityHarvest::MODE_SKIP:
+                                $this->logger->info(
+                                    'The identifier was already imported as resource #{resource_id}. New data are skipped.', // @translate
+                                    ['resource_id' => $harvestedResourceId]
+                                );
+                                ++$stats['skipped'];
+                                continue 2;
+                            case EntityHarvest::MODE_DUPLICATE:
+                                $this->logger->info(
+                                    'The identifier was already imported as resource #{resource_id}. A new resource is created.', // @translate
+                                    ['resource_id' => $harvestedResourceId]
+                                );
+                                ++$stats['duplicated'];
+                                break;
+                        }
+                    }
+                }
+
                 $toInsert[$identifier] = [];
                 $resources = $harvesterMap->mapRecord($record);
                 foreach ($resources as $resource) {
@@ -406,14 +494,16 @@ class Harvest extends AbstractJob
             $this->api->update('oaipmhharvester_harvests', $harvestId, $harvestData);
 
             $this->logger->info(
-                'Page #{page} processed: total records = {total}, harvested = {harvested}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, imported = {imported}, medias = {medias}, errors = {errors}.', // @translate
+                'Page #{page} processed: total records = {total}, harvested = {harvested}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, skipped = {skipped}, imported = {imported}, duplicated = {duplicated}, medias = {medias}, errors = {errors}.', // @translate
                 [
                     'page' => $pageIndex,
                     'total' => $stats['records'] ?: '?',
                     'harvested' => $stats['harvested'],
                     'whitelisted' => $stats['whitelisted'],
                     'blacklisted' => $stats['blacklisted'],
+                    'skipped' => $stats['skipped'],
                     'imported' => $stats['imported'],
+                    'duplicated' => $stats['duplicated'],
                     'medias' => $stats['medias'],
                     'errors' => $stats['errors'],
                 ]
@@ -436,13 +526,15 @@ class Harvest extends AbstractJob
         $this->api->update('oaipmhharvester_harvests', $harvestId, $harvestData);
 
         $this->logger->notice(
-            'Results: total records = {total}, harvested = {harvested}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, imported = {imported}, medias = {medias}, errors = {errors}.', // @translate
+            'Results: total records = {total}, harvested = {harvested}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, skipped = {skipped}, imported = {imported}, duplicated = {duplicated}, medias = {medias}, errors = {errors}.', // @translate
             [
                 'total' => $stats['records'] ?: '?',
                 'harvested' => $stats['harvested'],
                 'whitelisted' => $stats['whitelisted'],
                 'blacklisted' => $stats['blacklisted'],
+                'skipped' => $stats['skipped'],
                 'imported' => $stats['imported'],
+                'duplicated' => $stats['duplicated'],
                 'medias' => $stats['medias'],
                 'errors' => $stats['errors'],
             ]

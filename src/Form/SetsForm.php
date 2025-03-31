@@ -4,6 +4,7 @@ namespace OaiPmhHarvester\Form;
 
 use Laminas\Form\Element;
 use Laminas\Form\Form;
+use OaiPmhHarvester\Entity\Harvest;
 use Omeka\Form\Element as OmekaElement;
 
 class SetsForm extends Form
@@ -132,6 +133,23 @@ class SetsForm extends Form
                 ],
                 'attributes' => [
                     'id' => 'filters_blacklist',
+                ],
+            ])
+
+            ->add([
+                'name' => 'mode_harvest',
+                'type' => Element\Select::class,
+                'options' => [
+                    'label' => 'Import/update mode for atomic formats', // @translate
+                    'info' => 'An atomic format is a format where an oai record with an oai identifier maps to a single resource in Omeka. Ead via oai-pmh is not an atomic format, so a reharvest will duplicate records.', // @translate
+                    'value_options' => [
+                        Harvest::MODE_SKIP => 'Skip record (keep existing resource)', // @translate
+                        Harvest::MODE_DUPLICATE => 'Create a new resource (not recommended)', // @translate
+                    ],
+                ],
+                'attributes' => [
+                    'id' => 'mode_harvest',
+                    'value' => 'skip',
                 ],
             ])
 

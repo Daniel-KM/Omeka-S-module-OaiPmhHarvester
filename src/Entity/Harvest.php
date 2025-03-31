@@ -15,6 +15,16 @@ use Omeka\Entity\Job;
  */
 class Harvest extends AbstractEntity
 {
+    /**#@+
+     * Harvest modes for atomic formats.
+     *
+     * MODE_SKIP: Skip record (keep existing resource)
+     * MODE_DUPLICATE: Create a new resource (not recommended)
+     */
+    const MODE_SKIP = 'skip'; // @translate
+    const MODE_DUPLICATE = 'duplicate'; // @translate
+    /**#@-*/
+
     /**
      * @var int
      *
@@ -100,11 +110,21 @@ class Harvest extends AbstractEntity
      * @var string
      *
      * @Column(
-     *      type="string",
-     *      length=190
+     *     type="string",
+     *     length=190
      * )
      */
     protected $metadataPrefix;
+
+    /**
+     * @var string
+     *
+     * @Column(
+     *     type="string",
+     *     length=190
+     * )
+     */
+    protected $modeHarvest;
 
     /**
      * @var DateTime
@@ -269,6 +289,17 @@ class Harvest extends AbstractEntity
     public function getMetadataPrefix(): string
     {
         return $this->metadataPrefix;
+    }
+
+    public function setModeHarvest(string $modeHarvest): self
+    {
+        $this->modeHarvest = $modeHarvest;
+        return $this;
+    }
+
+    public function getModeHarvest(): string
+    {
+        return $this->modeHarvest;
     }
 
     public function setFrom(?DateTime $from): self
