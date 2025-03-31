@@ -344,6 +344,8 @@ class Harvest extends AbstractJob
     {
         $services = $this->getServiceLocator();
 
+        $startTime =  microtime(true);
+
         $metadataPrefix = $args['metadata_prefix'] ?? null;
         $from = $args['from'] ?? null;
         $until = $args['until'] ?? null;
@@ -374,6 +376,7 @@ class Harvest extends AbstractJob
             'imported' => 0, // @translate
             'medias' => 0, // @translate
             'errors' => 0, // @translate
+            'duration' => null, // @translate
         ];
 
         // Only to keep track of translation.
@@ -714,6 +717,7 @@ class Harvest extends AbstractJob
                 : false;
 
             // Update job.
+            $stats['duration'] = (int) (microtime(true) - $startTime);
             $harvestData = [
                 'o-oai-pmh:message' => 'Processing', // @translate
                 'o-oai-pmh:has_err' => $this->hasErr,
@@ -759,6 +763,7 @@ class Harvest extends AbstractJob
             - $stats['processed']
             + ($totalToInsertAll - $totalCreatedAll);
 
+        $stats['duration'] = (int) (microtime(true) - $startTime);
         $harvestData = [
             'o-oai-pmh:message' => $message,
             'o-oai-pmh:has_err' => $this->hasErr,
