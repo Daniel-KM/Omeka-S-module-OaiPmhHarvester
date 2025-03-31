@@ -544,7 +544,7 @@ class Harvest extends AbstractJob
                         ++$stats['skipped'];
                         $this->logger->info(
                             'The oai record {oai_id} was marked deleted and skipped.', // @translate
-                            ['oai_id' => $identifier, 'oai_endpoint' => $args['endpoint']]
+                            ['oai_id' => $identifier]
                         );
                         continue;
                     }
@@ -556,7 +556,7 @@ class Harvest extends AbstractJob
                             $stats['deleted'] += count($result);
                             $this->logger->info(
                                 'The oai record {oai_id} was marked deleted and imported resources were deleted: {resource_ids}.', // @translate
-                                ['oai_id' => $identifier, 'resource_ids' => implode(', ', $result), 'oai_endpoint' => $args['endpoint']]
+                                ['oai_id' => $identifier, 'resource_ids' => implode(', ', $result)]
                             );
                         }
                         continue;
@@ -591,7 +591,7 @@ class Harvest extends AbstractJob
                         $stats['deleted'] += count($result);
                         $this->logger->info(
                             'The oai record {oai_id} was marked deleted and imported resources were deleted: {resource_ids}.', // @translate
-                            ['oai_id' => $identifier, 'resource_ids' => implode(', ', $result), 'oai_endpoint' => $args['endpoint']]
+                            ['oai_id' => $identifier, 'resource_ids' => implode(', ', $result)]
                         );
                     }
                     continue;
@@ -611,7 +611,7 @@ class Harvest extends AbstractJob
                             case EntityHarvest::MODE_SKIP:
                                 $this->logger->info(
                                     'The oai record {oai_id} was already imported as resource {resource_id}. New data are skipped.', // @translate
-                                    ['oai_id' => $identifier, 'resource_id' => $harvestedResourceId, 'oai_endpoint' => $args['endpoint']]
+                                    ['oai_id' => $identifier, 'resource_id' => $harvestedResourceId]
                                 );
                                 ++$stats['skipped'];
                                 continue 2;
@@ -623,7 +623,7 @@ class Harvest extends AbstractJob
                             case EntityHarvest::MODE_DUPLICATE:
                                 $this->logger->info(
                                     'The oai record {oai_id} was already imported as resource {resource_id}. A new resource is created.', // @translate
-                                    ['oai_id' => $identifier, 'resource_id' => $harvestedResourceId, 'oai_endpoint' => $args['endpoint']]
+                                    ['oai_id' => $identifier, 'resource_id' => $harvestedResourceId]
                                 );
                                 ++$stats['duplicated'];
                                 break;
@@ -639,7 +639,7 @@ class Harvest extends AbstractJob
                     } elseif (count($resources) > 1) {
                         $this->logger->err(
                             'The oai record {oai_id} (resource {resource_id} cannot be updated, because it maps to multiple resources.', // @translate
-                            ['oai_id' => $identifier, 'resource_id' => $harvestedResourceId, 'oai_endpoint' => $args['endpoint']]
+                            ['oai_id' => $identifier, 'resource_id' => $harvestedResourceId]
                         );
                         // Error is counted below.
                         continue;
@@ -658,26 +658,26 @@ class Harvest extends AbstractJob
                             case EntityHarvest::MODE_APPEND:
                                 $this->logger->info(
                                     'The oai record {oai_id} was already imported as resource {resource_id}. The resource was completed.', // @translate
-                                    ['oai_id' => $identifier, 'resource_id' => $harvestedResourceId, 'oai_endpoint' => $args['endpoint']]
+                                    ['oai_id' => $identifier, 'resource_id' => $harvestedResourceId]
                                 );
                                 break;
                             case EntityHarvest::MODE_UPDATE:
                                 $this->logger->info(
                                     'The oai record {oai_id} was already imported as resource {resource_id}. The resource was updated.', // @translate
-                                    ['oai_id' => $identifier, 'resource_id' => $harvestedResourceId, 'oai_endpoint' => $args['endpoint']]
+                                    ['oai_id' => $identifier, 'resource_id' => $harvestedResourceId]
                                 );
                                 break;
                             case EntityHarvest::MODE_REPLACE:
                                 $this->logger->info(
                                     'The oai record {oai_id} was already imported as resource {resource_id}. The resource was replaced.', // @translate
-                                    ['oai_id' => $identifier, 'resource_id' => $harvestedResourceId, 'oai_endpoint' => $args['endpoint']]
+                                    ['oai_id' => $identifier, 'resource_id' => $harvestedResourceId]
                                 );
                                 break;
                         }
                     } else {
                         $this->logger->warn(
                             'The oai record {oai_id} was already imported as resource {resource_id}. The resource cannot be updated.', // @translate
-                            ['oai_id' => $identifier, 'resource_id' => $harvestedResourceId, 'oai_endpoint' => $args['endpoint']]
+                            ['oai_id' => $identifier, 'resource_id' => $harvestedResourceId]
                         );
                     }
                 } else {
@@ -852,29 +852,29 @@ class Harvest extends AbstractJob
                     if ($identifierTotal === 1) {
                         $this->logger->info(
                             '{count} resource created from oai record {oai_id}: {resource_id}.', // @translate
-                            ['count' => 1, 'oai_id' => $identifier, 'resource_id' => reset($identifierIds), 'oai_endpoint' => $this->oaiEndpoint]
+                            ['count' => 1, 'oai_id' => $identifier, 'resource_id' => reset($identifierIds)]
                         );
                     } else {
                         $this->logger->info(
                             '{count} resources created from oai record {oai_id}: {resource_ids}.', // @translate
-                            ['count' => $identifierTotal, 'oai_id' => $identifier, 'resource_ids' => implode(', ', $identifierIds), 'oai_endpoint' => $this->oaiEndpoint]
+                            ['count' => $identifierTotal, 'oai_id' => $identifier, 'resource_ids' => implode(', ', $identifierIds)]
                         );
                     }
                 } elseif ($identifierTotal && $identifierTotal !== count($resources)) {
                     $this->logger->warn(
                         'Only {count}/{total} resources created from oai record {oai_id}: {resource_ids}.', // @translate
-                        ['count' => $identifierTotal, 'total' => count($resources) - $identifierTotal, 'oai_id' => $identifier, 'resource_ids' => implode(', ', $identifierIds), 'oai_endpoint' => $this->oaiEndpoint]
+                        ['count' => $identifierTotal, 'total' => count($resources) - $identifierTotal, 'oai_id' => $identifier, 'resource_ids' => implode(', ', $identifierIds)]
                     );
                 } else {
                     $this->logger->warn(
                         'No resource created from oai record {oai_id}.', // @translate
-                        ['oai_id' => $identifier, 'oai_endpoint' => $this->oaiEndpoint]
+                        ['oai_id' => $identifier]
                     );
                 }
             } else {
                 $this->logger->warn(
                     'No resource created from oai record {oai_id}, according to its metadata.', // @translate
-                    ['oai_id' => $identifier, 'oai_endpoint' => $this->oaiEndpoint]
+                    ['oai_id' => $identifier]
                 );
             }
         }
