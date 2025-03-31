@@ -13,13 +13,13 @@ class SetsForm extends Form
     {
         is_array($name)
             ? parent::__construct($name['name'] ?? null, $name)
-            : parent::__construct($name, $options);
+            : parent::__construct($name, $options ?? []);
     }
 
     public function init(): void
     {
         $this
-            ->setAttribute('id', 'harvest-list-sets')
+            ->setAttribute('id', 'harvest-list-sets-form')
             ->setAttribute('class', 'oai-pmh-harvester')
 
             ->add([

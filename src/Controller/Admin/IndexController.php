@@ -129,6 +129,7 @@ class IndexController extends AbstractActionController
         ] + $data + $optionsData;
 
         // The form for sets is dynamic.
+        /** @var \OaiPmhHarvester\Form\SetsForm $form */
         $form = $this->getForm(SetsForm::class, $optionsData)
             ->setAttribute('action', $this->url()->fromRoute('admin/default', ['controller' => 'oai-pmh-harvester', 'action' => 'sets']));
         $optionsData['predefined_sets'] = json_encode($predefinedSets, 320);
@@ -209,7 +210,10 @@ class IndexController extends AbstractActionController
             $predefinedSets = @json_decode($predefinedSets, true) ?: [];
         }
         $optionsData = $this->dataFromEndpoint($endpoint, $harvestAllRecords, $predefinedSets);
+
+        /** @var \OaiPmhHarvester\Form\SetsForm $form */
         $form = $this->getForm(SetsForm::class, $optionsData);
+
         $form->setData($post);
         if (!$form->isValid()) {
             $params['action'] = 'sets';
@@ -239,7 +243,7 @@ class IndexController extends AbstractActionController
         }
         $until = $data['until'] ?? null;
         if ($until) {
-            $until = $until . 'T' .  (empty($until['until_time']) ? '23:59:59' : $data['until_time']) . 'Z';
+            $until = $until . 'T' . (empty($until['until_time']) ? '23:59:59' : $data['until_time']) . 'Z';
         }
 
         $filters = [
@@ -298,7 +302,7 @@ class IndexController extends AbstractActionController
 
         if ($from && $until) {
             $message = new PsrMessage(
-                $this->translate('The harvesting will be limited to period from {from} until {until}.'), // @translate
+                $this->translate('The harvesting will be limited to period from {from} until {until}.'), // @translate
                 ['from' => $from, 'until' => $until]
             );
             $this->messenger()->addSuccess($message);
@@ -354,7 +358,7 @@ class IndexController extends AbstractActionController
         $strategy = null;
         // $strategy = 'synchronous';
         $strategy = $strategy === 'synchronous'
-            ? $this->getServiceLocator()->get(\Omeka\Job\DispatchStrategy\Synchronous::class)
+            ? $this->api()->get('vocabularies', 1)->getContent()->getServiceLocator()->get(\Omeka\Job\DispatchStrategy\Synchronous::class)
             : null;
 
         $job = $this->jobDispatcher()->dispatch(\OaiPmhHarvester\Job\Harvest::class, $args, $strategy);
@@ -428,7 +432,7 @@ class IndexController extends AbstractActionController
         $args = ['harvestId' => $harvest->id()];
         $job = $this->jobDispatcher()->dispatch(\OaiPmhHarvester\Job\DeleteHarvestedEntities::class, $args);
 
-        $this->api()->update('oaipmhharvester_harvests', $harvest->id(),[
+        $this->api()->update('oaipmhharvester_harvests', $harvest->id(), [
             'o:undo_job' => ['o:id' => $job->getId() ],
         ]);
 

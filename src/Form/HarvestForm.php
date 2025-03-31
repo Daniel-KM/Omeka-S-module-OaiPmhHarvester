@@ -21,7 +21,7 @@ class HarvestForm extends Form
         $translator = $this->oaiPmhRepository->getTranslator();
 
         $this
-            ->setAttribute('id', 'harvest-repository')
+            ->setAttribute('id', 'harvest-repository-form')
             ->setAttribute('class', 'oai-pmh-harvester')
 
             ->add([

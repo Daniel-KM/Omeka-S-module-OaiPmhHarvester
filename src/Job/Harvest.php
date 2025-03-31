@@ -16,9 +16,14 @@ class Harvest extends AbstractJob
      * Date format for OAI-PMH requests.
      * Only use day-level granularity for maximum compatibility with
      * repositories.
+     *
+     * @var string
      */
     const OAI_DATE_FORMAT = 'Y-m-d';
 
+    /**
+     * @var int
+     */
     const BATCH_CREATE_SIZE = 20;
 
     /**
@@ -339,6 +344,7 @@ class Harvest extends AbstractJob
         $this->staticEntityIds = [
             'job_id' => $this->job->getId(),
             'user_id' => $this->job->getOwner()->getId(),
+            // There is no harvest here.
         ];
 
         // Loop all sets.
@@ -832,14 +838,21 @@ class Harvest extends AbstractJob
     }
 
     /**
-     * Try to load XML from specified URL and handle network issues by retrying several times
+     * Try to load XML from specified URL and handle network issues by retrying
+     * several times.
+     *
      * @param string $url The URL to load
      * @param int $retry The maximum number of retries
-     * @param int $timeToWaitBeforeRetry The initial wait time before the first retry. This time will be multiplied by 2 for each subsequent retry.
-     * @return null|SimpleXMLElement Returns a SimpleXMLElement on success, or null on failure.
+     * @param int $timeToWaitBeforeRetry The initial wait time before the first
+     *   retry. This time will be multiplied by 2 for each subsequent retry.
+     * @return null|SimpleXMLElement Returns a SimpleXMLElement on success, or
+     *   null on failure.
      */
-    private function tryToLoadXml(string $url, int $retry = self::REQUEST_MAX_RETRY, int $timeToWaitBeforeRetry = self::REQUEST_WAIT * 3): ?SimpleXMLElement
-    {
+    protected function tryToLoadXml(
+        string $url,
+        int $retry = self::REQUEST_MAX_RETRY,
+        int $timeToWaitBeforeRetry = self::REQUEST_WAIT * 3
+    ): ?SimpleXMLElement {
         /** @var \SimpleXMLElement $response */
         $response = simplexml_load_file($url);
         if (!$response && $retry > 0) {
@@ -848,11 +861,9 @@ class Harvest extends AbstractJob
                 'Error: the harvester does not list records with url {url}. Retrying {count}/{total} times in {seconds} seconds', // @translate
                 ['url' => $url, 'count' => self::REQUEST_MAX_RETRY - $retry, 'total' => self::REQUEST_MAX_RETRY, 'seconds' => self::REQUEST_WAIT * 3]
             );
-
             sleep($timeToWaitBeforeRetry);
             $response = $this->tryToLoadXml($url, $retry, $timeToWaitBeforeRetry * 2);
         }
-
         return $response;
     }
 
@@ -867,6 +878,8 @@ class Harvest extends AbstractJob
         $total = 0;
         $getId = fn ($v) => $v->id();
         foreach ($toCreate as $identifier => $resources) {
+            // Sometime, the identifier is a number.
+            $identifier = (string) $identifier;
             if (count($resources)) {
                 $identifierIds = [];
                 foreach (array_chunk($resources, self::BATCH_CREATE_SIZE, true) as $chunk) {
@@ -1001,7 +1014,7 @@ class Harvest extends AbstractJob
         return $resourceIds;
     }
 
-    protected function createRollback(array $resources, $identifier)
+    protected function createRollback(array $resources, string $identifier)
     {
         if (empty($resources)) {
             return null;
@@ -1016,49 +1029,52 @@ class Harvest extends AbstractJob
         $this->refreshEntityManager();
     }
 
-    protected function buildImportEntity(AbstractRepresentation $resource, $identifier): array
+    /**
+     * The resource is always an item for now.
+     */
+    protected function buildImportEntity(AbstractRepresentation $resource, string $identifier): array
     {
         return [
             'o-oai-pmh:harvest' => ['o:id' => $this->harvest->id()],
             'o-oai-pmh:entity_id' => $resource->id(),
-            'o-oai-pmh:entity_name' => $this->getArg('entity_name', 'items'),
-            'o-oai-pmh:identifier' => (string) $identifier,
+            'o-oai-pmh:entity_name' => $resource->resourceName(),
+            'o-oai-pmh:identifier' => $identifier,
         ];
     }
 
     protected function storeXml(\SimpleXMLElement $xml, int $pageIndex, ?int $recordIndex = null): void
     {
-            $isRecord = $recordIndex !== null;
-            $filename = $isRecord
-                ? sprintf('%s.h%04d.p%04d.r%07d.oaipmh.xml', $this->baseName, $this->harvest->id(), $pageIndex, $recordIndex)
-                : sprintf('%s.h%04d.p%04d.oaipmh.xml', $this->baseName, $this->harvest->id(), $pageIndex);
-            $filepath = $this->basePath . '/oai-pmh-harvest/' . $filename;
-            // dom_import_simplexml($response);
-            $dom = new \DOMDocument('1.0', 'UTF-8');
-            $dom->preserveWhiteSpace = false;
-            $dom->formatOutput = true;
-            $dom->loadXML($xml->asXML());
-            $resultSave = $dom->save($filepath);
-            if (!$resultSave) {
-                $isRecord
-                    ? $this->logger->err(
-                        'Unable to store xml for page #{page}, record #{index}.', // @translate
-                        ['page' => $pageIndex, 'index' => $recordIndex]
-                    )
-                    : $this->logger->err(
-                        'Unable to store xml for page #{page}.', // @translate
-                        ['page' => $pageIndex]
-                    );
-            } else {
-                $isRecord
-                    ? $this->logger->info(
-                        'Page #{page}: the xml record {index} was stored as {url}.', // @translate
-                        ['page' => $pageIndex, 'index' => $recordIndex, 'url' => $this->baseUri . '/oai-pmh-harvest/' . $filename]
-                    )
-                    : $this->logger->info(
-                        'The xml response #{page} was stored as {url}.', // @translate
-                        ['page' => $pageIndex, 'url' => $this->baseUri . '/oai-pmh-harvest/' . $filename]
-                    );
+        $isRecord = $recordIndex !== null;
+        $filename = $isRecord
+            ? sprintf('%s.h%04d.p%04d.r%07d.oaipmh.xml', $this->baseName, $this->harvest->id(), $pageIndex, $recordIndex)
+            : sprintf('%s.h%04d.p%04d.oaipmh.xml', $this->baseName, $this->harvest->id(), $pageIndex);
+        $filepath = $this->basePath . '/oai-pmh-harvest/' . $filename;
+        // dom_import_simplexml($response);
+        $dom = new \DOMDocument('1.0', 'UTF-8');
+        $dom->preserveWhiteSpace = false;
+        $dom->formatOutput = true;
+        $dom->loadXML($xml->asXML());
+        $result = $dom->save($filepath);
+        if (!$result) {
+            $isRecord
+                ? $this->logger->err(
+                    'Unable to store xml for page #{page}, record #{index}.', // @translate
+                    ['page' => $pageIndex, 'index' => $recordIndex]
+                )
+                : $this->logger->err(
+                    'Unable to store xml for page #{page}.', // @translate
+                    ['page' => $pageIndex]
+                );
+        } else {
+            $isRecord
+                ? $this->logger->info(
+                    'Page #{page}: the xml record {index} was stored as {url}.', // @translate
+                    ['page' => $pageIndex, 'index' => $recordIndex, 'url' => $this->baseUri . '/oai-pmh-harvest/' . $filename]
+                )
+                : $this->logger->info(
+                    'The xml response #{page} was stored as {url}.', // @translate
+                    ['page' => $pageIndex, 'url' => $this->baseUri . '/oai-pmh-harvest/' . $filename]
+                );
         }
     }
 
