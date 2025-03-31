@@ -68,14 +68,14 @@ class HarvestAdapter extends AbstractEntityAdapter
     {
         $expr = $qb->expr();
 
-        if (isset($query['job_id'])) {
+        if (!empty($query['job_id'])) {
             $qb->andWhere($expr->eq(
                 'omeka_root.job',
                 $this->createNamedParameter($qb, $query['job_id']))
             );
         }
 
-        if (isset($query['entity_name'])) {
+        if (!empty($query['entity_name'])) {
             $qb->andWhere($expr->eq(
                 'omeka_root.entityName',
                 $this->createNamedParameter($qb, $query['entity_name']))

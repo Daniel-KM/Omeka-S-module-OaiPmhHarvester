@@ -47,14 +47,14 @@ class EntityAdapter extends AbstractEntityAdapter
     {
         $expr = $qb->expr();
 
-        if (isset($query['harvest_id'])) {
+        if (!empty($query['harvest_id'])) {
             $qb->andWhere($expr->eq(
                 'omeka_root.harvest',
                 $this->createNamedParameter($qb, $query['harvest_id']))
             );
         }
 
-        if (isset($query['job_id'])) {
+        if (!empty($query['job_id'])) {
             $harvestAlias = $this->createAlias();
             $qb
                 ->innerJoin(
@@ -66,21 +66,21 @@ class EntityAdapter extends AbstractEntityAdapter
                 );
         }
 
-        if (isset($query['entity_id'])) {
+        if (!empty($query['entity_id'])) {
             $qb->andWhere($expr->eq(
                 'omeka_root.entityId',
                 $this->createNamedParameter($qb, $query['entity_id']))
             );
         }
 
-        if (isset($query['entity_name'])) {
+        if (!empty($query['entity_name'])) {
             $qb->andWhere($expr->eq(
                 'omeka_root.entityName',
                 $this->createNamedParameter($qb, $query['entity_name']))
             );
         }
 
-        if (isset($query['identifier'])) {
+        if (!empty($query['identifier'])) {
             $qb->andWhere($expr->eq(
                 'omeka_root.identifier',
                 $this->createNamedParameter($qb, $query['identifier']))
