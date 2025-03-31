@@ -125,6 +125,11 @@ class Harvest extends AbstractJob
         $this->entityManager = $services->get('Omeka\EntityManager');
         $this->harvesterMapManager = $services->get(\OaiPmhHarvester\OaiPmh\HarvesterMap\Manager::class);
 
+        // The reference id is the job id for now.
+        $referenceIdProcessor = new \Laminas\Log\Processor\ReferenceId();
+        $referenceIdProcessor->setReferenceId('oai-pmh/harvest/job_' . $this->job->getId());
+        $this->logger->addProcessor($referenceIdProcessor);
+
         $args = $this->job->getArgs();
 
         // Early checks.

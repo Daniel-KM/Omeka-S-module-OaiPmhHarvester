@@ -18,6 +18,11 @@ class DeleteHarvestedEntities extends AbstractJob
         $logger = $services->get('Omeka\Logger');
         $api = $services->get('Omeka\ApiManager');
 
+        // The reference id is the job id for now.
+        $referenceIdProcessor = new \Laminas\Log\Processor\ReferenceId();
+        $referenceIdProcessor->setReferenceId('oai-pmh/delete/job_' . $this->job->getId());
+        $logger->addProcessor($referenceIdProcessor);
+
         /** @var \OaiPmhHarvester\Api\Representation\HarvestRepresentation $harvest */
         $harvest = $this->getArg('harvestId');
         if (!$harvest) {
