@@ -157,6 +157,23 @@ class SetsForm extends Form
             ])
 
             ->add([
+                'name' => 'mode_delete',
+                'type' => Element\Select::class,
+                'options' => [
+                    'label' => 'Process for oai record marked as deleted', // @translate
+                    'value_options' => [
+                        Harvest::MODE_SKIP => 'Skip', // @translate
+                        Harvest::MODE_DELETE_FILTERED  => 'Delete resources previously imported', // @translate
+                        Harvest::MODE_DELETE => 'Delete resources previously imported, whatever the filters', // @translate
+                    ],
+                ],
+                'attributes' => [
+                    'id' => 'mode_delete',
+                    'value' => 'skip',
+                ],
+            ])
+
+            ->add([
                 'name' => 'store_xml',
                 'type' => Element\MultiCheckbox::class,
                 'options' => [

@@ -48,11 +48,6 @@ class Harvest extends AbstractJob
     protected $harvesterMapManager;
 
     /**
-     * @var array
-     */
-    protected $harvestedResourceIdentifiers = [];
-
-    /**
      * @var \Laminas\Log\Logger
      */
     protected $logger;
@@ -78,14 +73,28 @@ class Harvest extends AbstractJob
     protected $baseUri;
 
     /**
+     * @var \OaiPmhHarvester\Api\Representation\HarvestRepresentation
+     */
+    protected $harvest;
+
+    /**
+     * List of resource ids and oai identifiers.
+     *
+     * The resource type is "items" or "media", but not managed.
+     *
+     * @var array
+     */
+    protected $harvestedResourceIdentifiers = [];
+
+    /**
      * @var bool
      */
     protected $hasErr = false;
 
     /**
-     * @var \OaiPmhHarvester\Api\Representation\HarvestRepresentation
+     * @var string
      */
-    protected $harvest;
+    protected $modeDelete = EntityHarvest::MODE_SKIP;
 
     /**
      * @var string
@@ -186,6 +195,21 @@ class Harvest extends AbstractJob
             );
         }
 
+        // Check delete mode.
+        $modeDeletes = [
+            EntityHarvest::MODE_SKIP,
+            EntityHarvest::MODE_DELETE,
+            EntityHarvest::MODE_DELETE_FILTERED,
+        ];
+        $this->modeDelete = ($args['mode_delete'] ?? EntityHarvest::MODE_SKIP) ?: EntityHarvest::MODE_SKIP;
+        if (!in_array($this->modeDelete, $modeDeletes)) {
+            $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
+            $this->logger->err(
+                'The delete mode "{mode}" is not supported.', // @translate
+                ['mode' => $this->modeDelete]
+            );
+        }
+
         // Check directory to store xmls.
         $storeXml = !empty($args['store_xml']) && is_array($args['store_xml']) ? $args['store_xml'] : [];
         $this->storeXmlResponse = in_array('page', $storeXml);
@@ -272,18 +296,25 @@ class Harvest extends AbstractJob
         $blacklist = $args['filters']['blacklist'] ?? [];
 
         $message = null;
+
+        // Note: the number of deleted resources is hard to know exactly because
+        // there are many edge cases (added media, already deleted, etc.).
         $stats = [
             'records' => null,
             'harvested' => 0,
+            'marked_deleted' => 0,
             'whitelisted' => 0,
             'blacklisted' => 0,
             'skipped' => 0,
+            'deleted' => 0,
             'imported' => 0,
             'updated' => 0,
             'duplicated' => 0,
             'medias' => 0,
             'errors' => 0,
         ];
+        // Only to keep track of translation.
+        unset($stats['marked deleted']); // @translate
 
         $harvestData = [
             'o:job' => ['o:id' => $this->job->getId()],
@@ -294,6 +325,7 @@ class Harvest extends AbstractJob
             'o:item_set' => ['o:id' => $args['item_set_id']],
             'o-oai-pmh:metadata_prefix' => $args['metadata_prefix'],
             'o-oai-pmh:mode_harvest' => $this->modeHarvest,
+            'o-oai-pmh:mode_delete' => $this->modeDelete,
             'o-oai-pmh:from' => $from ? new DateTime($from, new DateTimeZone('UTC')) : null,
             'o-oai-pmh:until' => $until ? new DateTime($until, new DateTimeZone('UTC')) : null,
             'o-oai-pmh:set_spec' => $args['set_spec'],
@@ -346,13 +378,15 @@ class Harvest extends AbstractJob
             ++$pageIndex;
             if ($this->shouldStop()) {
                 $this->logger->notice(
-                    'Results: total records = {total}, harvested = {harvested}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, skipped = {skipped}, imported = {imported}, updated = {updated}, duplicated = {duplicated}, medias = {medias}, errors = {errors}.', // @translate
+                    'Results: total records = {total}, harvested = {harvested}, marked deleted = {marked_deleted}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, skipped = {skipped}, deleted = {deleted}, imported = {imported}, updated = {updated}, duplicated = {duplicated}, medias = {medias}, errors = {errors}.', // @translate
                     [
                         'total' => $stats['records'] ?: '?',
                         'harvested' => $stats['harvested'],
+                        'marked_deleted' => $stats['marked_deleted'],
                         'whitelisted' => $stats['whitelisted'],
                         'blacklisted' => $stats['blacklisted'],
                         'skipped' => $stats['skipped'],
+                        'deleted' => $stats['deleted'],
                         'imported' => $stats['imported'],
                         'updated' => $stats['updated'],
                         'duplicated' => $stats['duplicated'],
@@ -419,14 +453,44 @@ class Harvest extends AbstractJob
             /** @var \SimpleXMLElement $record */
             foreach ($records->record as $record) {
                 ++$recordIndex;
+                ++$stats['harvested'];
+
                 if ($this->storeXmlRecord) {
                     $this->storeXml($record, $pageIndex, $recordIndex);
                 }
-                if ($harvesterMap->isDeletedRecord($record)) {
-                    continue;
+
+                // The oai identifier is not part of the resource.
+                // The oai identifier should not be included in the resource.
+                // The oai identifier does not depend on the metadata prefix.
+                // To make identifier really unique, the endpoint from the
+                // harvest may be used.
+                // A record can be mapped to multiple resources: cf. ead.
+                $identifier = (string) $record->header->identifier;
+
+                $isDeletedRecord = $harvesterMap->isDeletedRecord($record);
+                if ($isDeletedRecord) {
+                    ++$stats['marked_deleted'];
+
+                    if (!in_array($this->modeDelete, [EntityHarvest::MODE_DELETE, EntityHarvest::MODE_DELETE_FILTERED])) {
+                        ++$stats['skipped'];
+                        $this->logger->info(
+                            'The identifier "{identifier}" was marked deleted on oai record and skipped.', // @translate
+                            ['identifier' => $identifier]
+                        );
+                        continue;
+                    }
+
+                    if ($identifier && $this->modeDelete === EntityHarvest::MODE_DELETE) {
+                        $result = $this->deleteResources($identifier);
+                        $stats['deleted'] += count($result);
+                        $this->logger->info(
+                            'The identifier "{identifier}" was marked deleted on oai record and imported resources deleted: {resource_ids}.', // @translate
+                            ['identifier' => $identifier, 'resource_ids' => implode(', ', $result)]
+                        );
+                        continue;
+                    }
                 }
 
-                ++$stats['harvested'];
                 if ($whitelist || $blacklist) {
                     // Use xml instead of string because some formats may use
                     // attributes for data.
@@ -445,13 +509,18 @@ class Harvest extends AbstractJob
                     }
                 }
 
-                // The oai identifier is not part of the resource.
-                // The oai identifier should not be included in the resource.
-                // The oai identifier does not depend on the metadata prefix.
-                // To make identifier really unique, the endpoint from the
-                // harvest may be used.
-                // A record can be mapped to multiple resources: cf. ead.
-                $identifier = (string) $record->header->identifier;
+                if ($identifier
+                    && $isDeletedRecord
+                    && $this->modeDelete === EntityHarvest::MODE_DELETE_FILTERED
+                ) {
+                    $result = $this->deleteResources($identifier);
+                    $stats['deleted'] += count($result);
+                    $this->logger->info(
+                        'The identifier "{identifier}" was marked deleted on oai record and imported resources deleted: {resource_ids}.', // @translate
+                        ['identifier' => $identifier, 'resource_ids' => implode(', ', $result)]
+                    );
+                    continue;
+                }
 
                 $isToUpdate = false;
                 if ($identifier
@@ -565,14 +634,16 @@ class Harvest extends AbstractJob
             $this->api->update('oaipmhharvester_harvests', $harvestId, $harvestData);
 
             $this->logger->info(
-                'Page #{page} processed: total records = {total}, harvested = {harvested}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, skipped = {skipped}, imported = {imported}, updated = {updated}, duplicated = {duplicated}, medias = {medias}, errors = {errors}.', // @translate
+                'Page #{page} processed: total records = {total}, harvested = {harvested}, marked deleted = {marked_deleted}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, skipped = {skipped}, deleted = {deleted}, imported = {imported}, updated = {updated}, duplicated = {duplicated}, medias = {medias}, errors = {errors}.', // @translate
                 [
                     'page' => $pageIndex,
                     'total' => $stats['records'] ?: '?',
                     'harvested' => $stats['harvested'],
+                    'marked_deleted' => $stats['marked_deleted'],
                     'whitelisted' => $stats['whitelisted'],
                     'blacklisted' => $stats['blacklisted'],
                     'skipped' => $stats['skipped'],
+                    'deleted' => $stats['deleted'],
                     'imported' => $stats['imported'],
                     'updated' => $stats['updated'],
                     'duplicated' => $stats['duplicated'],
@@ -598,13 +669,15 @@ class Harvest extends AbstractJob
         $this->api->update('oaipmhharvester_harvests', $harvestId, $harvestData);
 
         $this->logger->notice(
-            'Results: total records = {total}, harvested = {harvested}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, skipped = {skipped}, imported = {imported}, updated = {updated}, duplicated = {duplicated}, medias = {medias}, errors = {errors}.', // @translate
+            'Results: total records = {total}, harvested = {harvested}, marked deleted = {marked_deleted}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, skipped = {skipped}, deleted = {deleted}, imported = {imported}, updated = {updated}, duplicated = {duplicated}, medias = {medias}, errors = {errors}.', // @translate
             [
                 'total' => $stats['records'] ?: '?',
                 'harvested' => $stats['harvested'],
+                'marked_deleted' => $stats['marked_deleted'],
                 'whitelisted' => $stats['whitelisted'],
                 'blacklisted' => $stats['blacklisted'],
                 'skipped' => $stats['skipped'],
+                'deleted' => $stats['deleted'],
                 'imported' => $stats['imported'],
                 'updated' => $stats['updated'],
                 'duplicated' => $stats['duplicated'],
@@ -749,6 +822,50 @@ class Harvest extends AbstractJob
         }
 
         return true;
+    }
+
+    /**
+     * Delete resources from a harvested record identifier.
+     *
+     * @param string $identifier
+     * @return array The deleted resource ids from previously harvested and
+     * imported records with the identifier that were deleted (items and media).
+     */
+    protected function deleteResources(string $identifier): array
+    {
+        $resourceIds = array_keys($this->harvestedResourceIdentifiers, $identifier);
+        if (!count($resourceIds)) {
+            return [];
+        }
+
+        // Some resource may have been deleted.
+        // Be sure this is not an empty array, else everything will be deleted..
+        $resourceIds = array_values(array_unique(array_filter(array_map('intval', $resourceIds))));
+
+        // For now, only items can be imported, so deleted. Media will be
+        // deleted automatically with the items.
+        if (count($resourceIds)) {
+            $this->api->batchDelete('items', $resourceIds);
+            $this->api->batchDelete('media', $resourceIds);
+        }
+
+        // The right way is to keep track of deleted records by adding a column
+        // "deleted" for the current harvest. But it is heavy and not really
+        // useful in real use cases.
+        // TODO Do we need to remove info about deleted harvested records from previous harvests? Or to keep track of deleted entities?
+        $harvestEntityIds = $this->api
+            ->search(
+                'oaipmhharvester_entities',
+                ['identifier' => $identifier],
+                ['returnScalar' => 'id']
+            )
+            ->getContent();
+
+        if (count($harvestEntityIds)) {
+            $this->api->batchDelete('oaipmhharvester_entities', array_keys($harvestEntityIds));
+        }
+
+        return $resourceIds;
     }
 
     protected function createRollback(array $resources, $identifier)

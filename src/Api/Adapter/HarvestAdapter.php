@@ -21,6 +21,7 @@ class HarvestAdapter extends AbstractEntityAdapter
         'item_set' => 'itemSet',
         'metadata_prefix' => 'metadataPrefix',
         'mode_harvest' => 'modeHarvest',
+        'mode_delete' => 'modeDelete',
         'from' => 'from',
         'until' => 'until',
         'set_spec' => 'setSpec',
@@ -41,6 +42,7 @@ class HarvestAdapter extends AbstractEntityAdapter
         'item_set' => 'itemSet',
         'metadata_prefix' => 'metadataPrefix',
         'mode_harvest' => 'modeHarvest',
+        'mode_delete' => 'modeDelete',
         'from' => 'from',
         'until' => 'until',
         'set_spec' => 'setSpec',
@@ -132,6 +134,10 @@ class HarvestAdapter extends AbstractEntityAdapter
 
         if (array_key_exists('o-oai-pmh:mode_harvest', $data)) {
             $entity->setModeHarvest((string) $data['o-oai-pmh:mode_harvest']);
+        }
+
+        if (array_key_exists('o-oai-pmh:mode_delete', $data)) {
+            $entity->setModeDelete((string) $data['o-oai-pmh:mode_delete']);
         }
 
         if (array_key_exists('o-oai-pmh:from', $data)) {

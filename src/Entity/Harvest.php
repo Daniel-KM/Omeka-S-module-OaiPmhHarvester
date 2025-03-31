@@ -23,12 +23,17 @@ class Harvest extends AbstractEntity
      * MODE_UPDATE: Replace existing values and let values of properties not present in harvested record
      * MODE_REPLACE: Replace the whole existing resource
      * MODE_DUPLICATE: Create a new resource (not recommended)
+     * MODE_DELETE: Delete existing resources when the record is marked deleted
+     * MODE_DELETE_FILTERED: Delete existing resources when the record is marked
+     *   deleted and in whitelist and not in blacklist
      */
     const MODE_SKIP = 'skip'; // @translate
     const MODE_APPEND = 'append'; // @translate
     const MODE_UPDATE = 'update'; // @translate
     const MODE_REPLACE = 'replace'; // @translate
     const MODE_DUPLICATE = 'duplicate'; // @translate
+    const MODE_DELETE = 'delete'; // @translate
+    const MODE_DELETE_FILTERED = 'delete_filtered'; // @translate
     /**#@-*/
 
     /**
@@ -131,6 +136,16 @@ class Harvest extends AbstractEntity
      * )
      */
     protected $modeHarvest;
+
+    /**
+     * @var string
+     *
+     * @Column(
+     *     type="string",
+     *     length=190
+     * )
+     */
+    protected $modeDelete;
 
     /**
      * @var DateTime
@@ -306,6 +321,17 @@ class Harvest extends AbstractEntity
     public function getModeHarvest(): string
     {
         return $this->modeHarvest;
+    }
+
+    public function setModeDelete(string $modeDelete): self
+    {
+        $this->modeDelete = $modeDelete;
+        return $this;
+    }
+
+    public function getModeDelete(): string
+    {
+        return $this->modeDelete;
     }
 
     public function setFrom(?DateTime $from): self

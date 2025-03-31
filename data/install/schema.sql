@@ -8,6 +8,7 @@ CREATE TABLE `oaipmhharvester_harvest` (
     `entity_name` VARCHAR(190) NOT NULL,
     `metadata_prefix` VARCHAR(190) NOT NULL,
     `mode_harvest` VARCHAR(190) NOT NULL,
+    `mode_delete` VARCHAR(190) NOT NULL,
     `from` DATETIME DEFAULT NULL,
     `until` DATETIME DEFAULT NULL,
     `set_spec` VARCHAR(190) DEFAULT NULL,

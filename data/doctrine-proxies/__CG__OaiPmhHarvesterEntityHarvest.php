@@ -67,10 +67,10 @@ class Harvest extends \OaiPmhHarvester\Entity\Harvest implements \Doctrine\ORM\P
     public function __sleep()
     {
         if ($this->__isInitialized__) {
-            return ['__isInitialized__', 'id', 'job', 'undoJob', 'message', 'endpoint', 'entityName', 'itemSet', 'metadataPrefix', 'modeHarvest', 'from', 'until', 'setSpec', 'setName', 'setDescription', 'hasErr', 'stats', 'resumptionToken'];
+            return ['__isInitialized__', 'id', 'job', 'undoJob', 'message', 'endpoint', 'entityName', 'itemSet', 'metadataPrefix', 'modeHarvest', 'modeDelete', 'from', 'until', 'setSpec', 'setName', 'setDescription', 'hasErr', 'stats', 'resumptionToken'];
         }
 
-        return ['__isInitialized__', 'id', 'job', 'undoJob', 'message', 'endpoint', 'entityName', 'itemSet', 'metadataPrefix', 'modeHarvest', 'from', 'until', 'setSpec', 'setName', 'setDescription', 'hasErr', 'stats', 'resumptionToken'];
+        return ['__isInitialized__', 'id', 'job', 'undoJob', 'message', 'endpoint', 'entityName', 'itemSet', 'metadataPrefix', 'modeHarvest', 'modeDelete', 'from', 'until', 'setSpec', 'setName', 'setDescription', 'hasErr', 'stats', 'resumptionToken'];
     }
 
     /**
@@ -366,6 +366,28 @@ class Harvest extends \OaiPmhHarvester\Entity\Harvest implements \Doctrine\ORM\P
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'getModeHarvest', []);
 
         return parent::getModeHarvest();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setModeDelete(string $modeDelete): \OaiPmhHarvester\Entity\Harvest
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'setModeDelete', [$modeDelete]);
+
+        return parent::setModeDelete($modeDelete);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getModeDelete(): string
+    {
+
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'getModeDelete', []);
+
+        return parent::getModeDelete();
     }
 
     /**

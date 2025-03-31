@@ -342,6 +342,7 @@ class IndexController extends AbstractActionController
             'entity_name' => 'items',
             'filters' => $filters,
             'mode_harvest' => ($data['mode_harvest'] ?? 'skip') ?: 'skip',
+            'mode_delete' => ($data['mode_delete'] ?? 'skip') ?: 'skip',
             'store_xml' => $data['store_xml'] ?? [],
             'sets' => $sets,
         ];

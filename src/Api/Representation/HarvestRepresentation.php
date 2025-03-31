@@ -30,6 +30,7 @@ class HarvestRepresentation extends AbstractEntityRepresentation
             'o:item_set' => $itemSet(),
             'o-oai-pmh:metadata_prefix' => $this->metadataPrefix(),
             'o-oai-pmh:mode_harvest' => $this->modeHarvest(),
+            'o-oai-pmh:mode_delete' => $this->modeDelete(),
             'o-oai-pmh:from' => $this->from(),
             'o-oai-pmh:until' => $this->until(),
             'o-oai-pmh:set_spec' => $this->getSetSpec(),
@@ -87,6 +88,11 @@ class HarvestRepresentation extends AbstractEntityRepresentation
     public function modeHarvest(): string
     {
         return $this->resource->getModeHarvest();
+    }
+
+    public function modeDelete(): string
+    {
+        return $this->resource->getModeDelete();
     }
 
     public function from(): ?DateTime
