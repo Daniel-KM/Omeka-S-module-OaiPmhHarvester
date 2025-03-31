@@ -5,6 +5,7 @@ namespace OaiPmhHarvester\Job;
 use DateTime;
 use DateTimeZone;
 use OaiPmhHarvester\Entity\Harvest as EntityHarvest;
+use Omeka\Api\Exception\NotFoundException;
 use Omeka\Api\Representation\AbstractRepresentation;
 use Omeka\Job\AbstractJob;
 use SimpleXMLElement;
@@ -90,6 +91,11 @@ class Harvest extends AbstractJob
      * @var bool
      */
     protected $hasErr = false;
+
+    /**
+     * @var int|string
+     */
+    protected $itemSetDefault;
 
     /**
      * @var string
@@ -210,6 +216,29 @@ class Harvest extends AbstractJob
             );
         }
 
+        // Check default item set.
+        // Anyway, this option is useless, since item sets are created earlier,
+        // before the job.
+        $this->itemSetDefault = ($args['item_set'] ?? 'none') ?: 'none';
+        if (is_numeric($this->itemSetDefault)) {
+            $this->itemSetDefault = (int) $this->itemSetDefault;
+            try {
+                $this->api->read('item_sets', ['id' => $this->itemSetDefault ?: -1]);
+            } catch (NotFoundException $e) {
+                $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
+                $this->logger->err(
+                    'The item set "{item_set_id}" does not exist.', // @translate
+                    ['item_set_id' => $this->itemSetDefault]
+                );
+            }
+        } elseif (!in_array($this->itemSetDefault, ['none', 'new'])) {
+            $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
+            $this->logger->err(
+                'The option "{mode}" for item set is not supported.', // @translate
+                ['mode' => $this->itemSetDefault]
+            );
+        }
+
         // Check directory to store xmls.
         $storeXml = !empty($args['store_xml']) && is_array($args['store_xml']) ? $args['store_xml'] : [];
         $this->storeXmlResponse = in_array('page', $storeXml);
@@ -280,7 +309,8 @@ class Harvest extends AbstractJob
         $defaultArgs = $args;
         unset($defaultArgs['sets']);
         foreach ($sets as $set) {
-            $this->processSet($defaultArgs + $set);
+            $setArgs = $defaultArgs + $set;
+            $this->processSet($setArgs);
         }
     }
 

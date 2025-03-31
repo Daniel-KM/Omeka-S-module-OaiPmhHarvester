@@ -174,6 +174,22 @@ class SetsForm extends Form
             ])
 
             ->add([
+                'name' => 'item_set',
+                'type' => OmekaElement\ItemSetSelect::class,
+                'options' => [
+                    'label' => 'Item set for items', // @translate
+                    'prepend_value_options' => [
+                        'none' => 'No item set', // @translate
+                        'new' => 'Create a new item set', // @translate
+                    ],
+                ],
+                'attributes' => [
+                    'id' => 'item_set',
+                    'value' => 'none',
+                ],
+            ])
+
+            ->add([
                 'name' => 'store_xml',
                 'type' => Element\MultiCheckbox::class,
                 'options' => [
