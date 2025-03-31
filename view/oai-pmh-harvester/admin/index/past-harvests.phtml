@@ -91,7 +91,9 @@ $this->headLink()
                 <?php endif; ?>
             </td>
             <td>
-                <?= $translate($harvest->modeHarvest()) ?>
+                <span><?= $escape(sprintf($translate('Harvest: %s'), $translate($harvest->modeHarvest()))) ?></span>
+                <br/>
+                <span><?= $escape(sprintf($translate('Deletion: %s'), $translate($harvest->modeDelete()))) ?></span>
             </td>
             <td>
                 <?= $translate($harvest->message()) ?>
@@ -100,17 +102,19 @@ $this->headLink()
                 <?php endif; ?>
             </td>
             <td>
-                <?php if ($stats = $harvest->stats()): ?>
-                <?php foreach ($stats as $statKey => $statValue):
-                    if ($statKey === 'whitelisted') $statKey = 'not whitelisted'; // @translate
-                    ?>
-                <span class="oai-pmh-stat">
-                    <?= sprintf($translate('%s: %s'), $translate($statKey), $statValue) ?>
-                </span>
-                <br/>
-                <?php endforeach; ?>
+                <?php if ($stats = $harvest->stats()):
+                    if (!empty($stats['harvested'])) $stats['imported'] ??= 0;
+                    foreach ($stats as $statKey => $statValue):
+                        $statKey = str_replace('_', ' ', $statKey);
+                        if ($statKey === 'whitelisted') $statKey = 'not whitelisted'; // @translate
+                        ?>
+                    <span class="oai-pmh-stat">
+                        <?= sprintf($translate('%s: %s'), $translate($statKey), $statValue) ?>
+                    </span>
+                    <br/>
+                    <?php endforeach; ?>
                 <?php else: ?>
-                <?= sprintf($translate('Imported: %d %s'), $harvest->totalImported(), $translate('items'/* $harvest->entityName() */)) ?>
+                    <?= sprintf($translate('Imported: %d %s'), $harvest->totalImported(), $translate('items'/* $harvest->entityName() */)) ?>
                 <?php endif; ?>
             </td>
             <td>
@@ -122,6 +126,7 @@ $this->headLink()
                         echo $translate('Undo in progress');
                     endif;
                     ?>
+                    <br/>
                     <span class="oai-pmh-job">
                         <?= $undoJob->link($translate('Job details')) ?>
                     </span>
