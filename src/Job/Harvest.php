@@ -58,6 +58,11 @@ class Harvest extends AbstractJob
     protected $logger;
 
     /**
+     * @var array
+     */
+    protected $propertyIds = [];
+
+    /**
      * @var string
      */
     protected $baseName;
@@ -167,6 +172,9 @@ class Harvest extends AbstractJob
         // Check harvest mode.
         $modeHarvests = [
             EntityHarvest::MODE_SKIP,
+            EntityHarvest::MODE_APPEND,
+            EntityHarvest::MODE_UPDATE,
+            EntityHarvest::MODE_REPLACE,
             EntityHarvest::MODE_DUPLICATE,
         ];
         $this->modeHarvest = ($args['mode_harvest'] ?? EntityHarvest::MODE_SKIP) ?: EntityHarvest::MODE_SKIP;
@@ -241,6 +249,8 @@ class Harvest extends AbstractJob
         ;
         $this->harvestedResourceIdentifiers = $connection->executeQuery($qb)->fetchAllKeyValue();
 
+        $this->propertyIds = $this->getPropertyIds();
+
         // Loop all sets.
 
         $defaultArgs = $args;
@@ -269,6 +279,7 @@ class Harvest extends AbstractJob
             'blacklisted' => 0,
             'skipped' => 0,
             'imported' => 0,
+            'updated' => 0,
             'duplicated' => 0,
             'medias' => 0,
             'errors' => 0,
@@ -289,7 +300,7 @@ class Harvest extends AbstractJob
             'o-oai-pmh:set_name' => $args['set_name'],
             'o-oai-pmh:set_description' => $args['set_description'] ?? null,
             'o-oai-pmh:has_err' => false,
-            'o-oai-pmh:stats' => $stats,
+            'o-oai-pmh:stats' => array_filter($stats),
         ];
 
         /** @var \OaiPmhHarvester\Api\Representation\HarvestRepresentation $harvest */
@@ -335,7 +346,7 @@ class Harvest extends AbstractJob
             ++$pageIndex;
             if ($this->shouldStop()) {
                 $this->logger->notice(
-                    'Results: total records = {total}, harvested = {harvested}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, skipped = {skipped}, imported = {imported}, duplicated = {duplicated}, medias = {medias}, errors = {errors}.', // @translate
+                    'Results: total records = {total}, harvested = {harvested}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, skipped = {skipped}, imported = {imported}, updated = {updated}, duplicated = {duplicated}, medias = {medias}, errors = {errors}.', // @translate
                     [
                         'total' => $stats['records'] ?: '?',
                         'harvested' => $stats['harvested'],
@@ -343,6 +354,7 @@ class Harvest extends AbstractJob
                         'blacklisted' => $stats['blacklisted'],
                         'skipped' => $stats['skipped'],
                         'imported' => $stats['imported'],
+                        'updated' => $stats['updated'],
                         'duplicated' => $stats['duplicated'],
                         'medias' => $stats['medias'],
                         'errors' => $stats['errors'],
@@ -441,6 +453,7 @@ class Harvest extends AbstractJob
                 // A record can be mapped to multiple resources: cf. ead.
                 $identifier = (string) $record->header->identifier;
 
+                $isToUpdate = false;
                 if ($identifier
                     && in_array($identifier, $this->harvestedResourceIdentifiers)
                 ) {
@@ -448,20 +461,25 @@ class Harvest extends AbstractJob
                     // are duplicated.
                     $harvestedResourceIds = array_keys($this->harvestedResourceIdentifiers, $identifier, true);
                     if (count($harvestedResourceIds) === 1) {
-                        $harvestedResourceId = reset($harvestedResourceIds);
+                        $harvestedResourceId = (int) reset($harvestedResourceIds);
                         switch ($this->modeHarvest) {
                             default:
                             case EntityHarvest::MODE_SKIP:
                                 $this->logger->info(
-                                    'The identifier was already imported as resource #{resource_id}. New data are skipped.', // @translate
-                                    ['resource_id' => $harvestedResourceId]
+                                    'The identifier "{identifier}" was already imported as resource #{resource_id}. New data are skipped.', // @translate
+                                    ['identifier' => $identifier, 'resource_id' => $harvestedResourceId]
                                 );
                                 ++$stats['skipped'];
                                 continue 2;
+                            case EntityHarvest::MODE_APPEND:
+                            case EntityHarvest::MODE_UPDATE:
+                            case EntityHarvest::MODE_REPLACE:
+                                $isToUpdate = true;
+                                break;
                             case EntityHarvest::MODE_DUPLICATE:
                                 $this->logger->info(
-                                    'The identifier was already imported as resource #{resource_id}. A new resource is created.', // @translate
-                                    ['resource_id' => $harvestedResourceId]
+                                    'The identifier "{identifier}" was already imported as resource #{resource_id}. A new resource is created.', // @translate
+                                    ['identifier' => $identifier, 'resource_id' => $harvestedResourceId]
                                 );
                                 ++$stats['duplicated'];
                                 break;
@@ -469,17 +487,70 @@ class Harvest extends AbstractJob
                     }
                 }
 
-                $toInsert[$identifier] = [];
-                $resources = $harvesterMap->mapRecord($record);
-                foreach ($resources as $resource) {
-                    $toInsert[$identifier][] = $resource;
-                    $stats['medias'] += !empty($resource['o:media']) ? count($resource['o:media']) : 0;
-                    ++$stats['imported'];
+                if ($isToUpdate) {
+                    // Update requires a single resource.
+                    $resources = $harvesterMap->mapRecord($record);
+                    if (!count($resources)) {
+                        continue;
+                    } elseif (count($resources) > 1) {
+                        $this->logger->err(
+                            'The identifier {identifier} (resource #{resource_id} cannot be updated, because it maps to multiple resources.', // @translate
+                            ['identifier' => $identifier, 'resource_id' => $harvestedResourceId]
+                        );
+                        // Error is counted below.
+                        continue;
+                    }
+                    $result = $this->updateResource($harvestedResourceId, reset($resources));
+                    if ($result === null) {
+                        ++$stats['updated'];
+                        $this->logger->info(
+                            'The oai record {oai_id} was already imported as resource {resource_id}. There is no change.', // @translate
+                            ['oai_id' => $identifier, 'resource_id' => $harvestedResourceId]
+                        );
+                    } elseif ($result) {
+                        ++$stats['updated'];
+                        switch ($this->modeHarvest) {
+                            default:
+                            case EntityHarvest::MODE_APPEND:
+                                $this->logger->info(
+                                    'The identifier "{identifier}" was already imported as resource #{resource_id}. The resource was completed.', // @translate
+                                    ['identifier' => $identifier, 'resource_id' => $harvestedResourceId]
+                                );
+                                break;
+                            case EntityHarvest::MODE_UPDATE:
+                                $this->logger->info(
+                                    'The identifier "{identifier}" was already imported as resource #{resource_id}. The resource was updated.', // @translate
+                                    ['identifier' => $identifier, 'resource_id' => $harvestedResourceId]
+                                );
+                                break;
+                            case EntityHarvest::MODE_REPLACE:
+                                $this->logger->info(
+                                    'The identifier "{identifier}" was already imported as resource #{resource_id}. The resource was replaced.', // @translate
+                                    ['identifier' => $identifier, 'resource_id' => $harvestedResourceId]
+                                );
+                                break;
+                        }
+                    } else {
+                        $this->logger->warn(
+                            'The identifier "{identifier}" was already imported as resource #{resource_id}. The resource cannot be updated.', // @translate
+                            ['identifier' => $identifier, 'resource_id' => $harvestedResourceId]
+                        );
+                    }
+                } else {
+                    $toInsert[$identifier] = [];
+                    $resources = $harvesterMap->mapRecord($record);
+                    foreach ($resources as $resource) {
+                        $toInsert[$identifier][] = $resource;
+                        $stats['medias'] += !empty($resource['o:media']) ? count($resource['o:media']) : 0;
+                        ++$stats['imported'];
+                    }
                 }
             }
 
+            // Messages are already logged when the total is lower.
             $totalCreated = $this->createItems($toInsert);
-            $stats['errors'] += count($toInsert) - $totalCreated;
+
+            $stats['errors'] += count($toInsert) - $totalCreated - $stats['updated'];
 
             $resumptionToken = isset($response->ListRecords->resumptionToken) && $response->ListRecords->resumptionToken !== ''
                 ? (string) $response->ListRecords->resumptionToken
@@ -489,12 +560,12 @@ class Harvest extends AbstractJob
             $harvestData = [
                 'o-oai-pmh:message' => 'Processing', // @translate
                 'o-oai-pmh:has_err' => $this->hasErr,
-                'o-oai-pmh:stats' => $stats,
+                'o-oai-pmh:stats' => array_filter($stats),
             ];
             $this->api->update('oaipmhharvester_harvests', $harvestId, $harvestData);
 
             $this->logger->info(
-                'Page #{page} processed: total records = {total}, harvested = {harvested}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, skipped = {skipped}, imported = {imported}, duplicated = {duplicated}, medias = {medias}, errors = {errors}.', // @translate
+                'Page #{page} processed: total records = {total}, harvested = {harvested}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, skipped = {skipped}, imported = {imported}, updated = {updated}, duplicated = {duplicated}, medias = {medias}, errors = {errors}.', // @translate
                 [
                     'page' => $pageIndex,
                     'total' => $stats['records'] ?: '?',
@@ -503,6 +574,7 @@ class Harvest extends AbstractJob
                     'blacklisted' => $stats['blacklisted'],
                     'skipped' => $stats['skipped'],
                     'imported' => $stats['imported'],
+                    'updated' => $stats['updated'],
                     'duplicated' => $stats['duplicated'],
                     'medias' => $stats['medias'],
                     'errors' => $stats['errors'],
@@ -520,13 +592,13 @@ class Harvest extends AbstractJob
         $harvestData = [
             'o-oai-pmh:message' => $message,
             'o-oai-pmh:has_err' => $this->hasErr,
-            'o-oai-pmh:stats' => $stats,
+            'o-oai-pmh:stats' => array_filter($stats),
         ];
 
         $this->api->update('oaipmhharvester_harvests', $harvestId, $harvestData);
 
         $this->logger->notice(
-            'Results: total records = {total}, harvested = {harvested}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, skipped = {skipped}, imported = {imported}, duplicated = {duplicated}, medias = {medias}, errors = {errors}.', // @translate
+            'Results: total records = {total}, harvested = {harvested}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, skipped = {skipped}, imported = {imported}, updated = {updated}, duplicated = {duplicated}, medias = {medias}, errors = {errors}.', // @translate
             [
                 'total' => $stats['records'] ?: '?',
                 'harvested' => $stats['harvested'],
@@ -534,6 +606,7 @@ class Harvest extends AbstractJob
                 'blacklisted' => $stats['blacklisted'],
                 'skipped' => $stats['skipped'],
                 'imported' => $stats['imported'],
+                'updated' => $stats['updated'],
                 'duplicated' => $stats['duplicated'],
                 'medias' => $stats['medias'],
                 'errors' => $stats['errors'],
@@ -634,6 +707,50 @@ class Harvest extends AbstractJob
         return $total;
     }
 
+    protected function updateResource(int $resourceId, array $resource): ?bool
+    {
+        // The id is already checked.
+        $existingResource = $this->api->read('resources', $resourceId)->getContent()->jsonSerialize();
+        $updatedResource = $existingResource;
+        switch ($this->modeHarvest) {
+            default:
+            case EntityHarvest::MODE_APPEND:
+                // The function array_unique() is not fully working here,
+                // because the existing values have specific keys.
+                // Deduplication is done outside (see modules BulkEdit or EasyAdmin).
+                // Else see the process of the modules BulkImport or CsvImport.
+                foreach (array_filter(array_intersect_key($resource, $this->propertyIds)) as $term => $values) {
+                    $updatedResource[$term] = empty($existingResource[$term])
+                        ? $values
+                        : array_unique(array_merge(array_values($existingResource[$term]), array_values($values)));
+                }
+                break;
+            case EntityHarvest::MODE_UPDATE:
+                $updatedResource = array_replace(
+                    $existingResource,
+                    array_filter(array_intersect_key($resource, $this->propertyIds))
+                );
+                break;
+            case EntityHarvest::MODE_REPLACE:
+                $updatedResource = array_diff_key($existingResource, $this->propertyIds)
+                    + array_filter(array_intersect_key($resource, $this->propertyIds));
+                break;
+        }
+
+        // TODO Improve the comparison between existing resource and updated resource.
+        if ($existingResource === $updatedResource) {
+            return null;
+        }
+
+        try {
+            $this->api->update('items', $resourceId, $updatedResource, [], ['isPartial' => true]);
+        } catch (\Exception $e) {
+            return false;
+        }
+
+        return true;
+    }
+
     protected function createRollback(array $resources, $identifier)
     {
         if (empty($resources)) {
@@ -691,6 +808,34 @@ class Harvest extends AbstractJob
                         ['page' => $pageIndex, 'url' => $this->baseUri . '/oai-pmh-harvest/' . $filename]
                     );
         }
+    }
+
+    /**
+     * Get all property ids by term.
+     *
+     * @return array Associative array of ids by term.
+     *
+     * @todo Use \Common\Stdlib\EasyMeta.
+     */
+    protected function getPropertyIds(): array
+    {
+        $connection = $this->getServiceLocator()->get('Omeka\Connection');
+        $qb = $connection->createQueryBuilder();
+        $qb
+            ->select(
+                'DISTINCT CONCAT(vocabulary.prefix, ":", property.local_name) AS term',
+                'property.id AS id',
+                // Only the two first selects are needed, but some databases
+                // require "order by" or "group by" value to be in the select.
+                'vocabulary.id'
+            )
+            ->from('property', 'property')
+            ->innerJoin('property', 'vocabulary', 'vocabulary', 'property.vocabulary_id = vocabulary.id')
+            ->orderBy('vocabulary.id', 'asc')
+            ->addOrderBy('property.id', 'asc')
+            ->addGroupBy('property.id')
+        ;
+        return array_map('intval', $connection->executeQuery($qb)->fetchAllKeyValue());
     }
 
     /**

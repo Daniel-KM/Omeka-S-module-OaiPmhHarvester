@@ -19,9 +19,15 @@ class Harvest extends AbstractEntity
      * Harvest modes for atomic formats.
      *
      * MODE_SKIP: Skip record (keep existing resource)
+     * MODE_APPEND: Append new values
+     * MODE_UPDATE: Replace existing values and let values of properties not present in harvested record
+     * MODE_REPLACE: Replace the whole existing resource
      * MODE_DUPLICATE: Create a new resource (not recommended)
      */
     const MODE_SKIP = 'skip'; // @translate
+    const MODE_APPEND = 'append'; // @translate
+    const MODE_UPDATE = 'update'; // @translate
+    const MODE_REPLACE = 'replace'; // @translate
     const MODE_DUPLICATE = 'duplicate'; // @translate
     /**#@-*/
 

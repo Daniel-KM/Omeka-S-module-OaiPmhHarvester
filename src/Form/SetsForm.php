@@ -144,6 +144,9 @@ class SetsForm extends Form
                     'info' => 'An atomic format is a format where an oai record with an oai identifier maps to a single resource in Omeka. Ead via oai-pmh is not an atomic format, so a reharvest will duplicate records.', // @translate
                     'value_options' => [
                         Harvest::MODE_SKIP => 'Skip record (keep existing resource)', // @translate
+                        Harvest::MODE_APPEND => 'Append new values', // @translate
+                        Harvest::MODE_UPDATE => 'Replace existing values and let values of properties not present in harvested record', // @translate
+                        Harvest::MODE_REPLACE => 'Replace the whole existing resource', // @translate
                         Harvest::MODE_DUPLICATE => 'Create a new resource (not recommended)', // @translate
                     ],
                 ],
