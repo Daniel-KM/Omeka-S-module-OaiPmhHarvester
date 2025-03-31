@@ -1,0 +1,45 @@
+<?php
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var array $query
+ */
+
+$plugins = $this->getHelperPluginManager();
+$translate = $plugins->get('translate');
+$resourceSelect = $plugins->get('resourceSelect');
+
+$ids = $query['harvest_id'] ?? [];
+$ids = array_filter($ids);
+?>
+
+<div id="harvests" class="field" role="group" aria-labelledby="by-harvest-label">
+    <div class="field-meta">
+        <span id="by-harvest-label" class="label"><?= $translate('OAI-PMH harvest') ?></span>
+    </div>
+    <div class="inputs">
+        <div class="value">
+            <?= $resourceSelect([
+                'name' => 'harvest_id',
+                'options' => [
+                    'label' => 'OAI-PMH harvest', // @translate
+                    'resource_value_options' => [
+                        'resource' => 'oaipmhharvester_harvests',
+                        'option_text_callback' => fn (\OaiPmhHarvester\Api\Representation\HarvestRepresentation $harvest) => trim(sprintf('#%d: %s', $harvest->id(), $harvest->getSetName()), ': '),
+                    ],
+                    'prepend_value_options' => [
+                        '0' => '[none]', // @translate
+                    ],
+                    'empty_option' => '',
+                ],
+                'attributes' => [
+                    'id' => 'harvest_id',
+                    'value' => $ids,
+                    'multiple' => 'multiple',
+                    'class' => 'resource-select chosen-select',
+                    'aria-labelledby' => 'by-harvest-label',
+                    'data-placeholder' => 'Select harvests…', // @translate
+                ],
+            ]) ?>
+        </div>
+    </div>
+</div>

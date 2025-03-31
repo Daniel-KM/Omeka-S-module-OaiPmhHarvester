@@ -58,6 +58,23 @@ class Module extends AbstractModule
             'api.delete.pre',
             [$this, 'handleBeforeDelete'],
         );
+
+        // Manage search items with harvests.
+        $sharedEventManager->attach(
+            'Omeka\Api\Adapter\ItemAdapter',
+            'api.search.query',
+            [$this, 'handleApiSearchQuery']
+        );
+        $sharedEventManager->attach(
+            'Omeka\Controller\Admin\Item',
+            'view.advanced_search',
+            [$this, 'handleViewAdvancedSearch']
+        );
+        $sharedEventManager->attach(
+            'Omeka\Controller\Admin\Item',
+            'view.search.filters',
+            [$this, 'handleSearchFilters']
+        );
     }
 
     /**
@@ -104,6 +121,98 @@ class Module extends AbstractModule
                     ]
                 );
         } catch (\Omeka\Api\Exception\NotFoundException $e) {
+        }
+    }
+
+    /**
+     * Helper to build search queries.
+     */
+    public function handleApiSearchQuery(Event $event): void
+    {
+        /**
+         * @var \Doctrine\ORM\QueryBuilder $qb
+         * @var \Omeka\Api\Adapter\AbstractResourceEntityAdapter $adapter
+         * @var \Omeka\Api\Request $request
+         * @var array $query
+         */
+        $request = $event->getParam('request');
+        $query = $request->getContent();
+
+        if (array_key_exists('harvest_id', $query)
+            && $query['harvest_id'] !== ''
+            && $query['harvest_id'] !== []
+        ) {
+            $adapter = $event->getTarget();
+            $qb = $event->getParam('queryBuilder');
+            $expr = $qb->expr();
+            $entityAlias = $adapter->createAlias();
+
+            if (empty($query['harvest_id']) || $query['harvest_id'] === [0] || $query['harvest_id'] === ['0']) {
+                // TODO Optimize query to find items without harvest.
+                $qb
+                    ->leftJoin(
+                        \OaiPmhHarvester\Entity\Entity::class,
+                        $entityAlias,
+                        \Doctrine\ORM\Query\Expr\Join::WITH,
+                        "$entityAlias.entityId = omeka_root.id"
+                    )
+                    ->andWhere($expr->isNull("$entityAlias.entityId"));
+            } else {
+                $ids = is_array($query['harvest_id']) ? $query['harvest_id'] : [$query['harvest_id']];
+                $ids = array_filter(array_map('intval', $ids));
+                if ($ids) {
+                    $qb
+                        ->innerJoin(
+                            \OaiPmhHarvester\Entity\Entity::class,
+                            $entityAlias,
+                            \Doctrine\ORM\Query\Expr\Join::WITH,
+                            "$entityAlias.harvest IN(:harvest_ids) AND $entityAlias.entityId = omeka_root.id"
+                        )
+                        ->setParameter('harvest_ids', $ids, \Doctrine\DBAL\Connection::PARAM_INT_ARRAY);
+                } else {
+                    // The harvest is set, but invalid (not integer).
+                    $qb
+                        ->innerJoin(
+                            \OaiPmhHarvester\Entity\Entity::class,
+                            $entityAlias,
+                            \Doctrine\ORM\Query\Expr\Join::WITH,
+                            "$entityAlias.harvest = 0"
+                        );
+                }
+            }
+        }
+    }
+
+    public function handleViewAdvancedSearch(Event $event): void
+    {
+        $partials = $event->getParam('partials');
+        $partials[] = 'common/advanced-search/harvests';
+        $event->setParam('partials', $partials);
+    }
+
+    /**
+     * Complete the list of search filters for the browse page.
+     */
+    public function handleSearchFilters(Event $event): void
+    {
+        $filters = $event->getParam('filters');
+        $query = $event->getParam('query', []);
+
+        if (array_key_exists('harvest_id', $query)
+            && $query['harvest_id'] !== ''
+            && $query['harvest_id'] !== []
+        ) {
+            $services = $this->getServiceLocator();
+            $translator = $services->get('MvcTranslator');
+            $values = is_array($query['harvest_id']) ? $query['harvest_id'] : [$query['harvest_id']];
+            $values = array_filter(array_map('intval', $values));
+            $filterLabel = $translator->translate('OAI-PMH harvest'); // @translate
+            if ($values && $values !== [0] && $values['0']) {
+                $filters[$filterLabel] = $values;
+            } else {
+                $filters[$filterLabel][] = $translator->translate('None'); // @translate
+            }
+            $event->setParam('filters', $filters);
         }
     }
 }
