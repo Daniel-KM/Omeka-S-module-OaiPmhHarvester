@@ -108,6 +108,13 @@ class Harvest extends AbstractJob
     protected $modeHarvest = EntityHarvest::MODE_SKIP;
 
     /**
+     * Oai endpoint.
+     *
+     * @var string
+     */
+    protected $oaiEndpoint;
+
+    /**
      * @var bool
      */
     protected $storeRecord = false;
@@ -133,6 +140,20 @@ class Harvest extends AbstractJob
         $args = $this->job->getArgs();
 
         // Early checks.
+
+        $this->oaiEndpoint = $args['endpoint'] ?? null;
+        if (empty($this->oaiEndpoint)) {
+            $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
+            $this->logger->err(
+                'No endpoint defined.' // @translate
+            );
+        } elseif (!filter_var($args['endpoint'], FILTER_VALIDATE_URL)) {
+            $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
+            $this->logger->err(
+                'The endpoint "{oai_endpoint}" is not a valid url.', // @translate
+                ['oai_endpoint' => $this->oaiEndpoint]
+            );
+        }
 
         $from = empty($args['from']) ? null : (string) $args['from'];
         $until = empty($args['until']) ? null : (string) $args['until'];
@@ -335,19 +356,26 @@ class Harvest extends AbstractJob
         // Note: the number of deleted resources is hard to know exactly because
         // there are many edge cases (added media, already deleted, etc.).
         $stats = [
-            'records' => null,
-            'harvested' => 0,
+            'records' => null, // @translate
+            'harvested' => 0, // @translate
             'marked_deleted' => 0,
-            'whitelisted' => 0,
-            'blacklisted' => 0,
-            'skipped' => 0,
-            'deleted' => 0,
-            'imported' => 0,
-            'updated' => 0,
-            'duplicated' => 0,
-            'medias' => 0,
-            'errors' => 0,
+            'whitelisted' => 0, // @translate
+            'blacklisted' => 0, // @translate
+            'skipped' => 0, // @translate
+            // Removed is the number of oai records marked deleted really
+            // deleted, and deleted is the number of resources deleted.
+            'removed' => 0, // @translate
+            'deleted' => 0, // @translate
+            'updated' => 0, // @translate
+            // Processed means created, but there may be multiple created items.
+            'processed' => 0, // @translate
+            'duplicated' => 0, // @translate
+            // Imported is the number of new items created, duplicated included.
+            'imported' => 0, // @translate
+            'medias' => 0, // @translate
+            'errors' => 0, // @translate
         ];
+
         // Only to keep track of translation.
         unset($stats['marked deleted']); // @translate
 
@@ -378,23 +406,23 @@ class Harvest extends AbstractJob
 
         if ($from && $until) {
             $this->logger->notice(
-                'Start harvesting {url}, format {format}, from {from} until {until}.', // @translate
-                ['url' => $args['endpoint'], 'format' => $metadataPrefix, 'from' => $from, 'until' => $until]
+                'Start harvesting {oai_url}, format {format}, from {from} until {until}.', // @translate
+                ['oai_url' => $args['endpoint'], 'format' => $metadataPrefix, 'from' => $from, 'until' => $until]
             );
         } elseif ($from) {
             $this->logger->notice(
-                'Start harvesting {url}, format {format}, from {from}.', // @translate
-                ['url' => $args['endpoint'], 'format' => $metadataPrefix, 'from' => $from]
+                'Start harvesting {oai_url}, format {format}, from {from}.', // @translate
+                ['oai_url' => $args['endpoint'], 'format' => $metadataPrefix, 'from' => $from]
             );
         } elseif ($from && $until) {
             $this->logger->notice(
-                'Start harvesting {url}, format {format}, until {until}.', // @translate
-                ['url' => $args['endpoint'], 'format' => $metadataPrefix, 'until' => $until]
+                'Start harvesting {oai_url}, format {format}, until {until}.', // @translate
+                ['oai_url' => $args['endpoint'], 'format' => $metadataPrefix, 'until' => $until]
             );
         } else {
             $this->logger->notice(
-                'Start harvesting {url}, format {format}.', // @translate
-                ['url' => $args['endpoint'], 'format' => $metadataPrefix]
+                'Start harvesting {oai_url}, format {format}.', // @translate
+                ['oai_url' => $args['endpoint'], 'format' => $metadataPrefix]
             );
         }
 
@@ -406,14 +434,18 @@ class Harvest extends AbstractJob
             'o:item_set' => $itemSetId ? [['o:id' => $itemSetId]] : [],
         ]);
 
+        $totalToInsertAll = 0;
+        $totalCreatedAll = 0;
+
         $resumptionToken = false;
         $recordIndex = 0;
         $pageIndex = 0;
+
         do {
             ++$pageIndex;
             if ($this->shouldStop()) {
                 $this->logger->notice(
-                    'Results: total records = {total}, harvested = {harvested}, marked deleted = {marked_deleted}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, skipped = {skipped}, deleted = {deleted}, imported = {imported}, updated = {updated}, duplicated = {duplicated}, medias = {medias}, errors = {errors}.', // @translate
+                    'Results: total records = {total}, harvested = {harvested}, marked deleted = {marked_deleted}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, skipped = {skipped}, removed = {removed}, updated = {updated}, processed = {processed}, deleted resources = {deleted}, imported resources = {imported}, duplicated = {duplicated}, medias = {medias}, errors = {errors}.', // @translate
                     [
                         'total' => $stats['records'] ?: '?',
                         'harvested' => $stats['harvested'],
@@ -421,9 +453,11 @@ class Harvest extends AbstractJob
                         'whitelisted' => $stats['whitelisted'],
                         'blacklisted' => $stats['blacklisted'],
                         'skipped' => $stats['skipped'],
+                        'removed' => $stats['removed'],
+                        'updated' => $stats['updated'],
+                        'processed' => $stats['processed'],
                         'deleted' => $stats['deleted'],
                         'imported' => $stats['imported'],
-                        'updated' => $stats['updated'],
                         'duplicated' => $stats['duplicated'],
                         'medias' => $stats['medias'],
                         'errors' => $stats['errors'],
@@ -509,19 +543,22 @@ class Harvest extends AbstractJob
                     if (!in_array($this->modeDelete, [EntityHarvest::MODE_DELETE, EntityHarvest::MODE_DELETE_FILTERED])) {
                         ++$stats['skipped'];
                         $this->logger->info(
-                            'The identifier "{identifier}" was marked deleted on oai record and skipped.', // @translate
-                            ['identifier' => $identifier]
+                            'The oai record {oai_id} was marked deleted and skipped.', // @translate
+                            ['oai_id' => $identifier, 'oai_endpoint' => $args['endpoint']]
                         );
                         continue;
                     }
 
                     if ($identifier && $this->modeDelete === EntityHarvest::MODE_DELETE) {
+                        ++ $stats['removed'];
                         $result = $this->deleteResources($identifier);
-                        $stats['deleted'] += count($result);
-                        $this->logger->info(
-                            'The identifier "{identifier}" was marked deleted on oai record and imported resources deleted: {resource_ids}.', // @translate
-                            ['identifier' => $identifier, 'resource_ids' => implode(', ', $result)]
-                        );
+                        if (count($result)) {
+                            $stats['deleted'] += count($result);
+                            $this->logger->info(
+                                'The oai record {oai_id} was marked deleted and imported resources were deleted: {resource_ids}.', // @translate
+                                ['oai_id' => $identifier, 'resource_ids' => implode(', ', $result), 'oai_endpoint' => $args['endpoint']]
+                            );
+                        }
                         continue;
                     }
                 }
@@ -548,12 +585,15 @@ class Harvest extends AbstractJob
                     && $isDeletedRecord
                     && $this->modeDelete === EntityHarvest::MODE_DELETE_FILTERED
                 ) {
+                    ++ $stats['removed'];
                     $result = $this->deleteResources($identifier);
-                    $stats['deleted'] += count($result);
-                    $this->logger->info(
-                        'The identifier "{identifier}" was marked deleted on oai record and imported resources deleted: {resource_ids}.', // @translate
-                        ['identifier' => $identifier, 'resource_ids' => implode(', ', $result)]
-                    );
+                    if (count($result)) {
+                        $stats['deleted'] += count($result);
+                        $this->logger->info(
+                            'The oai record {oai_id} was marked deleted and imported resources were deleted: {resource_ids}.', // @translate
+                            ['oai_id' => $identifier, 'resource_ids' => implode(', ', $result), 'oai_endpoint' => $args['endpoint']]
+                        );
+                    }
                     continue;
                 }
 
@@ -570,8 +610,8 @@ class Harvest extends AbstractJob
                             default:
                             case EntityHarvest::MODE_SKIP:
                                 $this->logger->info(
-                                    'The identifier "{identifier}" was already imported as resource #{resource_id}. New data are skipped.', // @translate
-                                    ['identifier' => $identifier, 'resource_id' => $harvestedResourceId]
+                                    'The oai record {oai_id} was already imported as resource {resource_id}. New data are skipped.', // @translate
+                                    ['oai_id' => $identifier, 'resource_id' => $harvestedResourceId, 'oai_endpoint' => $args['endpoint']]
                                 );
                                 ++$stats['skipped'];
                                 continue 2;
@@ -582,8 +622,8 @@ class Harvest extends AbstractJob
                                 break;
                             case EntityHarvest::MODE_DUPLICATE:
                                 $this->logger->info(
-                                    'The identifier "{identifier}" was already imported as resource #{resource_id}. A new resource is created.', // @translate
-                                    ['identifier' => $identifier, 'resource_id' => $harvestedResourceId]
+                                    'The oai record {oai_id} was already imported as resource {resource_id}. A new resource is created.', // @translate
+                                    ['oai_id' => $identifier, 'resource_id' => $harvestedResourceId, 'oai_endpoint' => $args['endpoint']]
                                 );
                                 ++$stats['duplicated'];
                                 break;
@@ -598,8 +638,8 @@ class Harvest extends AbstractJob
                         continue;
                     } elseif (count($resources) > 1) {
                         $this->logger->err(
-                            'The identifier {identifier} (resource #{resource_id} cannot be updated, because it maps to multiple resources.', // @translate
-                            ['identifier' => $identifier, 'resource_id' => $harvestedResourceId]
+                            'The oai record {oai_id} (resource {resource_id} cannot be updated, because it maps to multiple resources.', // @translate
+                            ['oai_id' => $identifier, 'resource_id' => $harvestedResourceId, 'oai_endpoint' => $args['endpoint']]
                         );
                         // Error is counted below.
                         continue;
@@ -617,27 +657,27 @@ class Harvest extends AbstractJob
                             default:
                             case EntityHarvest::MODE_APPEND:
                                 $this->logger->info(
-                                    'The identifier "{identifier}" was already imported as resource #{resource_id}. The resource was completed.', // @translate
-                                    ['identifier' => $identifier, 'resource_id' => $harvestedResourceId]
+                                    'The oai record {oai_id} was already imported as resource {resource_id}. The resource was completed.', // @translate
+                                    ['oai_id' => $identifier, 'resource_id' => $harvestedResourceId, 'oai_endpoint' => $args['endpoint']]
                                 );
                                 break;
                             case EntityHarvest::MODE_UPDATE:
                                 $this->logger->info(
-                                    'The identifier "{identifier}" was already imported as resource #{resource_id}. The resource was updated.', // @translate
-                                    ['identifier' => $identifier, 'resource_id' => $harvestedResourceId]
+                                    'The oai record {oai_id} was already imported as resource {resource_id}. The resource was updated.', // @translate
+                                    ['oai_id' => $identifier, 'resource_id' => $harvestedResourceId, 'oai_endpoint' => $args['endpoint']]
                                 );
                                 break;
                             case EntityHarvest::MODE_REPLACE:
                                 $this->logger->info(
-                                    'The identifier "{identifier}" was already imported as resource #{resource_id}. The resource was replaced.', // @translate
-                                    ['identifier' => $identifier, 'resource_id' => $harvestedResourceId]
+                                    'The oai record {oai_id} was already imported as resource {resource_id}. The resource was replaced.', // @translate
+                                    ['oai_id' => $identifier, 'resource_id' => $harvestedResourceId, 'oai_endpoint' => $args['endpoint']]
                                 );
                                 break;
                         }
                     } else {
                         $this->logger->warn(
-                            'The identifier "{identifier}" was already imported as resource #{resource_id}. The resource cannot be updated.', // @translate
-                            ['identifier' => $identifier, 'resource_id' => $harvestedResourceId]
+                            'The oai record {oai_id} was already imported as resource {resource_id}. The resource cannot be updated.', // @translate
+                            ['oai_id' => $identifier, 'resource_id' => $harvestedResourceId, 'oai_endpoint' => $args['endpoint']]
                         );
                     }
                 } else {
@@ -648,13 +688,26 @@ class Harvest extends AbstractJob
                         $stats['medias'] += !empty($resource['o:media']) ? count($resource['o:media']) : 0;
                         ++$stats['imported'];
                     }
+                    ++$stats['processed'];
                 }
             }
 
             // Messages are already logged when the total is lower.
             $totalCreated = $this->createItems($toInsert);
 
-            $stats['errors'] += count($toInsert) - $totalCreated - $stats['updated'];
+            $totalToInsertAll += count($toInsert);
+            $totalCreatedAll += $totalCreated;
+
+            $stats['errors'] = $stats['harvested']
+                - $stats['whitelisted']
+                - $stats['blacklisted']
+                - $stats['skipped']
+                // $stats['deleted'] is not an atomic value, so use removed.
+                - $stats['removed']
+                - $stats['updated']
+                // $stats['imported'] is not an atomic value, so use processed.
+                - $stats['processed']
+                + (count($toInsert) - $totalCreated);
 
             $resumptionToken = isset($response->ListRecords->resumptionToken) && $response->ListRecords->resumptionToken !== ''
                 ? (string) $response->ListRecords->resumptionToken
@@ -669,7 +722,7 @@ class Harvest extends AbstractJob
             $this->api->update('oaipmhharvester_harvests', $harvestId, $harvestData);
 
             $this->logger->info(
-                'Page #{page} processed: total records = {total}, harvested = {harvested}, marked deleted = {marked_deleted}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, skipped = {skipped}, deleted = {deleted}, imported = {imported}, updated = {updated}, duplicated = {duplicated}, medias = {medias}, errors = {errors}.', // @translate
+                'Page #{page} processed: total records = {total}, harvested = {harvested}, marked deleted = {marked_deleted}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, skipped = {skipped}, removed = {removed}, updated resources = {updated}, processed = {processed}, deleted resources = {deleted}, imported resources = {imported}, duplicated = {duplicated}, medias = {medias}, errors = {errors}.', // @translate
                 [
                     'page' => $pageIndex,
                     'total' => $stats['records'] ?: '?',
@@ -678,9 +731,11 @@ class Harvest extends AbstractJob
                     'whitelisted' => $stats['whitelisted'],
                     'blacklisted' => $stats['blacklisted'],
                     'skipped' => $stats['skipped'],
+                    'removed' => $stats['removed'],
+                    'updated' => $stats['updated'],
+                    'processed' => $stats['processed'],
                     'deleted' => $stats['deleted'],
                     'imported' => $stats['imported'],
-                    'updated' => $stats['updated'],
                     'duplicated' => $stats['duplicated'],
                     'medias' => $stats['medias'],
                     'errors' => $stats['errors'],
@@ -695,6 +750,15 @@ class Harvest extends AbstractJob
             $message = 'Harvest ended.'; // @translate
         }
 
+        $stats['errors'] = $stats['harvested']
+            - $stats['whitelisted']
+            - $stats['blacklisted']
+            - $stats['skipped']
+            - $stats['removed']
+            - $stats['updated']
+            - $stats['processed']
+            + ($totalToInsertAll - $totalCreatedAll);
+
         $harvestData = [
             'o-oai-pmh:message' => $message,
             'o-oai-pmh:has_err' => $this->hasErr,
@@ -704,7 +768,7 @@ class Harvest extends AbstractJob
         $this->api->update('oaipmhharvester_harvests', $harvestId, $harvestData);
 
         $this->logger->notice(
-            'Results: total records = {total}, harvested = {harvested}, marked deleted = {marked_deleted}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, skipped = {skipped}, deleted = {deleted}, imported = {imported}, updated = {updated}, duplicated = {duplicated}, medias = {medias}, errors = {errors}.', // @translate
+            'Results: total records = {total}, harvested = {harvested}, marked deleted = {marked_deleted}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, skipped = {skipped}, removed = {removed}, updated = {updated}, processed = {processed}, deleted resources = {deleted}, imported resources = {imported}, duplicated = {duplicated}, medias = {medias}, errors = {errors}.', // @translate
             [
                 'total' => $stats['records'] ?: '?',
                 'harvested' => $stats['harvested'],
@@ -712,9 +776,11 @@ class Harvest extends AbstractJob
                 'whitelisted' => $stats['whitelisted'],
                 'blacklisted' => $stats['blacklisted'],
                 'skipped' => $stats['skipped'],
+                'removed' => $stats['removed'],
+                'updated' => $stats['updated'],
+                'processed' => $stats['processed'],
                 'deleted' => $stats['deleted'],
                 'imported' => $stats['imported'],
-                'updated' => $stats['updated'],
                 'duplicated' => $stats['duplicated'],
                 'medias' => $stats['medias'],
                 'errors' => $stats['errors'],
@@ -785,30 +851,30 @@ class Harvest extends AbstractJob
                 if ($identifierTotal === count($resources)) {
                     if ($identifierTotal === 1) {
                         $this->logger->info(
-                            '{count} resource created from oai record {identifier}: #{resource_ids}.', // @translate
-                            ['count' => 1, 'identifier' => $identifier, 'resource_ids' => reset($identifierIds)]
+                            '{count} resource created from oai record {oai_id}: {resource_id}.', // @translate
+                            ['count' => 1, 'oai_id' => $identifier, 'resource_id' => reset($identifierIds), 'oai_endpoint' => $this->oaiEndpoint]
                         );
                     } else {
                         $this->logger->info(
-                            '{count} resources created from oai record {identifier}: #{resource_ids}.', // @translate
-                            ['count' => $identifierTotal, 'identifier' => $identifier, 'resource_ids' => implode('#, ', $identifierIds)]
+                            '{count} resources created from oai record {oai_id}: {resource_ids}.', // @translate
+                            ['count' => $identifierTotal, 'oai_id' => $identifier, 'resource_ids' => implode(', ', $identifierIds), 'oai_endpoint' => $this->oaiEndpoint]
                         );
                     }
                 } elseif ($identifierTotal && $identifierTotal !== count($resources)) {
                     $this->logger->warn(
-                        'Only {count}/{total} resources created from oai record {identifier}: #{resource_ids}.', // @translate
-                        ['count' => $identifierTotal, 'total' => count($resources) - $identifierTotal, 'identifier' => $identifier, 'resource_ids' => implode('#, ', $identifierIds)]
+                        'Only {count}/{total} resources created from oai record {oai_id}: {resource_ids}.', // @translate
+                        ['count' => $identifierTotal, 'total' => count($resources) - $identifierTotal, 'oai_id' => $identifier, 'resource_ids' => implode(', ', $identifierIds), 'oai_endpoint' => $this->oaiEndpoint]
                     );
                 } else {
                     $this->logger->warn(
-                        'No resource created from oai record {identifier}.', // @translate
-                        ['identifier' => $identifier]
+                        'No resource created from oai record {oai_id}.', // @translate
+                        ['oai_id' => $identifier, 'oai_endpoint' => $this->oaiEndpoint]
                     );
                 }
             } else {
                 $this->logger->warn(
-                    'No resource created from oai record {identifier}, according to its metadata.', // @translate
-                    ['identifier' => $identifier]
+                    'No resource created from oai record {oai_id}, according to its metadata.', // @translate
+                    ['oai_id' => $identifier, 'oai_endpoint' => $this->oaiEndpoint]
                 );
             }
         }

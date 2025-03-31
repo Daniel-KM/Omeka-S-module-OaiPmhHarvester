@@ -194,7 +194,7 @@ class SetsForm extends Form
                 'type' => Element\MultiCheckbox::class,
                 'options' => [
                     'label' => 'Store oai-pmh xml responses', // @translate
-                    'info' => 'This option allows to investigate issues. Xml files are stored in directory /files/oai-pmh-harvest.', // @translate
+                    'info' => 'This option allows to investigate issues. Xml files are stored in directory /files/oai-pmh-harvest. The url is indicated in the logs.', // @translate
                     'value_options' => [
                         'page' => 'By page', // @translate
                         'record' => 'By record', // @translate
