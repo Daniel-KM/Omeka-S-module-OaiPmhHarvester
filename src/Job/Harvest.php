@@ -124,6 +124,11 @@ class Harvest extends AbstractJob
      */
     protected $storeResponse = false;
 
+    /**
+     * @var array
+     */
+    protected $staticEntityIds = [];
+
     public function perform()
     {
         $services = $this->getServiceLocator();
@@ -330,6 +335,12 @@ class Harvest extends AbstractJob
 
         $this->propertyIds = $this->getPropertyIds();
 
+        // Prepare data for entity manager.
+        $this->staticEntityIds = [
+            'job_id' => $this->job->getId(),
+            'user_id' => $this->job->getOwner()->getId(),
+        ];
+
         // Loop all sets.
 
         $defaultArgs = $args;
@@ -444,8 +455,12 @@ class Harvest extends AbstractJob
         $recordIndex = 0;
         $pageIndex = 0;
 
+        // Process a page.
         do {
             ++$pageIndex;
+
+            $this->refreshEntityManager();
+
             if ($this->shouldStop()) {
                 $this->logger->notice(
                     'Results: total records = {total}, harvested = {harvested}, marked deleted = {marked_deleted}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, skipped = {skipped}, removed = {removed}, updated = {updated}, processed = {processed}, deleted resources = {deleted}, imported resources = {imported}, duplicated = {duplicated}, medias = {medias}, errors = {errors}.', // @translate
@@ -723,7 +738,12 @@ class Harvest extends AbstractJob
                 'o-oai-pmh:has_err' => $this->hasErr,
                 'o-oai-pmh:stats' => array_filter($stats),
             ];
-            $this->api->update('oaipmhharvester_harvests', $harvestId, $harvestData);
+            try {
+                $this->api->update('oaipmhharvester_harvests', $harvestId, $harvestData);
+            } catch (\Exception $e) {
+                // Don't fail here, because this is only information and to
+                // harvest is long.
+            }
 
             $this->logger->info(
                 'Page #{page} processed: total records = {total}, harvested = {harvested}, marked deleted = {marked_deleted}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, skipped = {skipped}, removed = {removed}, updated resources = {updated}, processed = {processed}, deleted resources = {deleted}, imported resources = {imported}, duplicated = {duplicated}, medias = {medias}, errors = {errors}.', // @translate
@@ -745,6 +765,9 @@ class Harvest extends AbstractJob
                     'errors' => $stats['errors'],
                 ]
             );
+
+            // Avoid memory issue.
+            $this->refreshEntityManager();
 
             sleep(self::REQUEST_WAIT);
         } while ($resumptionToken);
@@ -771,6 +794,9 @@ class Harvest extends AbstractJob
         ];
 
         $this->api->update('oaipmhharvester_harvests', $harvestId, $harvestData);
+
+        // Avoid memory issue.
+        $this->refreshEntityManager();
 
         $this->logger->notice(
             'Results: total records = {total}, harvested = {harvested}, marked deleted = {marked_deleted}, not in whitelist = {whitelisted}, blacklisted = {blacklisted}, skipped = {skipped}, removed = {removed}, updated = {updated}, processed = {processed}, deleted resources = {deleted}, imported resources = {imported}, duplicated = {duplicated}, medias = {medias}, errors = {errors}.', // @translate
@@ -844,7 +870,8 @@ class Harvest extends AbstractJob
             if (count($resources)) {
                 $identifierIds = [];
                 foreach (array_chunk($resources, self::BATCH_CREATE_SIZE, true) as $chunk) {
-                    $response = $this->api->batchCreate('items', $chunk, [], ['continueOnError' => true]);
+                    $this->refreshEntityManager();
+                    $response = $this->api->batchCreate('items', $chunk, [], ['continueOnError' => false]);
                     // TODO The batch create does not return the total of results in Omeka 3.
                     // $totalResults = $response->getTotalResults();
                     $currentResults = $response->getContent();
@@ -984,7 +1011,9 @@ class Harvest extends AbstractJob
         foreach ($resources as $resource) {
             $importEntities[] = $this->buildImportEntity($resource, $identifier);
         }
-        $this->api->batchCreate('oaipmhharvester_entities', $importEntities, [], ['continueOnError' => true]);
+
+        $this->api->batchCreate('oaipmhharvester_entities', $importEntities, [], ['continueOnError' => false]);
+        $this->refreshEntityManager();
     }
 
     protected function buildImportEntity(AbstractRepresentation $resource, $identifier): array
@@ -1030,6 +1059,23 @@ class Harvest extends AbstractJob
                         'The xml response #{page} was stored as {url}.', // @translate
                         ['page' => $pageIndex, 'url' => $this->baseUri . '/oai-pmh-harvest/' . $filename]
                     );
+        }
+    }
+
+    protected function refreshEntityManager(): void
+    {
+        $this->entityManager->flush();
+        $this->entityManager->clear();
+
+        $user = $this->entityManager->find(\Omeka\Entity\User::class, $this->staticEntityIds['user_id']);
+        if (!$this->entityManager->contains($user)) {
+            $this->entityManager->persist($user);
+        }
+
+        $this->job = $this->entityManager->find(\Omeka\Entity\Job::class, $this->staticEntityIds['job_id']);
+        if (!$this->entityManager->contains($this->job)) {
+            $this->job->setOwner($user);
+            $this->entityManager->persist($this->job);
         }
     }
 
