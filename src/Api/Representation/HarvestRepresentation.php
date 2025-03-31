@@ -139,15 +139,52 @@ class HarvestRepresentation extends AbstractEntityRepresentation
     }
 
     /**
+     * Get the list of entities harvested (id / resource name).
+     *
+     * For now, the resource name is always "items".
+     *
+     * @return array Associative array with entity id as key and entity name as
+     * value.
+     */
+    public function harvestedEntities(): array
+    {
+        /** @var \Omeka\Api\Manager $api */
+        $api = $this->getServiceLocator()->get('Omeka\ApiManager');
+        $entityIds = $api
+            ->search(
+                'oaipmhharvester_entities',
+                [
+                    'harvest_id' => $this->id(),
+                    'limit' => 0,
+                ],
+                ['returnScalar' => 'entity_id']
+            )
+            ->getContent();
+        $entityNames = $api
+            ->search(
+                'oaipmhharvester_entities',
+                [
+                    'harvest_id' => $this->id(),
+                    'limit' => 0,
+                ],
+                ['returnScalar' => 'entity_name']
+            )
+            ->getContent();
+        return array_combine($entityIds, $entityNames);
+    }
+
+    /**
      * Get the count of the currently imported resources.
      */
     public function totalImported(): int
     {
-        $response = $this->getServiceLocator()->get('Omeka\ApiManager')
+        /** @var \Omeka\Api\Manager $api */
+        $api = $this->getServiceLocator()->get('Omeka\ApiManager');
+        return $api
             ->search('oaipmhharvester_entities', [
-                'job_id' => $this->job()->id(),
+                'harvest_id' => $this->id(),
                 'limit' => 0,
-            ]);
-        return $response->getTotalResults();
+            ])
+            ->getTotalResults();
     }
 }
