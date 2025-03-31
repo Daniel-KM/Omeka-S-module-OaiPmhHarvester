@@ -75,6 +75,18 @@ class Module extends AbstractModule
             'view.search.filters',
             [$this, 'handleSearchFilters']
         );
+
+        // Display the harvest in item views.
+        $sharedEventManager->attach(
+            'Omeka\Controller\Admin\Item',
+            'view.show.sidebar',
+            [$this, 'handleViewShowAfterAdmin']
+        );
+        $sharedEventManager->attach(
+            'Omeka\Controller\Admin\Item',
+            'view.details',
+            [$this, 'handleViewShowAfterAdmin']
+        );
     }
 
     /**
@@ -214,5 +226,51 @@ class Module extends AbstractModule
             }
             $event->setParam('filters', $filters);
         }
+    }
+
+    public function handleViewShowAfterAdmin(Event $event): void
+    {
+        /**
+         * @var \Omeka\Api\Manager $api
+         * @var \Omeka\Permissions\Acl $acl
+         */
+        $services = $this->getServiceLocator();
+        $acl = $this->getServiceLocator()->get('Omeka\Acl');
+
+        // TODO Check rights? Useless: the ids are a list of allowed ids.
+        $user = $services->get('Omeka\AuthenticationService')->getIdentity();
+        if (!$user || !$acl->isAdminRole($user->getRole())) {
+            return;
+        }
+
+        $view = $event->getTarget();
+        $vars = $view->vars();
+
+        /** @var \Omeka\Api\Representation\AbstractResourceEntityRepresentation $resource */
+        $resource = $vars->offsetGet('resource');
+        if (!$resource) {
+            return;
+        }
+
+        // Get the harvests for the current resource.
+
+        /** @var \Omeka\Api\Manager $api */
+        $api = $services->get('Omeka\ApiManager');
+        $harvestIds = $api->search(
+            'oaipmhharvester_entities',
+            ['entity_id' => $resource->id(), 'entity_name' => $resource->resourceName()],
+            ['returnScalar' => 'harvest']
+        )->getContent();
+
+        if (!count($harvestIds)) {
+            return;
+        }
+
+        $harvestIds = array_values(array_unique($harvestIds));
+
+        $vars->offsetSet('heading', $view->translate('OAI-PMH harvests')); // @translate
+        $vars->offsetSet('resourceName', 'oaipmhharvester_harvests');
+        $vars->offsetSet('ids', $harvestIds);
+        echo $view->partial('common/harvests-sidebar');
     }
 }

@@ -1,0 +1,27 @@
+<?php
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var \Omeka\Api\Representation\AbstractResourceEntityRepresentation $resource
+ * @var \Omeka\Api\Representation\AbstractResourceEntityRepresentation $resource
+ * @var string $resourceName "oaipmhharvester_harvests"
+ * @var array $ids Harvest ids.
+ * @var string $heading
+ */
+
+$plugins = $this->getHelperPluginManager();
+$url = $plugins->get('url');
+$escape = $plugins->get('escapeHtml');
+$translate = $plugins->get('translate');
+$escapeAttr = $plugins->get('escapeHtmlAttr');
+?>
+
+<div class="meta-group harvests">
+    <?php if (!empty($heading)): ?>
+    <h4><?= $escape($heading) ?></h4>
+    <?php endif; ?>
+    <div class="value">
+        <a class="link harvests" href="<?= $escapeAttr($url('admin/oaipmhharvester/default', ['action' => 'past-harvests'], ['query' => ['id' => $ids]])) ?>">
+            <?= $escape(sprintf($translate('Harvests: %s'), '#' . implode(', #', $ids))) ?>
+        </a>
+    </div>
+</div>
