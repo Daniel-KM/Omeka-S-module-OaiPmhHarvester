@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OaipmhHarvester\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-31 00:00+0000\n"
-"PO-Revision-Date: 2025-03-31 00:00+0000\n"
+"POT-Creation-Date: 2025-05-12 00:00+0000\n"
+"PO-Revision-Date: 2025-05-12 00:00+0000\n"
 "Last-Translator: Daniel Berthereau <Daniel.fr@Berthereau.net>\n"
 "Language-Team: French <kde-i18n-doc@kde.org>\n"
 "Language: fr\n"
@@ -53,19 +53,19 @@ msgstr "Ces filtres en liste blanche sont utilisés : %s."
 msgid "These blacklist filters are used: %s."
 msgstr "Ces filtres en liste noire sont utilisés : %s."
 
-#: src/Controller/Admin/IndexController.php:464
+#: src/Controller/Admin/IndexController.php:461
 msgid "Missing endpoint."
 msgstr "Point d’accès manquant."
 
-#: src/Controller/Admin/IndexController.php:474
+#: src/Controller/Admin/IndexController.php:471
 msgid "[Untitled repository]"
 msgstr "[Entrepôt sans nom]"
 
-#: src/Controller/Admin/IndexController.php:501
+#: src/Controller/Admin/IndexController.php:498
 msgid "The sets you specified are not correctly formatted."
 msgstr "Les lots que vous avez indiqués ne sont pas correctement formattés."
 
-#: src/Controller/Admin/IndexController.php:511
+#: src/Controller/Admin/IndexController.php:508
 #, php-format
 msgid "The following formats are not managed: \"%s\"."
 msgstr "Les formats suivants ne sont pas gérés : %s."
@@ -272,7 +272,7 @@ msgstr "[aucun]"
 msgid "Select harvests…"
 msgstr "Sélectionner les moissons…"
 
-#: src/Mvc/Controller/Plugin/OaiPmhRepository.php:254 src/Job/Harvest.php:278
+#: src/Mvc/Controller/Plugin/OaiPmhRepository.php:254 src/Job/Harvest.php:288
 msgid ""
 "The directory \"{path}\" is not writeable, so the oai-pmh xml responses are "
 "not storable."
@@ -288,139 +288,143 @@ msgstr "Impossible d’enregistrer le xml (verbe {verb})."
 msgid "The xml response (verb {verb}) was stored as {url}."
 msgstr "La réponse xml (verbe {verb}) a été stockée en tant que {url}."
 
-#: src/Job/Harvest.php:148
+#: src/Job/Harvest.php:158
 msgid "No endpoint defined."
 msgstr "Aucune url de service définie."
 
-#: src/Job/Harvest.php:153
+#: src/Job/Harvest.php:163
 msgid "The endpoint \"{oai_endpoint}\" is not a valid url."
 msgstr "Le point d’accès « {oai_endpoint} » n’est pas une url valide."
 
-#: src/Job/Harvest.php:164
+#: src/Job/Harvest.php:174
 msgid "The date \"from\" {date} is invalid."
 msgstr "La date « depuis » {date} n’est pas valide."
 
-#: src/Job/Harvest.php:171
+#: src/Job/Harvest.php:181
 msgid "The date \"until\" {date} is invalid."
 msgstr "La date « jusqu’au » {date} n’est pas valide."
 
-#: src/Job/Harvest.php:178
+#: src/Job/Harvest.php:188
 msgid "The date \"from\" {date_1} cannot be after the date \"until\" {date_2}."
 msgstr ""
 "La date « depuis » {date_1} ne peut être postérieure à la date "
 "« jusqu’au » {date_2}."
 
-#: src/Job/Harvest.php:187
+#: src/Job/Harvest.php:197
 msgid "No set defined."
 msgstr "Aucun lot défini."
 
-#: src/Job/Harvest.php:201
+#: src/Job/Harvest.php:211
 msgid "The format {format} is not managed by the module currently."
 msgstr "Le format {format} n’est pas géré par le module actuellement."
 
-#: src/Job/Harvest.php:206
+#: src/Job/Harvest.php:216
 msgid "The formats {formats} are not managed by the module currently."
 msgstr "Les formats {formats} ne sont pas gérés par le module actuellement."
 
-#: src/Job/Harvest.php:225 src/Job/DeleteHarvestedEntities.php:60
+#: src/Job/Harvest.php:235 src/Job/DeleteHarvestedEntities.php:60
 msgid "The harvest mode \"{mode}\" is not supported."
 msgstr "Le mode de moisson « {mode} » n’est pas pris en charge."
 
-#: src/Job/Harvest.php:240
+#: src/Job/Harvest.php:250
 msgid "The delete mode \"{mode}\" is not supported."
 msgstr "Le mode de suppression « {mode} » n’est pas pris en charge."
 
-#: src/Job/Harvest.php:256
+#: src/Job/Harvest.php:266
 msgid "The item set \"{item_set_id}\" does not exist."
 msgstr "La collection « {item_set_id} » n’existe pas."
 
-#: src/Job/Harvest.php:263
+#: src/Job/Harvest.php:273
 msgid "The option \"{mode}\" for item set is not supported."
 msgstr "L’option « {mode} » pour la collection n’est pas prise en charge."
 
-#: src/Job/Harvest.php:361
+#: src/Job/Harvest.php:318
+msgid "The process starts at page {page}."
+msgstr "Le traitement commence à la page {page}."
+
+#: src/Job/Harvest.php:388
 msgid "records"
 msgstr "notices"
 
-#: src/Job/Harvest.php:362
+#: src/Job/Harvest.php:389
 msgid "harvested"
 msgstr "moissonnées"
 
-#: src/Job/Harvest.php:364
+#: src/Job/Harvest.php:391
 msgid "whitelisted"
 msgstr "en liste blanche"
 
-#: src/Job/Harvest.php:365
+#: src/Job/Harvest.php:392
 msgid "blacklisted"
 msgstr "en liste noire"
 
-#: src/Job/Harvest.php:366
+#: src/Job/Harvest.php:393
 msgid "skipped"
 msgstr "ignoré"
 
-#: src/Job/Harvest.php:369
+#: src/Job/Harvest.php:396
 msgid "removed"
 msgstr "supprimé"
 
-#: src/Job/Harvest.php:370
+#: src/Job/Harvest.php:397
 msgid "deleted"
 msgstr "terminé"
 
-#: src/Job/Harvest.php:371
+#: src/Job/Harvest.php:398
 msgid "updated"
 msgstr "mis à jour"
 
-#: src/Job/Harvest.php:373
+#: src/Job/Harvest.php:400
 msgid "processed"
 msgstr "traité"
 
-#: src/Job/Harvest.php:374
+#: src/Job/Harvest.php:401
 msgid "duplicated"
 msgstr "dupliqué"
 
-#: src/Job/Harvest.php:376
+#: src/Job/Harvest.php:403
 msgid "imported"
 msgstr "importées"
 
-#: src/Job/Harvest.php:377
+#: src/Job/Harvest.php:404
 msgid "medias"
 msgstr "médias"
 
-#: src/Job/Harvest.php:378
+#: src/Job/Harvest.php:405
 msgid "errors"
 msgstr "erreurs"
 
-#: src/Job/Harvest.php:379
+#: src/Job/Harvest.php:406
 msgid "duration"
 msgstr "durée"
 
-#: src/Job/Harvest.php:383
+#: src/Job/Harvest.php:410
 msgid "marked deleted"
 msgstr "marqué supprimé"
 
-#: src/Job/Harvest.php:388
+#: src/Job/Harvest.php:415
 msgid "Harvesting started"
 msgstr "Moissonnage lancé"
 
-#: src/Job/Harvest.php:412
+#: src/Job/Harvest.php:439
 msgid "Start harvesting {oai_url}, format {format}, from {from} until {until}."
 msgstr ""
 "Lancement de la moisson {oai_url}, format {format}, de {from} à {until}."
 
-#: src/Job/Harvest.php:417
+#: src/Job/Harvest.php:444
 msgid "Start harvesting {oai_url}, format {format}, from {from}."
 msgstr ""
 "Lancement de la moisson {oai_url}, format {format}, à partir de {from}."
 
-#: src/Job/Harvest.php:422
+#: src/Job/Harvest.php:449
 msgid "Start harvesting {oai_url}, format {format}, until {until}."
 msgstr "Lancement de la moisson {oai_url}, format {format}, jusqu’au {until}."
 
-#: src/Job/Harvest.php:427
+#: src/Job/Harvest.php:454
 msgid "Start harvesting {oai_url}, format {format}."
 msgstr "Lancement de la moisson {oai_url}, format {format}."
 
-#: src/Job/Harvest.php:451 src/Job/Harvest.php:770
+#: src/Job/Harvest.php:483 src/Job/Harvest.php:825
 msgid ""
 "Results: total records = {total}, harvested = {harvested}, marked deleted = "
 "{marked_deleted}, not in whitelist = {whitelisted}, blacklisted = "
@@ -436,31 +440,31 @@ msgstr ""
 "ressources importées = {imported}, doublons = {duplicated}, médias = "
 "{medias}, erreurs = {errors}."
 
-#: src/Job/Harvest.php:470
+#: src/Job/Harvest.php:502
 msgid "The job was stopped."
 msgstr "La tâche a été arrêtée."
 
-#: src/Job/Harvest.php:493
+#: src/Job/Harvest.php:525
 msgid "Error: Server unavailable."
 msgstr "Erreur : Serveur indisponible."
 
-#: src/Job/Harvest.php:495
+#: src/Job/Harvest.php:527
 msgid "Error: the harvester does not list records with url {url}."
 msgstr "Erreur : le moissonneur n’a trouvé aucune notice avec l’url {url}."
 
-#: src/Job/Harvest.php:508
+#: src/Job/Harvest.php:540
 msgid "Error."
 msgstr "Erreur."
 
-#: src/Job/Harvest.php:510
+#: src/Job/Harvest.php:542
 msgid "The harvester does not list records with url {url}."
 msgstr "Erreur : le moissonneur n’a trouvé aucune notice avec l’url {url}."
 
-#: src/Job/Harvest.php:549
+#: src/Job/Harvest.php:591
 msgid "The oai record {oai_id} was marked deleted and skipped."
 msgstr "La notice oai {oai_id} a été marquée supprimée et ignorée."
 
-#: src/Job/Harvest.php:561 src/Job/Harvest.php:596
+#: src/Job/Harvest.php:603 src/Job/Harvest.php:638
 msgid ""
 "The oai record {oai_id} was marked deleted and imported resources were "
 "deleted: {resource_ids}."
@@ -468,7 +472,7 @@ msgstr ""
 "La notice oai {oai_id} a été marquée supprimée et les ressources importées "
 "ont été supprimées : {resource_ids}."
 
-#: src/Job/Harvest.php:616
+#: src/Job/Harvest.php:658
 msgid ""
 "The oai record {oai_id} was already imported as resource {resource_id}. New "
 "data are skipped."
@@ -476,7 +480,7 @@ msgstr ""
 "La notice oai {oai_id} a déjà été importée en tant que ressource "
 "#{resource_id}. Les nouvelles données sont ignorées."
 
-#: src/Job/Harvest.php:628
+#: src/Job/Harvest.php:670
 msgid ""
 "The oai record {oai_id} was already imported as resource {resource_id}. A "
 "new resource is created."
@@ -484,7 +488,7 @@ msgstr ""
 "La notice oai {oai_id} a déjà été importée en tant que ressource "
 "#{resource_id}. Une nouvelle ressource a été créée."
 
-#: src/Job/Harvest.php:644
+#: src/Job/Harvest.php:686
 msgid ""
 "The oai record {oai_id} (resource {resource_id} cannot be updated, because "
 "it maps to multiple resources."
@@ -492,7 +496,15 @@ msgstr ""
 "La notice oai {oai_id} (ressource {resource_id}) ne peut pas être mis à "
 "jour, car il correspond à plusieurs ressources."
 
-#: src/Job/Harvest.php:657
+#: src/Job/Harvest.php:696
+msgid ""
+"The oai record {oai_id} was already imported as resource {resource_id}. "
+"There is no change."
+msgstr ""
+"La notice oai {oai_id} a déjà été importée en tant que ressource "
+"#{resource_id}. Il n’y a pas de changement."
+
+#: src/Job/Harvest.php:705
 msgid ""
 "The oai record {oai_id} was already imported as resource {resource_id}. The "
 "resource was completed."
@@ -500,7 +512,7 @@ msgstr ""
 "La notice oai {oai_id} a déjà été importée en tant que ressource "
 "#{resource_id}. La ressource a été complétée."
 
-#: src/Job/Harvest.php:663
+#: src/Job/Harvest.php:711
 msgid ""
 "The oai record {oai_id} was already imported as resource {resource_id}. The "
 "resource was updated."
@@ -508,7 +520,7 @@ msgstr ""
 "La notice oai {oai_id} a déjà été importée en tant que ressource "
 "#{resource_id}. La ressource a été mise à jour."
 
-#: src/Job/Harvest.php:669
+#: src/Job/Harvest.php:717
 msgid ""
 "The oai record {oai_id} was already imported as resource {resource_id}. The "
 "resource was replaced."
@@ -516,7 +528,7 @@ msgstr ""
 "La notice oai {oai_id} a déjà été importée en tant que ressource "
 "#{resource_id}. La ressource a été remplacée."
 
-#: src/Job/Harvest.php:676
+#: src/Job/Harvest.php:724
 msgid ""
 "The oai record {oai_id} was already imported as resource {resource_id}. The "
 "resource cannot be updated."
@@ -524,11 +536,11 @@ msgstr ""
 "La notice oai {oai_id} a déjà été importée en tant que ressource "
 "#{resource_id}. La ressource ne peut pas être mise à jour."
 
-#: src/Job/Harvest.php:716
+#: src/Job/Harvest.php:760
 msgid "Processing"
 msgstr "En traitement"
 
-#: src/Job/Harvest.php:723
+#: src/Job/Harvest.php:772
 msgid ""
 "Page #{page} processed: total records = {total}, harvested = {harvested}, "
 "marked deleted = {marked_deleted}, not in whitelist = {whitelisted}, "
@@ -544,15 +556,15 @@ msgstr ""
 "ressources supprimées = {deleted}, ressources importées = {imported}, "
 "doublons = {duplicated}, médias = {medias}, erreurs = {errors}."
 
-#: src/Job/Harvest.php:748
+#: src/Job/Harvest.php:800
 msgid "Harvest ended."
 msgstr "Moisson terminée."
 
-#: src/Job/Harvest.php:791
+#: src/Job/Harvest.php:846
 msgid "Imports of medias should be checked separately."
 msgstr "Les imports des médias doivent être vérifiées séparément."
 
-#: src/Job/Harvest.php:797
+#: src/Job/Harvest.php:852
 msgid ""
 "Some records were not imported, probably related to issue on media. You may "
 "check the main logs."
@@ -560,7 +572,7 @@ msgstr ""
 "Certaines notices n’ont pas été importées, probablement en raison de "
 "problèmes sur les médias. Vous pouvez vérifier les journaux."
 
-#: src/Job/Harvest.php:823
+#: src/Job/Harvest.php:878
 msgid ""
 "Error: the harvester does not list records with url {url}. Retrying {count}/"
 "{total} times in {seconds} seconds"
@@ -568,18 +580,22 @@ msgstr ""
 "Erreur : le moissonneur n’a trouvé aucune notice avec l’url {url}. Nouvel "
 "essai {count}/{total} dans {seconds} secondes"
 
-#: src/Job/Harvest.php:858
+#: src/Job/Harvest.php:918
+msgid "Unable do create resource for oai record {oai_id}: {msg}."
+msgstr "Impossible de créer une ressource pour la notice oai {oai_id} : {msg}."
+
+#: src/Job/Harvest.php:933
 msgid "{count} resource created from oai record {oai_id}: {resource_id}."
 msgstr ""
 "{count} ressource créée à partir de la notice oai {oai_id} : {resource_id}."
 
-#: src/Job/Harvest.php:863
+#: src/Job/Harvest.php:938
 msgid "{count} resources created from oai record {oai_id}: {resource_ids}."
 msgstr ""
 "{count} ressources créées à partir de la notice oai {oai_id} : "
 "#{resource_ids}."
 
-#: src/Job/Harvest.php:869
+#: src/Job/Harvest.php:944
 msgid ""
 "Only {count}/{total} resources created from oai record {oai_id}: "
 "{resource_ids}."
@@ -587,32 +603,32 @@ msgstr ""
 "Seules {count}/{total} ressources ont été créées à partir de la notice oai "
 "{oai_id} : {resource_ids}."
 
-#: src/Job/Harvest.php:874
+#: src/Job/Harvest.php:949
 msgid "No resource created from oai record {oai_id}."
 msgstr "Aucune ressource créée à partir de la notice oai {oai_id}."
 
-#: src/Job/Harvest.php:880
+#: src/Job/Harvest.php:955
 msgid ""
 "No resource created from oai record {oai_id}, according to its metadata."
 msgstr ""
 "Aucune ressource créée à partir de la notice oai {oai_id}, conformément à "
 "ses métadonnées."
 
-#: src/Job/Harvest.php:1002
+#: src/Job/Harvest.php:1096
 msgid "Unable to store xml for page #{page}, record #{index}."
 msgstr ""
 "Impossible d’enregistrer le fichier xml pour la page #{page}, notice "
 "#{index}."
 
-#: src/Job/Harvest.php:1006
+#: src/Job/Harvest.php:1100
 msgid "Unable to store xml for page #{page}."
 msgstr "Impossible de stocker le xml pour la page #{page}."
 
-#: src/Job/Harvest.php:1012
+#: src/Job/Harvest.php:1106
 msgid "Page #{page}: the xml record {index} was stored as {url}."
 msgstr "Page #{page} : la réponse xml {index} a été enregistrée à {url}."
 
-#: src/Job/Harvest.php:1016
+#: src/Job/Harvest.php:1110
 msgid "The xml response #{page} was stored as {url}."
 msgstr "La réponse xml #{page} a été stockée sous {url}."
 
@@ -663,12 +679,24 @@ msgstr ""
 msgid "Optional until time"
 msgstr "Jusqu’à l’heure (facultatif)"
 
-#: src/Form/SetsForm.php:120
+#: src/Form/SetsForm.php:119 src/Form/HarvestForm.php:140
+msgid "Start page"
+msgstr "Première page"
+
+#: src/Form/SetsForm.php:120 src/Form/HarvestForm.php:141
+msgid ""
+"This option allows to skip the first pages sent by the repository. It is "
+"useful to resume a harvest when the repository has issues."
+msgstr ""
+"Cette option permet de sauter les premières pages de l’entrepôt. Elle est "
+"utile pour reprendre un moissonnage quand l’entrepôt a des problèmes."
+
+#: src/Form/SetsForm.php:133
 msgid "Filters (whitelist)"
 msgstr "Filtres (liste blanche)"
 
-#: src/Form/SetsForm.php:121 src/Form/SetsForm.php:132
-#: src/Form/HarvestForm.php:142 src/Form/HarvestForm.php:153
+#: src/Form/SetsForm.php:134 src/Form/SetsForm.php:145
+#: src/Form/HarvestForm.php:155 src/Form/HarvestForm.php:166
 msgid ""
 "Add strings to filter the input, for example to import only some articles of "
 "a journal."
@@ -676,15 +704,15 @@ msgstr ""
 "Ajouter des chaînes pour filtrer les entrées, par exemple pour importer "
 "seulement certains articles d’une revue."
 
-#: src/Form/SetsForm.php:131
+#: src/Form/SetsForm.php:144
 msgid "Filters (blacklist)"
 msgstr "Filtres (liste noire)"
 
-#: src/Form/SetsForm.php:143 src/Form/HarvestForm.php:164
+#: src/Form/SetsForm.php:156 src/Form/HarvestForm.php:177
 msgid "Import/update mode for atomic formats"
 msgstr "Mode d’import/mise à jour pour les formats atomiques"
 
-#: src/Form/SetsForm.php:144 src/Form/HarvestForm.php:165
+#: src/Form/SetsForm.php:157 src/Form/HarvestForm.php:178
 msgid ""
 "An atomic format is a format where an oai record with an oai identifier maps "
 "to a single resource in Omeka. Ead via oai-pmh is not an atomic format, so a "
@@ -695,15 +723,15 @@ msgstr ""
 "n’est pas un format atomique, donc une nouvelle moisson dupliquera les "
 "notices."
 
-#: src/Form/SetsForm.php:146 src/Form/HarvestForm.php:167
+#: src/Form/SetsForm.php:159 src/Form/HarvestForm.php:180
 msgid "Skip record (keep existing resource)"
 msgstr "Ignorer la notice (conserver la ressource existante)"
 
-#: src/Form/SetsForm.php:147 src/Form/HarvestForm.php:168
+#: src/Form/SetsForm.php:160 src/Form/HarvestForm.php:181
 msgid "Append new values"
 msgstr "Ajouter de nouvelles valeurs"
 
-#: src/Form/SetsForm.php:148 src/Form/HarvestForm.php:169
+#: src/Form/SetsForm.php:161 src/Form/HarvestForm.php:182
 msgid ""
 "Replace existing values and let values of properties not present in "
 "harvested record"
@@ -711,48 +739,48 @@ msgstr ""
 "Remplacer les valeurs existantes et laisser les valeurs des propriétés non "
 "présentes dans la notice moissonnée"
 
-#: src/Form/SetsForm.php:149 src/Form/HarvestForm.php:170
+#: src/Form/SetsForm.php:162 src/Form/HarvestForm.php:183
 msgid "Replace the whole existing resource"
 msgstr "Remplacer toute la ressource existante"
 
-#: src/Form/SetsForm.php:150 src/Form/HarvestForm.php:171
+#: src/Form/SetsForm.php:163 src/Form/HarvestForm.php:184
 msgid "Create a new resource (not recommended)"
 msgstr "Créer une nouvelle ressource (non recommandé)"
 
-#: src/Form/SetsForm.php:163 src/Form/HarvestForm.php:183
+#: src/Form/SetsForm.php:176 src/Form/HarvestForm.php:196
 msgid "Process for oai record marked as deleted"
 msgstr "Traitement pour les notices oai marquées supprimées"
 
-#: src/Form/SetsForm.php:165 src/Form/HarvestForm.php:185
+#: src/Form/SetsForm.php:178 src/Form/HarvestForm.php:198
 msgid "Skip"
 msgstr "Ignorer"
 
-#: src/Form/SetsForm.php:166 src/Form/HarvestForm.php:186
+#: src/Form/SetsForm.php:179 src/Form/HarvestForm.php:199
 msgid "Delete resources previously imported"
 msgstr "Supprimer les ressources précédemment importées"
 
-#: src/Form/SetsForm.php:167 src/Form/HarvestForm.php:187
+#: src/Form/SetsForm.php:180 src/Form/HarvestForm.php:200
 msgid "Delete resources previously imported, whatever the filters"
 msgstr ""
 "Supprimer les ressources précédemment importées, quels que soient les filtres"
 
-#: src/Form/SetsForm.php:180 src/Form/HarvestForm.php:200
+#: src/Form/SetsForm.php:193 src/Form/HarvestForm.php:213
 msgid "Item set for items"
 msgstr "Collections pour les contenus"
 
-#: src/Form/SetsForm.php:182 src/Form/HarvestForm.php:202
+#: src/Form/SetsForm.php:195 src/Form/HarvestForm.php:215
 msgid "No item set"
 msgstr "Pas de collection"
 
-#: src/Form/SetsForm.php:183 src/Form/HarvestForm.php:203
+#: src/Form/SetsForm.php:196 src/Form/HarvestForm.php:216
 msgid "Create a new item set"
 msgstr "Créer une nouvelle collection"
 
-#: src/Form/SetsForm.php:196
+#: src/Form/SetsForm.php:209
 msgid "Store oai-pmh xml responses"
 msgstr "Enregistrer les réponses xml oai-pmh"
 
-#: src/Form/SetsForm.php:197
+#: src/Form/SetsForm.php:210
 msgid ""
 "This option allows to investigate issues. Xml files are stored in directory /"
 "files/oai-pmh-harvest. The url is indicated in the logs."
@@ -760,23 +788,23 @@ msgstr ""
 "Cette option permet de trouver les problèmes. Les fichiers xml sont stockés "
 "dans le dossier /files/oai-pmh-harvest. L’url est indiquée dans les logs."
 
-#: src/Form/SetsForm.php:199
+#: src/Form/SetsForm.php:212
 msgid "By page"
 msgstr "Par page"
 
-#: src/Form/SetsForm.php:200
+#: src/Form/SetsForm.php:213
 msgid "By record"
 msgstr "Par notice"
 
-#: src/Form/SetsForm.php:290
+#: src/Form/SetsForm.php:311
 msgid "Harvest this set?"
 msgstr "Moissonner ce set ?"
 
-#: src/Form/SetsForm.php:327
+#: src/Form/SetsForm.php:348
 msgid "Harvest this set"
 msgstr "Moissonner ce set"
 
-#: src/Form/SetsForm.php:341
+#: src/Form/SetsForm.php:362
 msgid "Whole repository"
 msgstr "Dépôt entier"
 
@@ -806,35 +834,35 @@ msgstr ""
 "Séparer le lot et le préfixe par \"=\". Si aucun préfixe n’est indiqué, "
 "\"dcterms\" ou \"oai_dc\" seront utilisés."
 
-#: src/Form/HarvestForm.php:141
+#: src/Form/HarvestForm.php:154
 msgid "Filters on each record (whitelist)"
 msgstr "Filtres pour chaque notice (liste blanche)"
 
-#: src/Form/HarvestForm.php:152
+#: src/Form/HarvestForm.php:165
 msgid "Filters on each record (blacklist)"
 msgstr "Filtres pour chaque notice (liste noire)"
 
-#: src/Form/HarvestForm.php:216
+#: src/Form/HarvestForm.php:229
 msgid "Store oai-pmh xml response for list of sets"
 msgstr "Enregistrer les réponses xml oai-pmh pour la liste des lots"
 
-#: src/Form/HarvestForm.php:217
+#: src/Form/HarvestForm.php:230
 msgid "See log to get the url."
 msgstr "Consulter les journaux pour avoir l’url."
 
-#: src/Form/HarvestForm.php:245
+#: src/Form/HarvestForm.php:258
 msgid "The endpoint \"%value%\" should not have a query."
 msgstr "Le point d’accès « %value% » ne doit pas avoir une requête."
 
-#: src/Form/HarvestForm.php:254
+#: src/Form/HarvestForm.php:267
 msgid "The endpoint \"%value%\" does not return xml."
 msgstr "Le point d’accès « %value% » ne retourne pas de xml."
 
-#: src/Form/HarvestForm.php:263
+#: src/Form/HarvestForm.php:276
 msgid "The endpoint \"%value%\" does not manage any format."
 msgstr "Le point d’accès « %value% » ne gère aucun format."
 
-#: src/Form/HarvestForm.php:302
+#: src/Form/HarvestForm.php:315
 msgid "When set, the \"from\" date must be before the \"until\" date."
 msgstr ""
 "Lorsqu’elle est définie, la date « jusqu’à » doit être antérieure à la date "
@@ -880,7 +908,7 @@ msgstr ""
 msgid "At least one repository should be selected."
 msgstr "Au moins un dépôt doit être sélectionné."
 
-#: src/Controller/Admin/IndexController.php:369
+#: src/Controller/Admin/IndexController.php:370
 #, php-format
 msgid ""
 "Harvesting started in background (job %1$s#%2$d%3$s, %4$slogs%3$s). This may "
@@ -889,7 +917,7 @@ msgstr ""
 "Moissonnage lancé en arrière-plan (tâche %1$s#%2$d%3$s, %4$sjournaux%3$s). "
 "Cela peut prendre un moment."
 
-#: src/Controller/Admin/IndexController.php:402
+#: src/Controller/Admin/IndexController.php:399
 #, php-format
 msgid "Undo in progress in the following jobs: %s"
 msgstr "Annulations en cours pour les tâches suivantes : %s"
