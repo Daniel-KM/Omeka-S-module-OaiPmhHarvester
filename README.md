@@ -1,4 +1,4 @@
-OAI-PMH Harvester (plugin for Omeka)
+-OAI-PMH Harvester (plugin for Omeka)
 ====================================
 
 > __New versions of this module and support for Omeka S version 3.0 and above
@@ -102,10 +102,9 @@ Copyright
 * Copyright Daniel Berthereau, 2014-2025 (see [Daniel-KM])
 
 This module has first been built by [Numerizen] as a simplified version of the
-[plugin] for [Omeka Classic], shamelessly copied whenever possible: the work
-consisted mainly in adapting the code to Omeka-S - *i.e* Laminas (formerly Zend Framework 3).
-It was improved for the [Bibliothèque nationale universiaire de Strasbourg] for
-the digital library [Numistral].
+[plugin] for [Omeka Classic], for PSL University. Then, it was improved for the
+[Bibliothèque nationale universiaire de Strasbourg] for the digital library
+[Numistral] and for various libraries.
 
 
 [OAI-PMH Harvester]: https://gitlab.com/Daniel-KM/Omeka-S-module-OaiPmhHarvester
@@ -122,7 +121,7 @@ the digital library [Numistral].
 [Omeka Classic]: https://omeka.org/classic
 [plugin]: https://github.com/omeka/plugin-OaipmhHarvester
 [Bibliothèque nationale universiaire de Strasbourg]: https://www.bnu.fr
-[Numistral]: https://numistral.fr
+[Numistral]: https://omeka.numistral.fr
 [Numerizen]: http://omeka.numerizen.com
 [GitLab]: https://gitlab.com/Daniel-KM
 [Daniel-KM]: https://gitlab.com/Daniel-KM "Daniel Berthereau"
