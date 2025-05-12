@@ -893,21 +893,38 @@ class Harvest extends AbstractJob
     {
         // TODO The length should be related to the size of the repository output?
         $total = 0;
-        $getId = fn ($v) => $v->id();
+        $index = 0;
         foreach ($toCreate as $identifier => $resources) {
             // Sometime, the identifier is a number.
             $identifier = (string) $identifier;
             if (count($resources)) {
                 $identifierIds = [];
-                foreach (array_chunk($resources, self::BATCH_CREATE_SIZE, true) as $chunk) {
-                    $this->refreshEntityManager();
-                    $response = $this->api->batchCreate('items', $chunk, [], ['continueOnError' => false]);
-                    // TODO The batch create does not return the total of results in Omeka 3.
-                    // $totalResults = $response->getTotalResults();
-                    $currentResults = $response->getContent();
-                    $total += count($currentResults);
-                    $identifierIds = array_merge($identifierIds, array_map($getId, array_values($currentResults)));
-                    $this->createRollback($currentResults, $identifier);
+                // To use api batch create is useless, because it is a loop on
+                // api create with a flush by loop. But this flush create issue,
+                // so it is simpler to manage the loop here.
+                foreach ($resources as $resource) {
+                    ++$index;
+                    if ($index % self::BATCH_CREATE_SIZE === 0) {
+                        $this->refreshEntityManager();
+                    }
+                    // To specify owner avoids doctrine issue after clearing
+                    // entity manager.
+                    /** @see \Omeka\Api\Adapter\AbstractEntityAdapter::hydrateOwner() */
+                    $resource['o:owner']['o:id'] = $this->staticEntityIds['user_id'];
+                    try {
+                        $response = $this->api->create('items', $resource);
+                    } catch (\Exception $e) {
+                        $this->logger->err(
+                            'Unable do create resource for oai record {oai_id}: {msg}.', // @translate
+                            ['oai_id' => $identifier, 'msg' => $e->getMessage()]
+                        );
+                        continue;
+                    }
+                    ++$total;
+                    $resource = $response->getContent();
+                    $resourceId = $resource->id();
+                    $identifierIds[] = $resourceId;
+                    $this->createRollback([$resource], $identifier);
                 }
                 $identifierTotal = count($identifierIds);
                 if ($identifierTotal === count($resources)) {
@@ -1042,6 +1059,7 @@ class Harvest extends AbstractJob
             $importEntities[] = $this->buildImportEntity($resource, $identifier);
         }
 
+        // TODO Use simple create with loop?
         $this->api->batchCreate('oaipmhharvester_entities', $importEntities, [], ['continueOnError' => false]);
         $this->refreshEntityManager();
     }
