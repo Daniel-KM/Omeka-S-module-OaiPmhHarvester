@@ -96,7 +96,7 @@ class EntityAdapter extends AbstractEntityAdapter
 
         if (array_key_exists('o-oai-pmh:harvest', $data)) {
             $harvest = isset($data['o-oai-pmh:harvest']['o:id'])
-                ? $this->getAdapter('oaipmhharvester_harvests')->findEntity($data['o-oai-pmh:harvest']['o:id'])
+                ? $this->getEntityManager()->find(\OaiPmhHarvester\Entity\Harvest::class, $data['o-oai-pmh:harvest']['o:id'])
                 : null;
             $entity->setHarvest($harvest);
         }

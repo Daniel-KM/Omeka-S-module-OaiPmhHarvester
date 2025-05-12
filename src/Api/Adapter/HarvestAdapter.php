@@ -93,16 +93,18 @@ class HarvestAdapter extends AbstractEntityAdapter
 
         $data = $request->getContent();
 
+        $entityManager = $this->getEntityManager();
+
         if (array_key_exists('o:job', $data)) {
             $job = isset($data['o:job']['o:id'])
-                ? $this->getAdapter('jobs')->findEntity($data['o:job']['o:id'])
+                ? $entityManager->find(\Omeka\Entity\Job::class, $data['o:job']['o:id'])
                 : null;
             $entity->setJob($job);
         }
 
         if (array_key_exists('o:undo_job', $data)) {
             $job = isset($data['o:undo_job']['o:id'])
-                ? $this->getAdapter('jobs')->findEntity($data['o:undo_job']['o:id'])
+                ? $entityManager->find(\Omeka\Entity\Job::class, $data['o:undo_job']['o:id'])
                 : null;
             $entity->setUndoJob($job);
         }
@@ -123,7 +125,7 @@ class HarvestAdapter extends AbstractEntityAdapter
 
         if (array_key_exists('o:item_set', $data)) {
             $itemSet = isset($data['o:item_set']['o:id'])
-                ? $this->getAdapter('item_sets')->findEntity($data['o:item_set']['o:id'])
+                ? $entityManager->find(\Omeka\Entity\ItemSet::class, $data['o:item_set']['o:id'])
                 : null;
             $entity->setItemSet($itemSet);
         }

@@ -1086,6 +1086,7 @@ class Harvest extends AbstractJob
         $user = $this->entityManager->find(\Omeka\Entity\User::class, $this->staticEntityIds['user_id']);
         if (!$this->entityManager->contains($user)) {
             $this->entityManager->persist($user);
+            // $this->getServiceLocator()->get('Omeka\AuthenticationService')->setIdentity($user);
         }
 
         $this->job = $this->entityManager->find(\Omeka\Entity\Job::class, $this->staticEntityIds['job_id']);

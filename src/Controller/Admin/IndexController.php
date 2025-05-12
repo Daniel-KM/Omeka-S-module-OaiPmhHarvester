@@ -358,7 +358,7 @@ class IndexController extends AbstractActionController
         $strategy = null;
         // $strategy = 'synchronous';
         $strategy = $strategy === 'synchronous'
-            ? $this->api()->get('vocabularies', 1)->getContent()->getServiceLocator()->get(\Omeka\Job\DispatchStrategy\Synchronous::class)
+            ? $this->api()->read('vocabularies', 1)->getContent()->getServiceLocator()->get(\Omeka\Job\DispatchStrategy\Synchronous::class)
             : null;
 
         $job = $this->jobDispatcher()->dispatch(\OaiPmhHarvester\Job\Harvest::class, $args, $strategy);
