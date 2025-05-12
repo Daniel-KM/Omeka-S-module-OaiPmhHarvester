@@ -122,12 +122,12 @@ class Harvest extends AbstractJob
     /**
      * @var bool
      */
-    protected $storeRecord = false;
+    protected $storeXmlRecord = false;
 
     /**
      * @var bool
      */
-    protected $storeResponse = false;
+    protected $storeXmlResponse = false;
 
     /**
      * @var array

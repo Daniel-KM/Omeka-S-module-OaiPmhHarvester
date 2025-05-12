@@ -374,13 +374,9 @@ class IndexController extends AbstractActionController
             ),
             $job->getId(),
             '</a>',
-            sprintf(
-                '<a href="%s">',
-                // Check if module Log is enabled (avoid issue when disabled).
-                htmlspecialchars(class_exists(\Log\Module::class, false)
-                    ? $urlPlugin->fromRoute('admin/log/default', [], ['query' => ['job_id' => $job->getId()]])
-                    : $urlPlugin->fromRoute('admin/id', ['controller' => 'job', 'id' => $job->getId(), 'action' => 'log'])
-            ))
+            class_exists('Log\Module', false)
+                ? sprintf('<a href="%1$s">', $urlPlugin->fromRoute('admin/default', ['controller' => 'log'], ['query' => ['job_id' => $job->getId()]]))
+                : sprintf('<a href="%1$s" target="_blank">', $urlPlugin->fromRoute('admin/id', ['controller' => 'job', 'action' => 'log', 'id' => $job->getId()]))
         );
         $message->setEscapeHtml(false);
         $this->messenger()->addSuccess($message);
