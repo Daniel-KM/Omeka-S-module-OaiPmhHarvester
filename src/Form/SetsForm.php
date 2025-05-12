@@ -112,6 +112,19 @@ class SetsForm extends Form
                     'class' => 'datetime-time datetime-until',
                 ],
             ])
+            ->add([
+                'name' => 'page_start',
+                'type' => Element\Number::class,
+                'options' => [
+                    'label' => 'Start page', // @translate
+                    'info' => 'This option allows to skip the first pages sent by the repository. It is useful to resume a harvest when the repository has issues.', // @translate
+                ],
+                'attributes' => [
+                    'id' => 'page_start',
+                    'step' => 1,
+                    'min' => 0,
+                ],
+            ])
 
             ->add([
                 'name' => 'filters_whitelist',
@@ -233,6 +246,14 @@ class SetsForm extends Form
             ])
             ->add([
                 'name' => 'until_time',
+                'required' => false,
+            ])
+            ->add([
+                'name' => 'page_start',
+                'required' => false,
+            ])
+            ->add([
+                'name' => 'store_xml',
                 'required' => false,
             ])
         ;
@@ -361,7 +382,9 @@ class SetsForm extends Form
             if (strpos($elementName, 'namespace[') === 0
                 || strpos($elementName, 'setSpec[') === 0
                 || strpos($elementName, 'harvest[') === 0
-                || $elementName === 'store_xml'
+                || in_array($elementName, [
+                    'store_xml',
+                ])
             ) {
                 $inputFilters
                     ->add([

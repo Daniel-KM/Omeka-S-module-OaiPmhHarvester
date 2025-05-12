@@ -342,6 +342,7 @@ class IndexController extends AbstractActionController
             'endpoint' => $data['endpoint'],
             'from' => $from,
             'until' => $until,
+            'page_start' => empty($data['page_start']) ? null : (int) $data['page_start'],
             'has_err' => false,
             'entity_name' => 'items',
             'filters' => $filters,

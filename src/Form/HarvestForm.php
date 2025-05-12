@@ -133,6 +133,19 @@ class HarvestForm extends Form
                     'class' => 'datetime-time datetime-until',
                 ],
             ])
+            ->add([
+                'name' => 'page_start',
+                'type' => Element\Number::class,
+                'options' => [
+                    'label' => 'Start page', // @translate
+                    'info' => 'This option allows to skip the first pages sent by the repository. It is useful to resume a harvest when the repository has issues.', // @translate
+                ],
+                'attributes' => [
+                    'id' => 'page_start',
+                    'step' => 1,
+                    'min' => 0,
+                ],
+            ])
 
             ->add([
                 'name' => 'filters_whitelist',
@@ -304,6 +317,14 @@ class HarvestForm extends Form
                         ],
                     ],
                 ],
+            ])
+            ->add([
+                'name' => 'page_start',
+                'required' => false,
+            ])
+            ->add([
+                'name' => 'store_xml',
+                'required' => false,
             ])
         ;
     }

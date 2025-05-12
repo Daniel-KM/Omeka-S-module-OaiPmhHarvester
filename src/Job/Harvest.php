@@ -312,6 +312,15 @@ class Harvest extends AbstractJob
             return false;
         }
 
+        $pageStart = empty($args['page_start']) ? null : (int) $args['page_start'];
+        if ($pageStart) {
+            $this->logger->info(
+                'The process starts at page {page}.', // @translate
+                ['page' => $pageStart]
+            );
+        }
+        $args['page_start'] = $pageStart;
+
         // Get an array of all harvested items to avoid to check them each time.
         // Note: there may be issue in the table. The same oai identifier may be
         // imported or updated multiple times. The oai identifier may be used
@@ -366,6 +375,7 @@ class Harvest extends AbstractJob
         $metadataPrefix = $args['metadata_prefix'] ?? null;
         $from = $args['from'] ?? null;
         $until = $args['until'] ?? null;
+        $pageStart = empty($args['page_start']) ? null : (int) $args['page_start'];
         $itemSetId = empty($args['item_set_id']) ? null : (int) $args['item_set_id'];
         $whitelist = $args['filters']['whitelist'] ?? [];
         $blacklist = $args['filters']['blacklist'] ?? [];
@@ -460,6 +470,7 @@ class Harvest extends AbstractJob
         $resumptionToken = false;
         $recordIndex = 0;
         $pageIndex = 0;
+        $isPageSkipped = false;
 
         // Process a page.
         do {
@@ -534,10 +545,20 @@ class Harvest extends AbstractJob
                 break;
             }
 
+            // Get the resumption token early to manage the do/while loop.
+            $resumptionToken = isset($response->ListRecords->resumptionToken) && $response->ListRecords->resumptionToken !== ''
+                ? (string) $response->ListRecords->resumptionToken
+                : false;
+
+            $isPageSkipped = $pageStart && $pageIndex < $pageStart;
+            if ($isPageSkipped) {
+                continue;
+            }
+
             $records = $response->ListRecords;
 
             if (is_null($stats['records'])) {
-                $stats['records'] = isset($response->ListRecords->resumptionToken)
+                $stats['records'] = $resumptionToken
                     ? (int) $records->resumptionToken['completeListSize']
                     : count($response->ListRecords->record);
             }
@@ -733,10 +754,6 @@ class Harvest extends AbstractJob
                 - $stats['processed']
                 + (count($toInsert) - $totalCreated);
 
-            $resumptionToken = isset($response->ListRecords->resumptionToken) && $response->ListRecords->resumptionToken !== ''
-                ? (string) $response->ListRecords->resumptionToken
-                : false;
-
             // Update job.
             $stats['duration'] = (int) (microtime(true) - $startTime);
             $harvestData = [
@@ -776,7 +793,7 @@ class Harvest extends AbstractJob
             $this->refreshEntityManager();
 
             sleep(self::REQUEST_WAIT);
-        } while ($resumptionToken);
+        } while ($resumptionToken || $isPageSkipped);
 
         // Update job.
         if (empty($message)) {
