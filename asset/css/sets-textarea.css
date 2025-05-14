@@ -1,0 +1,27 @@
+.sets-textarea summary {
+    display: list-item;
+    cursor: pointer;
+}
+
+.sets-textarea__sets-list {
+    max-height: 400px;
+    overflow-y: auto;
+    line-height: 24px;
+    margin: 0;
+}
+
+.sets-textarea__sets-list table {
+    background-color: white;
+}
+
+.sets-textarea__sets-list thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: white;
+}
+
+.sets-textarea__loading-message {
+    font-size: 90%;
+    color: #909090;
+}

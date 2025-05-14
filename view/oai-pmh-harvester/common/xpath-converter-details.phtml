@@ -1,0 +1,19 @@
+<?php $namespaces = $settings['namespaces'] ?? [] ?>
+<?php if ($namespaces): ?>
+    <div class="meta-group">
+        <h4><?= $this->translate('XML namespaces') ?></h4>
+        <?php foreach ($namespaces as $prefix => $uri): ?>
+            <div class="value"><?= $this->escapeHtml($prefix) ?> = <?= $this->escapeHtml($uri) ?></div>
+        <?php endforeach; ?>
+    </div>
+<?php endif; ?>
+
+<?php $mappings = $settings['mappings'] ?? [] ?>
+<?php if ($mappings): ?>
+    <div class="meta-group">
+        <h4><?= $this->translate('Mappings') ?></h4>
+        <?php foreach ($mappings as $mapping): ?>
+            <div class="value"><?= $this->escapeHtml($mapping['xpath']) ?> → <?= $this->escapeHtml($mapping['property']) ?></div>
+        <?php endforeach; ?>
+    </div>
+<?php endif; ?>

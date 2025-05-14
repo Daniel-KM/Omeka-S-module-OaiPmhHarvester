@@ -5,6 +5,7 @@ namespace OaiPmhHarvester\Mvc\Controller\Plugin;
 use Laminas\Log\Logger;
 use Laminas\Mvc\Controller\Plugin\AbstractPlugin;
 use Laminas\Mvc\I18n\Translator;
+use OaiPmhHarvester\Client;
 use OaiPmhHarvester\OaiPmh\HarvesterMap\Manager as HarvesterMapManager;
 
 /**
@@ -16,6 +17,8 @@ class OaiPmhRepository extends AbstractPlugin
      * @var \OaiPmhHarvester\OaiPmh\HarvesterMap\Manager
      */
     protected $harvesterMapManager;
+
+    protected Client $client;
 
     /**
      * @var \Laminas\Log\Logger
@@ -64,12 +67,14 @@ class OaiPmhRepository extends AbstractPlugin
 
     public function __construct(
         HarvesterMapManager $harvesterMapManager,
+        Client $client,
         Logger $logger,
         Translator $translator,
         string $basePath,
         string $baseUri
     ) {
         $this->harvesterMapManager = $harvesterMapManager;
+        $this->client = $client;
         $this->logger = $logger;
         $this->translator = $translator;
         $this->managedMetadataPrefixes = $harvesterMapManager->getRegisteredNames();
@@ -171,19 +176,17 @@ class OaiPmhRepository extends AbstractPlugin
 
         $formats = [];
 
-        $url = $endpoint . '?verb=ListMetadataFormats';
-        $response = @\simplexml_load_file($url);
-        if ($response) {
-            if ($response && $this->isStoreXml) {
-                $this->storeXml($response, 'ListMetadataFormats');
-            }
-            foreach ($response->ListMetadataFormats->metadataFormat as $format) {
-                $prefix = (string) $format->metadataPrefix;
-                if (in_array($prefix, $this->managedMetadataPrefixes)) {
-                    $formats[$prefix] = $prefix;
-                } else {
-                    $formats[$prefix] = sprintf($this->translator->translate('%s [unmanaged]'), $prefix); // @translate
-                }
+        $document = $this->client->listMetadataFormats($endpoint);
+        if ($this->isStoreXml) {
+            $this->storeXml($document, 'ListMetadataFormats');
+        }
+
+        foreach ($document->getMetadataFormats() as $format) {
+            $prefix = $format['metadataPrefix'];
+            if (in_array($prefix, $this->managedMetadataPrefixes)) {
+                $formats[$prefix] = $prefix;
+            } else {
+                $formats[$prefix] = sprintf($this->translator->translate('%s [unmanaged]'), $prefix); // @translate
             }
         }
 
@@ -195,6 +198,7 @@ class OaiPmhRepository extends AbstractPlugin
      */
     public function listOaiPmhSets(?string $endpoint = null): array
     {
+        error_log('listOaiPmhSets');
         $endpoint ??= $this->endpoint;
         if (!$endpoint) {
             return [];
@@ -202,52 +206,49 @@ class OaiPmhRepository extends AbstractPlugin
 
         $sets = [];
 
-        $baseListSetUrl = $endpoint . '?verb=ListSets';
-        $resumptionToken = false;
+        $resumptionToken = null;
         $totalSets = null;
         $index = 0;
         do {
             ++$index;
-            $url = $baseListSetUrl;
-            if ($resumptionToken) {
-                $url = $baseListSetUrl . '&resumptionToken=' . rawurlencode($resumptionToken);
-            }
 
-            /** @var \SimpleXMLElement $response */
-            $response = @\simplexml_load_file($url);
-            if (!$response || !isset($response->ListSets)) {
+            try {
+                $document = $this->client->listSets($endpoint, $resumptionToken);
+            } catch (\Throwable $e) {
                 break;
             }
 
             if ($this->isStoreXml) {
-                $this->storeXml($response, 'ListSets', $index);
+                $this->storeXml($document, 'ListSets', $index);
             }
 
-            if (is_null($totalSets)) {
-                $totalSets = isset($response->ListSets->resumptionToken)
-                    ? (int) $response->ListSets->resumptionToken['completeListSize']
-                    : count($response->ListSets->set);
+            $completeListSize = $document->getCompleteListSize();
+            if (isset($completeListSize)) {
+                $totalSets = $completeListSize;
             }
 
-            foreach ($response->ListSets->set as $set) {
-                $sets[(string) $set->setSpec] = (string) $set->setName;
+            foreach ($document->getSets() as $set) {
+                $sets[ $set['setSpec'] ] = $set['setName'];
                 if (count($sets) >= $this->maxListSets) {
                     break 2;
                 }
             }
 
-            $resumptionToken = isset($response->ListSets->resumptionToken) && $response->ListSets->resumptionToken !== ''
-                ? (string) $response->ListSets->resumptionToken
-                : false;
+            $resumptionToken = $document->getResumptionToken();
         } while ($resumptionToken && count($sets) <= $this->maxListSets);
 
         return [
-            'total' => $totalSets,
+            'total' => $totalSets ?? count($sets),
             'sets' => array_slice($sets, 0, $this->maxListSets, true),
         ];
     }
 
-    protected function storeXml(\SimpleXMLElement $xml, string $part, ?int $index = null): void
+    public function listSets(string $baseUrl, string $resumptionToken = null)
+    {
+        return $this->client->listSets($baseUrl, $resumptionToken);
+    }
+
+    protected function storeXml(\DOMDocument $dom, string $part, ?int $index = null): void
     {
         if (!is_dir($this->basePath) || !is_readable($this->basePath) || !is_writeable($this->basePath)) {
             $this->logger->err(
@@ -269,13 +270,8 @@ class OaiPmhRepository extends AbstractPlugin
             : sprintf('%s.%s.%s.%04d.oaipmh.xml', $baseName, $part, $date, $index);
 
         $filepath = $this->basePath . '/oai-pmh-harvest/' . $filename;
-        // dom_import_simplexml($response);
-        $dom = new \DOMDocument('1.0', 'UTF-8');
-        $dom->preserveWhiteSpace = false;
         $dom->formatOutput = true;
-        $dom->loadXML($xml->asXML());
         $resultSave = $dom->save($filepath);
-        // $resultSave = $xml->saveXML($filepath);
         if (!$resultSave) {
             $this->logger->err(
                 'Unable to store xml (verb {verb}).', // @translate

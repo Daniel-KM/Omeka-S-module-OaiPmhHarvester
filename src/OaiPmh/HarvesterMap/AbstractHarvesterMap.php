@@ -20,10 +20,7 @@ abstract class AbstractHarvesterMap implements HarvesterMapInterface
      */
     protected $services;
 
-    protected $options = [
-        'o:is_public' => false,
-        'o:item_sets' => [],
-    ];
+    protected $options = [];
 
     public function setServiceLocator(ServiceLocatorInterface $services): HarvesterMapInterface
     {
@@ -46,10 +43,9 @@ abstract class AbstractHarvesterMap implements HarvesterMapInterface
     {
         $resource = [
             '@type' => 'o:Item',
-            'o:is_public' => $this->getOption('o:is_public'),
             'o:media' => [],
-            'o:item_set' => $this->getOption('o:item_set'),
         ];
+
         $resource = $this->mapRecordSingle($record, $resource);
         return [$resource];
     }

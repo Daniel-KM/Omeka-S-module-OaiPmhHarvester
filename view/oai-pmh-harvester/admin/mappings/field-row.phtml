@@ -1,0 +1,39 @@
+<?php
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var array $fieldData
+ * @var \OaiPmhHarvester\Api\Representation\ConfigurationRepresentation|null $configuration
+ */
+?>
+<li class="fields-field row"
+    data-field-name="<?php echo $this->escapeHtml($fieldData['name']); ?>"
+    data-field-data="<?php echo $this->escapeHtml(json_encode($fieldData)); ?>">
+    <span class="sortable-handle"></span>
+    <span class="fields-field-restore" style="display: none;"><?php echo $this->translate('Mapping to be removed'); ?></span>
+    <?php $xpath = $fieldData['xpath'] ?? ''; ?>
+    <?php $property = $fieldData['property'] ?? ''; ?>
+    <span class="fields-field-label">
+        <?php if ($xpath && $property): ?>
+            <span class="oaipmhharvester-monospace"><?= $this->escapeHtml($xpath) ?></span>
+            →
+            <span class="oaipmhharvester-monospace"><?= $this->escapeHtml($property) ?></span>
+            <?php $typeLabel = $this->dataType()->getLabel($fieldData['type'] ?? 'literal'); ?>
+            (<?= $this->escapeHtml($this->translate($typeLabel)) ?>)
+        <?php endif; ?>
+    </span>
+    <ul class="actions">
+        <li><?php echo $this->hyperlink('', [], [
+            'class' => 'o-icon-edit fields-field-edit-button',
+            'title' => $this->translate('Edit mapping'),
+        ]); ?></li>
+        <li><?php echo $this->hyperlink('', [], [
+            'class' => 'o-icon-delete fields-field-remove-button',
+            'title' => $this->translate('Remove mapping'),
+        ]); ?></li>
+        <li><?php echo $this->hyperlink('', [], [
+            'class' => 'o-icon-undo fields-field-restore-button',
+            'title' => $this->translate('Restore mapping'),
+            'style' => 'display: none;',
+        ]); ?></li>
+    </ul>
+</li>

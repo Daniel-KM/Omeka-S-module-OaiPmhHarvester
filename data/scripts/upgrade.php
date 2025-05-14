@@ -349,3 +349,148 @@ if (version_compare($oldVersion, '3.4.19', '<')) {
     );
     $messenger->addWarning($message);
 }
+
+if (version_compare($oldVersion, '3.4.21', '<')) {
+    $sql = <<<'SQL'
+        CREATE TABLE oaipmhharvester_configuration (
+            id INT AUTO_INCREMENT NOT NULL,
+            name VARCHAR(255) NOT NULL,
+            converter_name VARCHAR(255) NOT NULL,
+            settings LONGTEXT NOT NULL COMMENT '(DC2Type:json)',
+            PRIMARY KEY(id)
+        ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+    SQL;
+    $connection->executeStatement($sql);
+
+    $sql = <<<'SQL'
+        CREATE TABLE oaipmhharvester_source_record (
+            id INT AUTO_INCREMENT NOT NULL,
+            item_id INT NOT NULL,
+            source_id INT NOT NULL,
+            identifier VARCHAR(255) NOT NULL,
+            UNIQUE INDEX UNIQ_87DB1BED126F525E (item_id),
+            INDEX IDX_87DB1BED953C1C61 (source_id),
+            INDEX IDX_87DB1BED953C1C61772E836A (source_id, identifier),
+            UNIQUE INDEX UNIQ_87DB1BED126F525E953C1C61772E836A (item_id, source_id, identifier),
+            PRIMARY KEY(id)
+        ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+    SQL;
+    $connection->executeStatement($sql);
+
+    $sql = <<<'SQL'
+        CREATE TABLE oaipmhharvester_source (
+            id INT AUTO_INCREMENT NOT NULL,
+            configuration_id INT NOT NULL,
+            name VARCHAR(255) NOT NULL,
+            base_url VARCHAR(255) NOT NULL,
+            metadata_prefix VARCHAR(255) NOT NULL,
+            sets LONGTEXT NOT NULL COMMENT '(DC2Type:json)',
+            INDEX IDX_AF32171573F32DD8 (configuration_id),
+            PRIMARY KEY(id)
+        ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+    SQL;
+    $connection->executeStatement($sql);
+
+    $sql = <<<'SQL'
+        CREATE TABLE oaipmhharvester_source_job (
+            source_id INT NOT NULL,
+            job_id INT NOT NULL,
+            INDEX IDX_63040152953C1C61 (source_id),
+            UNIQUE INDEX UNIQ_63040152BE04EA9 (job_id),
+            PRIMARY KEY(source_id, job_id)
+        ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB;
+    SQL;
+    $connection->executeStatement($sql);
+
+    $sql = <<<'SQL'
+        ALTER TABLE oaipmhharvester_source_record
+        ADD CONSTRAINT FK_87DB1BED126F525E FOREIGN KEY (item_id) REFERENCES item (id) ON DELETE CASCADE;
+    SQL;
+    $connection->executeStatement($sql);
+
+    $sql = <<<'SQL'
+        ALTER TABLE oaipmhharvester_source_record
+        ADD CONSTRAINT FK_87DB1BED953C1C61 FOREIGN KEY (source_id) REFERENCES oaipmhharvester_source (id) ON DELETE CASCADE;
+    SQL;
+    $connection->executeStatement($sql);
+
+    $sql = <<<'SQL'
+        ALTER TABLE oaipmhharvester_source
+        ADD CONSTRAINT FK_AF32171573F32DD8 FOREIGN KEY (configuration_id) REFERENCES oaipmhharvester_configuration (id);
+    SQL;
+    $connection->executeStatement($sql);
+
+    $sql = <<<'SQL'
+        ALTER TABLE oaipmhharvester_source_job
+        ADD CONSTRAINT FK_63040152953C1C61 FOREIGN KEY (source_id) REFERENCES oaipmhharvester_source (id) ON DELETE CASCADE;
+    SQL;
+    $connection->executeStatement($sql);
+
+    $sql = <<<'SQL'
+        ALTER TABLE oaipmhharvester_source_job
+        ADD CONSTRAINT FK_63040152BE04EA9 FOREIGN KEY (job_id) REFERENCES job (id) ON DELETE CASCADE
+    SQL;
+    $connection->executeStatement($sql);
+
+    $connection->insert('oaipmhharvester_configuration', [
+        'name' => 'Built-in mappings for oai_dc (not configurable)',
+        'converter_name' => 'oai_dc',
+        'settings' => '{}',
+    ]);
+
+    $connection->insert('oaipmhharvester_configuration', [
+        'name' => 'Built-in mappings for oai_dcterms (not configurable)',
+        'converter_name' => 'oai_dcterms',
+        'settings' => '{}',
+    ]);
+
+    $connection->insert('oaipmhharvester_configuration', [
+        'name' => 'Built-in mappings for mets (not configurable)',
+        'converter_name' => 'mets',
+        'settings' => '{}',
+    ]);
+
+    $dcProperties = [
+        'contributor', 'coverage', 'creator', 'date', 'description', 'format', 'identifier', 'language',
+        'publisher', 'relation', 'rights', 'source', 'subject', 'title', 'type'
+    ];
+    $dcMappings = array_map(function ($name) {
+        return ['name' => 'xpath', 'xpath' => ".//dc:$name", 'property' => "dcterms:$name", 'type' => 'literal'];
+    }, $dcProperties);
+
+    $connection->insert('oaipmhharvester_configuration', [
+        'name' => 'oai_dc',
+        'converter_name' => 'xpath',
+        'settings' => json_encode([
+            'namespaces' => [
+                'dc' => 'http://purl.org/dc/elements/1.1/',
+            ],
+            'mappings' => $dcMappings,
+        ]),
+    ]);
+
+    $dctermsProperties = [
+        'abstract', 'accessRights', 'accrualMethod', 'accrualPeriodicity', 'accrualPolicy', 'alternative',
+        'audience', 'available', 'bibliographicCitation', 'conformsTo', 'contributor', 'coverage', 'created',
+        'creator', 'date', 'dateAccepted', 'dateCopyrighted', 'dateSubmitted', 'description', 'educationLevel',
+        'extent', 'format', 'hasFormat', 'hasPart', 'hasVersion', 'identifier', 'instructionalMethod', 'isFormatOf',
+        'isPartOf', 'isReferencedBy', 'isReplacedBy', 'isRequiredBy', 'issued', 'isVersionOf', 'language',
+        'license', 'mediator', 'medium', 'modified', 'provenance', 'publisher', 'references', 'relation',
+        'replaces', 'requires', 'rights', 'rightsHolder', 'source', 'spatial', 'subject', 'tableOfContents',
+        'temporal', 'title', 'type', 'valid'
+    ];
+    $dctermsMappings = array_map(function ($name) {
+        return ['name' => 'xpath', 'xpath' => ".//dcterms:$name", 'property' => "dcterms:$name", 'type' => 'literal'];
+    }, $dctermsProperties);
+
+    $connection->insert('oaipmhharvester_configuration', [
+        'name' => 'oai_dcterms',
+        'converter_name' => 'xpath',
+        'settings' => json_encode([
+            'namespaces' => [
+                'dcterms' => 'http://purl.org/dc/terms/',
+            ],
+            'mappings' => $dctermsMappings,
+        ]),
+    ]);
+}

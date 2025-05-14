@@ -1,0 +1,56 @@
+<dl>
+    <?php $namespaces = $settings['namespaces'] ?? [] ?>
+    <?php if ($namespaces): ?>
+        <div class="property">
+            <dt><?= $this->translate('XML namespaces') ?></dt>
+            <dd>
+                <table class="tablesaw">
+                    <thead>
+                        <tr>
+                            <th><?= $this->translate('Prefix') ?></th>
+                            <th><?= $this->translate('URI') ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($namespaces as $prefix => $uri): ?>
+                            <tr>
+                                <td><?= $this->escapeHtml($prefix) ?></td>
+                                <td><?= $this->escapeHtml($uri) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </dd>
+        </div>
+    <?php endif; ?>
+
+    <?php $mappings = $settings['mappings'] ?? [] ?>
+    <?php if ($mappings): ?>
+        <div class="property">
+            <dt><?= $this->translate('Mappings') ?></dt>
+            <dd>
+                <table class="tablesaw">
+                    <thead>
+                        <tr>
+                            <th><?= $this->translate('XPath') ?></th>
+                            <th><?= $this->translate('Property') ?></th>
+                            <th><?= $this->translate('Type') ?></th>
+                            <th><?= $this->translate('Replacements') ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($mappings as $mapping): ?>
+                            <?php $typeLabel = $this->dataType()->getLabel($mapping['type'] ?? 'literal'); ?>
+                            <tr>
+                                <td><?= $this->escapeHtml($mapping['xpath'] ?? '') ?></td>
+                                <td><?= $this->escapeHtml($mapping['property'] ?? '') ?></td>
+                                <td><?= $this->escapeHtml($this->translate($typeLabel)) ?></td>
+                                <td><?= nl2br($this->escapeHtml($mapping['replacements'] ?? '')) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </dd>
+        </div>
+    <?php endif; ?>
+</dl>

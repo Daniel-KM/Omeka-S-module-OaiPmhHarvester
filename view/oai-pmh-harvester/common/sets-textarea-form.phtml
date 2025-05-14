@@ -1,0 +1,25 @@
+<?php
+$this->headScript()->appendFile($this->assetUrl('js/sets-textarea.js', 'OaiPmhHarvester'));
+$this->headLink()->appendStylesheet($this->assetUrl('css/sets-textarea.css', 'OaiPmhHarvester'));
+?>
+
+<div class="sets-textarea" data-source-id="<?= $this->escapeHtml($element->getOption('source_id')) ?>">
+    <?= $textarea ?>
+    <details>
+        <summary><?= $this->translate('Explore sets') ?></summary>
+        <div class="sets-textarea__sets-list">
+            <table class="tablesaw">
+                <thead>
+                    <tr>
+                        <th><?= $this->translate('Set spec') ?></th>
+                        <th><?= $this->translate('Set name') ?></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+        <div class="sets-textarea__loading-message"></div>
+    </details>
+</div>

@@ -25,9 +25,7 @@ class Mets extends AbstractHarvesterMap
     {
         $resource = [
             '@type' => 'o:Item',
-            'o:is_public' => $this->getOption('o:is_public'),
             'o:media' => [],
-            'o:item_set' => $this->getOption('o:item_set'),
         ];
 
         // Manage specific profiles with structural map. Furthermore, files may

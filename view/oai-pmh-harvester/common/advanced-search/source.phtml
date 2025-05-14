@@ -1,0 +1,36 @@
+<?php
+$translate = $this->plugin('translate');
+// Prepare the resource class query.
+$ids = isset($query['oaipmhharvester_source_id']) ? $query['oaipmhharvester_source_id'] : [];
+if (!is_array($ids)) {
+    $ids = [$ids];
+}
+$ids = array_filter($ids);
+if (!$ids) {
+    $ids = [null];
+}
+?>
+<div id="oaipmhharvester-source" class="field removable multi-value" role="group">
+    <div class="field-meta">
+        <span id="by-oaipmhharvester-source-label" class="label"><?php echo $translate('Search by OAI-PMH Harvester source'); ?></span>
+        <?php echo $this->hyperlink('', '#', ['class' => 'expand', 'title' => $translate('Expand')]); ?>
+        <div class="collapsible">
+            <div class="field-description"><?php echo $translate('Searches for resources that were harvested from any of these sources.'); ?></div>
+        </div>
+        <button type="button" class="add-value o-icon-add button" aria-label="<?php echo $translate('Add new source'); ?>" title="<?php echo $translate('Add new source'); ?>"></button>
+    </div>
+    <div class="inputs">
+        <?php $sources = $this->api()->search('oaipmhharvester_sources')->getContent() ?>
+        <?php $sourcesOptions = array_map(fn($s) => ['value' => $s->id(), 'label' => $s->name()], $sources); ?>
+        <?php foreach ($ids as $id): ?>
+        <div class="value">
+            <?php $sourceSelect = new \Laminas\Form\Element\Select('oaipmhharvester_source_id[]') ?>
+            <?php $sourceSelect->setValueOptions($sourcesOptions) ?>
+            <?php $sourceSelect->setEmptyOption($translate('Select source…')) ?>
+            <?php $sourceSelect->setValue($id); ?>
+            <?= $this->formSelect($sourceSelect) ?>
+            <button type="button" class="o-icon-delete remove-value button" aria-label="<?php echo $translate('Remove value'); ?>" title="<?php echo $translate('Remove value'); ?>"></button>
+        </div>
+        <?php endforeach; ?>
+    </div>
+</div>

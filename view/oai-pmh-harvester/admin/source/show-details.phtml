@@ -1,0 +1,41 @@
+<?php
+$translate = $this->plugin('translate');
+?>
+<h3>
+    <a href="<?php echo $this->escapeHtml($resource->url()); ?>"><?php echo $this->escapeHtml($resource->name()); ?></a>
+</h3>
+
+<div class="meta-group">
+    <h4><?php echo $translate('Base URL'); ?></h4>
+    <div class="value"><?= $this->hyperlink($resource->baseUrl(), $resource->baseUrl()) ?></div>
+    <div class="value"><?= $this->hyperlink($resource->identifyUrl(), $resource->identifyUrl()) ?></div>
+</div>
+
+<div class="meta-group">
+    <h4><?php echo $translate('Metadata prefix'); ?></h4>
+    <div class="value"><?= $resource->metadataPrefix() ?></div>
+</div>
+
+<?php $sets = $resource->sets(); ?>
+<?php if ($sets): ?>
+    <div class="meta-group">
+        <h4><?php echo $translate('Sets'); ?></h4>
+        <?php foreach ($sets as $set): ?>
+            <div class="value"><?= $this->escapeHtml($set) ?></div>
+        <?php endforeach; ?>
+    </div>
+<?php endif; ?>
+
+<?php $itemCount = $this->api()->search('items', ['oaipmhharvester_source_id' => $resource->id(), 'limit' => 0])->getTotalResults() ?>
+<div class="meta-group">
+    <h4><?php echo $translate('Items'); ?></h4>
+    <div class="value"><?= $this->hyperlink($itemCount, $this->url('admin/default', ['controller' => 'item'], ['query' => ['oaipmhharvester_source_id[]' => $resource->id()]])) ?></div>
+</div>
+
+<?php $jobCount = $this->api()->search('jobs', ['oaipmhharvester_source_id' => $resource->id(), 'limit' => 0])->getTotalResults() ?>
+<div class="meta-group">
+    <h4><?php echo $translate('Jobs'); ?></h4>
+    <div class="value"><?= $this->hyperlink($jobCount, $this->url('admin/default', ['controller' => 'job'], ['query' => ['oaipmhharvester_source_id[]' => $resource->id()]])) ?></div>
+</div>
+
+<?php $this->trigger('view.details', array('entity' => $resource)); ?>

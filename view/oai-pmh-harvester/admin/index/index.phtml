@@ -29,4 +29,11 @@ $this->headScript()
 
 <h3><?= $translate('Set repository to harvest') ?></h3>
 
+<p>
+<?= sprintf(
+    $translate('Use this form if you want to harvest a repository only once (or occasionally) and if default mappings fit your needs. If you want to repeatedly harvest the same repository, or want better control on mappings, <a href="%s">define a new source</a>.'),
+    $this->url('admin/oaipmhharvester/source', ['action' => 'add'])
+); ?>
+</p>
+
 <?= $this->form($form) ?>
