@@ -155,7 +155,6 @@ class HarvestRepresentation extends AbstractEntityRepresentation
                 'oaipmhharvester_entities',
                 [
                     'harvest_id' => $this->id(),
-                    'limit' => 0,
                 ],
                 ['returnScalar' => 'entity_id']
             )
@@ -165,7 +164,6 @@ class HarvestRepresentation extends AbstractEntityRepresentation
                 'oaipmhharvester_entities',
                 [
                     'harvest_id' => $this->id(),
-                    'limit' => 0,
                 ],
                 ['returnScalar' => 'entity_name']
             )
