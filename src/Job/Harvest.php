@@ -349,7 +349,7 @@ class Harvest extends AbstractJob
 
         $this->propertyIds = $this->getPropertyIds();
 
-        // Prepare data for entity manager.
+        // Prepare data to refresh entity manager.
         $this->staticEntityIds = [
             'job_id' => $this->job->getId(),
             'user_id' => $this->job->getOwner()->getId(),
@@ -960,22 +960,30 @@ class Harvest extends AbstractJob
         return $total;
     }
 
+
     protected function updateResource(int $resourceId, array $resource): ?bool
     {
         // The id is already checked.
-        $existingResource = $this->api->read('resources', $resourceId)->getContent()->jsonSerialize();
+        // The method JsonSerialize() does not encode objects as array (owner,
+        // resource template, etc.) currently.
+        $existingResource = $this->api->read('resources', $resourceId)->getContent();
+        $existingResource = json_decode(json_encode($existingResource), true);
         $updatedResource = $existingResource;
         switch ($this->modeHarvest) {
             default:
             case EntityHarvest::MODE_APPEND:
-                // The function array_unique() is not fully working here,
-                // because the existing values have specific keys.
+                // The function array_unique() is not working here, because the
+                // existing values have specific keys.
+                // Furthermore, array_unique() work only with string, not array.
                 // Deduplication is done outside (see modules BulkEdit or EasyAdmin).
-                // Else see the process of the modules BulkImport or CsvImport.
+                // TODO See the process of the modules BulkImport or CsvImport to deduplicate harvested keys: normalize values then serialize.
                 foreach (array_filter(array_intersect_key($resource, $this->propertyIds)) as $term => $values) {
-                    $updatedResource[$term] = empty($existingResource[$term])
-                        ? $values
-                        : array_unique(array_merge(array_values($existingResource[$term]), array_values($values)));
+                    if (empty($existingResource[$term])) {
+                        $updatedResource[$term] = $values;
+                    } else {
+                        $merge = array_merge(array_values($existingResource[$term]), array_values($values));
+                        $updatedResource[$term] = array_map('unserialize', array_unique(array_map('serialize', $merge)));
+                    }
                 }
                 break;
             case EntityHarvest::MODE_UPDATE:
