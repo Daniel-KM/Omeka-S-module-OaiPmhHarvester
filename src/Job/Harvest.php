@@ -978,12 +978,7 @@ class Harvest extends AbstractJob
                 // Deduplication is done outside (see modules BulkEdit or EasyAdmin).
                 // TODO See the process of the modules BulkImport or CsvImport to deduplicate harvested keys: normalize values then serialize.
                 foreach (array_filter(array_intersect_key($resource, $this->propertyIds)) as $term => $values) {
-                    if (empty($existingResource[$term])) {
-                        $updatedResource[$term] = $values;
-                    } else {
-                        $merge = array_merge(array_values($existingResource[$term]), array_values($values));
-                        $updatedResource[$term] = array_map('unserialize', array_unique(array_map('serialize', $merge)));
-                    }
+                    $updatedResource[$term] = $this->arrayUniquePropertyValues($this->propertyIds[$term], $existingResource[$term] ?? [], $values);
                 }
                 break;
             case EntityHarvest::MODE_UPDATE:
@@ -1119,6 +1114,63 @@ class Harvest extends AbstractJob
                     ['page' => $pageIndex, 'url' => $this->baseUri . '/oai-pmh-harvest/' . $filename]
                 );
         }
+    }
+
+    /**
+     * Append new values to existing ones and deduplicate them.
+     */
+    protected function arrayUniquePropertyValues(int $propertyId, array $existingValues, array $newValues): array
+    {
+        if (!count($newValues)) {
+            return $existingValues;
+        } elseif (!count($existingValues)) {
+            return $newValues;
+        }
+
+        $result = [];
+
+        foreach ([$existingValues, $newValues] as $values) foreach ($values as $value) {
+            $storeValue = $value;
+            // Common.
+            $storeValue['type'] ??= empty($storeValue['type']) ? 'literal' : (string) $storeValue['type'];;
+            $storeValue['property_id'] = $propertyId;
+            $storeValue['is_public'] = !empty($storeValue['is_public']);
+            $storeValue['@language'] = empty($storeValue['@language']) ? null : (string) $storeValue['@language'];
+            $storeValue['@annotation'] = empty($storeValue['@annotation']) ? [] : $storeValue['@annotation'];
+            // Value.
+            $storeValue['@value'] = !isset($storeValue['@value']) || $storeValue['@value'] === '' ? null : (string) $storeValue['@value'];
+            // Uri.
+            $storeValue['o:label'] = !isset($storeValue['o:label']) || $storeValue['o:label'] === '' ? null : (string) $storeValue['o:label'];
+            $storeValue['o:lang'] = empty($storeValue['o:lang']) ? null : (string) $storeValue['o:lang'];
+            $storeValue['@id'] = empty($storeValue['@id']) ? null : (string) $storeValue['@id'];
+            // Resource.
+            $storeValue['value_resource_id'] = empty($storeValue['value_resource_id']) ? null : (int) $storeValue['value_resource_id'];
+            if (!empty($storeValue['value_resource_id'])) {
+                unset($storeValue['@id']);
+            }
+            unset(
+                $storeValue['property_label'],
+                $storeValue['value_resource_name'],
+                $storeValue['url'],
+                $storeValue['display_title'],
+                $storeValue['thumbnail_url'],
+                $storeValue['thumbnail_title'],
+                $storeValue['thumbnail_type'],
+                // Specific for modules.
+                $storeValue['@type'],
+                // DataTypeGeometry.
+                $storeValue['srid'],
+                $storeValue['geolocation_position'],
+                // DataTypePlace.
+                $storeValue['o:data'],
+                // DataTypeRdf.
+                // NumericDataTypes.
+            );
+            ksort($storeValue);
+            $values[] = $storeValue;
+        }
+
+        return array_values(array_map('unserialize', array_unique(array_map('serialize', $result))));
     }
 
     protected function refreshEntityManager(): void
