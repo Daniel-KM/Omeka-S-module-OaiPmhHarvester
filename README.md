@@ -1,4 +1,4 @@
--OAI-PMH Harvester (plugin for Omeka)
+OAI-PMH Harvester (plugin for Omeka)
 ====================================
 
 > __New versions of this module and support for Omeka S version 3.0 and above
