@@ -1,0 +1,126 @@
+<?php
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ */
+
+$translate = $this->plugin('translate');
+$escape = $this->plugin('escapeHtml');
+$assetUrl = $this->plugin('assetUrl');
+
+$this->htmlElement('body')->appendAttribute('class', 'oai-pmh-harvester oai-pmh-harvester-source browse');
+
+$this->headLink()->appendStylesheet($assetUrl('css/oai-pmh-harvester.css', 'OaiPmhHarvester'));
+$this->headScript()->appendFile($assetUrl('js/oai-pmh-harvester.js', 'OaiPmhHarvester'));
+?>
+
+<?= $this->pageTitle($translate('Sources'), 1, $translate('OAI-PMH')) ?>
+
+<?php echo $this->searchFilters(); ?>
+
+<div class="browse-controls">
+    <?php echo $this->pagination(); ?>
+    <?php echo $this->browse()->renderSortSelector('oaipmhharvester_sources'); ?>
+</div>
+
+<div id="page-actions">
+    <?php if ($this->userIsAllowed('OaiPmhHarvester\Api\Adapter\SourceAdapter', 'create')): ?>
+        <?= $this->hyperlink($translate('Add new source'), $this->url(null, ['action' => 'add'], true), ['class' => 'button']) ?>
+    <?php endif; ?>
+</div>
+
+<?php $this->trigger('view.browse.before'); ?>
+<?php if ($sources): ?>
+
+<table class="tablesaw batch-edit" data-tablesaw-mode="stack">
+    <thead>
+        <tr>
+            <th><?php echo $translate('Name'); ?></th>
+            <th><?php echo $translate('Configuration'); ?></th>
+            <th><?php echo $translate('Metadata prefix'); ?></th>
+            <th><?php echo $translate('Sets'); ?></th>
+            <th><?php echo $translate('Latest job'); ?></th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($sources as $source): ?>
+        <tr>
+            <td>
+                <?= $source->name() ?>
+                <ul class="actions">
+                    <?php $this->trigger('view.browse.actions', ['resource' => $source]); ?>
+                    <li><?php echo $source->link('', 'harvest', [
+                        'class' => 'o-icon- fa-seedling',
+                        'title' => $translate('Harvest'),
+                    ]); ?></li>
+                    <?php if ($source->userIsAllowed('update')): ?>
+                    <li><?php echo $source->link('', 'edit', [
+                        'class' => 'o-icon-edit',
+                        'title' => $translate('Edit'),
+                    ]); ?></li>
+                    <?php endif; ?>
+                    <?php if ($source->userIsAllowed('delete')): ?>
+                    <li><?php echo $this->hyperlink('', '#', [
+                        'data-sidebar-selector' => '#sidebar',
+                        'data-sidebar-content-url' => $source->url('delete-confirm'),
+                        'class' => 'o-icon-delete sidebar-content',
+                        'title' => $translate('Delete'),
+                    ]); ?></li>
+                    <?php endif; ?>
+                    <li><?php echo $this->hyperlink('', '#', [
+                        'data-sidebar-selector' => '#sidebar',
+                        'data-sidebar-content-url' => $source->url('show-details'),
+                        'class' => 'o-icon-more sidebar-content',
+                        'title' => $translate('Details'),
+                    ]); ?></li>
+                </ul>
+            </td>
+            <td>
+                <?php $configuration = $source->configuration(); ?>
+                <?= $configuration->link($configuration->name()) ?>
+            </td>
+            <td><?= $source->metadataPrefix() ?></td>
+            <td>
+                <?php $sets = $source->sets(); ?>
+                <?php if (empty($sets)): ?>
+                    <?= $this->escapeHtml($this->translate('All records')) ?>
+                <?php elseif (count($sets) < 5): ?>
+                    <?= implode(', ', $source->sets()) ?>
+                <?php else: ?>
+                    <?= $this->escapeHtml(sprintf($this->translate('%d sets'), count($sets))); ?>
+                <?php endif; ?>
+            </td>
+            <td>
+                <?php $job = $source->latestJob(); ?>
+                <?php if ($job): ?>
+                    <span>
+                        <?= $job->link(sprintf('#%d', $job->id())) ?>
+                        ·
+                        <?= $this->translate($job->statusLabel()) ?>
+                    </span>
+                <?php endif; ?>
+            </td>
+        </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>
+
+<?php $this->trigger('view.browse.after'); ?>
+<div class="browse-controls">
+    <?php echo $this->pagination(); ?>
+</div>
+
+<div id="sidebar" class="sidebar">
+    <?php echo $this->hyperlink('', '#', [
+        'class' => 'sidebar-close o-icon-close',
+        'title' => $translate('Close'),
+    ]); ?>
+    <div class="sidebar-content"></div>
+</div>
+
+<?php else: ?>
+
+<div class="no-resources">
+    <p><?php echo $translate('Omeka could not find any sources.'); ?></p>
+</div>
+
+<?php endif; ?>

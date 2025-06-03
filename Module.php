@@ -18,6 +18,7 @@ class Module extends AbstractModule
     public function install(ServiceLocatorInterface $services): void
     {
         $this->setServiceLocator($services);
+        $connection = $services->get('Omeka\Connection');
         $plugins = $services->get('ControllerPluginManager');
         $messenger = $plugins->get('messenger');
 
@@ -36,6 +37,68 @@ class Module extends AbstractModule
         if (!file_exists($dir)) {
             mkdir($dir);
         }
+
+        $connection->insert('oaipmhharvester_configuration', [
+            'name' => 'Built-in mappings for oai_dc (not configurable)',
+            'converter_name' => 'oai_dc',
+            'settings' => '{}',
+        ]);
+
+        $connection->insert('oaipmhharvester_configuration', [
+            'name' => 'Built-in mappings for oai_dcterms (not configurable)',
+            'converter_name' => 'oai_dcterms',
+            'settings' => '{}',
+        ]);
+
+        $connection->insert('oaipmhharvester_configuration', [
+            'name' => 'Built-in mappings for mets (not configurable)',
+            'converter_name' => 'mets',
+            'settings' => '{}',
+        ]);
+
+        $dcProperties = [
+            'contributor', 'coverage', 'creator', 'date', 'description', 'format', 'identifier', 'language',
+            'publisher', 'relation', 'rights', 'source', 'subject', 'title', 'type'
+        ];
+        $dcMappings = array_map(function ($name) {
+            return ['name' => 'xpath', 'xpath' => ".//dc:$name", 'property' => "dcterms:$name", 'type' => 'literal'];
+        }, $dcProperties);
+
+        $connection->insert('oaipmhharvester_configuration', [
+            'name' => 'oai_dc',
+            'converter_name' => 'xpath',
+            'settings' => json_encode([
+                'namespaces' => [
+                    'dc' => 'http://purl.org/dc/elements/1.1/',
+                ],
+                'mappings' => $dcMappings,
+            ]),
+        ]);
+
+        $dctermsProperties = [
+            'abstract', 'accessRights', 'accrualMethod', 'accrualPeriodicity', 'accrualPolicy', 'alternative',
+            'audience', 'available', 'bibliographicCitation', 'conformsTo', 'contributor', 'coverage', 'created',
+            'creator', 'date', 'dateAccepted', 'dateCopyrighted', 'dateSubmitted', 'description', 'educationLevel',
+            'extent', 'format', 'hasFormat', 'hasPart', 'hasVersion', 'identifier', 'instructionalMethod', 'isFormatOf',
+            'isPartOf', 'isReferencedBy', 'isReplacedBy', 'isRequiredBy', 'issued', 'isVersionOf', 'language',
+            'license', 'mediator', 'medium', 'modified', 'provenance', 'publisher', 'references', 'relation',
+            'replaces', 'requires', 'rights', 'rightsHolder', 'source', 'spatial', 'subject', 'tableOfContents',
+            'temporal', 'title', 'type', 'valid'
+        ];
+        $dctermsMappings = array_map(function ($name) {
+            return ['name' => 'xpath', 'xpath' => ".//dcterms:$name", 'property' => "dcterms:$name", 'type' => 'literal'];
+        }, $dctermsProperties);
+
+        $connection->insert('oaipmhharvester_configuration', [
+            'name' => 'oai_dcterms',
+            'converter_name' => 'xpath',
+            'settings' => json_encode([
+                'namespaces' => [
+                    'dcterms' => 'http://purl.org/dc/terms/',
+                ],
+                'mappings' => $dctermsMappings,
+            ]),
+        ]);
     }
 
     public function uninstall(ServiceLocatorInterface $services): void
@@ -86,6 +149,42 @@ class Module extends AbstractModule
             'Omeka\Controller\Admin\Item',
             'view.details',
             [$this, 'handleViewShowAfterAdmin']
+        );
+
+        $sharedEventManager->attach(
+            'Omeka\Controller\Admin\Item',
+            'view.advanced_search',
+            [$this, 'onItemViewAdvancedSearch']
+        );
+
+        $sharedEventManager->attach(
+            'Omeka\Controller\Admin\Item',
+            'view.search.filters',
+            [$this, 'onItemViewSearchFilters']
+        );
+
+        $sharedEventManager->attach(
+            'Omeka\Controller\Admin\Item',
+            'view.details',
+            [$this, 'onItemViewShowDetails']
+        );
+
+        $sharedEventManager->attach(
+            'Omeka\Controller\Admin\Item',
+            'view.show.sidebar',
+            [$this, 'onItemViewShowSidebar']
+        );
+
+        $sharedEventManager->attach(
+            'Omeka\Api\Adapter\ItemAdapter',
+            'api.search.query',
+            [$this, 'onItemApiSearchQuery']
+        );
+
+        $sharedEventManager->attach(
+            'Omeka\Api\Adapter\JobAdapter',
+            'api.search.query',
+            [$this, 'onJobApiSearchQuery']
         );
     }
 
@@ -272,5 +371,101 @@ class Module extends AbstractModule
         $vars->offsetSet('resourceName', 'oaipmhharvester_harvests');
         $vars->offsetSet('ids', $harvestIds);
         echo $view->partial('common/harvests-sidebar');
+    }
+
+    public function onItemViewAdvancedSearch(Event $event)
+    {
+        $partials = $event->getParam('partials');
+
+        $partials[] = 'oai-pmh-harvester/common/advanced-search/source';
+
+        $event->setParam('partials', $partials);
+    }
+
+    public function onItemViewSearchFilters(Event $event)
+    {
+        $view = $event->getTarget();
+        $query = $event->getParam('query');
+        $filters = $event->getParam('filters');
+
+        $ids = $query['oaipmhharvester_source_id'] ?? [];
+        if (!is_array($ids)) {
+            $ids = [$ids];
+        }
+        $ids = array_filter($ids);
+        if ($ids) {
+            $api = $this->getServiceLocator()->get('Omeka\ApiManager');
+            $values = [];
+            $sources = $api->search('oaipmhharvester_sources', ['id' => $ids])->getContent();
+            $names = array_map(fn($source) => $source->name(), $sources);
+            $filters[$view->translate('OAI-PMH Source')] = $names;
+        }
+
+        $event->setParam('filters', $filters);
+    }
+
+    public function onItemViewShowDetails(Event $event)
+    {
+        $view = $event->getTarget();
+        $item = $event->getParam('entity');
+
+        $sourceRecord = $view->api()->searchOne('oaipmhharvester_source_records', ['item_id' => $item->id()])->getContent();
+        if ($sourceRecord) {
+            echo $view->partial('oai-pmh-harvester/common/item-details', ['item' => $item, 'sourceRecord' => $sourceRecord]);
+        }
+    }
+
+    public function onItemViewShowSidebar(Event $event)
+    {
+        $view = $event->getTarget();
+        $item = $view->item;
+
+        $sourceRecord = $view->api()->searchOne('oaipmhharvester_source_records', ['item_id' => $item->id()])->getContent();
+        if ($sourceRecord) {
+            echo $view->partial('oai-pmh-harvester/common/item-details', ['item' => $item, 'sourceRecord' => $sourceRecord]);
+        }
+    }
+
+    public function onItemApiSearchQuery(Event $event)
+    {
+        $adapter = $event->getTarget();
+        $qb = $event->getParam('queryBuilder');
+        $request = $event->getParam('request');
+
+        $ids = $request->getValue('oaipmhharvester_source_id', []);
+        if (!is_array($ids)) {
+            $ids = [$ids];
+        }
+        $ids = array_filter($ids);
+        if ($ids) {
+            $subQb = $adapter->getEntityManager()->createQueryBuilder();
+            $subQb->select('r')
+                  ->from('OaiPmhHarvester\Entity\SourceRecord', 'r')
+                  ->where($subQb->expr()->in('r.source', $ids))
+                  ->andWhere('r.item = omeka_root');
+            $qb->andWhere($qb->expr()->exists($subQb->getDQL()));
+        }
+    }
+
+    public function onJobApiSearchQuery(Event $event)
+    {
+        $adapter = $event->getTarget();
+        $qb = $event->getParam('queryBuilder');
+        $request = $event->getParam('request');
+
+        $ids = $request->getValue('oaipmhharvester_source_id', []);
+        if (!is_array($ids)) {
+            $ids = [$ids];
+        }
+        $ids = array_filter($ids);
+        if ($ids) {
+            $subQb = $adapter->getEntityManager()->createQueryBuilder();
+            $subQb->select('j')
+                  ->from('OaiPmhHarvester\Entity\Source', 's')
+                  ->innerJoin('s.jobs', 'j')
+                  ->where($subQb->expr()->in('s.id', $ids))
+                  ->andWhere('j = omeka_root');
+            $qb->andWhere($qb->expr()->exists($subQb->getDQL()));
+        }
     }
 }
