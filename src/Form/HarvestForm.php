@@ -107,7 +107,6 @@ class HarvestForm extends Form
                 // 'type' => Element\DateTimeLocal::class,
                 'type' => Element\Date::class,
                 'options' => [
-                    'label' => 'From date', // @translate
                     'label' => 'Until date', // @translate
                     'info' => 'Date should be UTC. Time is optional. Value is included (≤).', // @translate
                     'should_show_seconds' => true,
