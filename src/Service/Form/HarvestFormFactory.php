@@ -2,9 +2,9 @@
 
 namespace OaiPmhHarvester\Service\Form;
 
-use Interop\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use OaiPmhHarvester\Form\HarvestForm;
+use Psr\Container\ContainerInterface;
 
 class HarvestFormFactory implements FactoryInterface
 {
