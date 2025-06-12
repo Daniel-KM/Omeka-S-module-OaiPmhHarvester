@@ -47,14 +47,16 @@ class HarvestRepresentation extends AbstractEntityRepresentation
         return 'o:OaiPmhHarvesterHarvest';
     }
 
-    public function job(): JobRepresentation
+    public function job(): ?JobRepresentation
     {
+        /** @var ?JobRepresentation */
         return $this->getAdapter('jobs')
             ->getRepresentation($this->resource->getJob());
     }
 
     public function undoJob(): ?JobRepresentation
     {
+        /** @var ?JobRepresentation */
         return $this->getAdapter('jobs')
             ->getRepresentation($this->resource->getUndoJob());
     }
@@ -76,6 +78,7 @@ class HarvestRepresentation extends AbstractEntityRepresentation
 
     public function itemSet(): ?ItemSetRepresentation
     {
+        /** @var ?ItemSetRepresentation */
         return $this->getAdapter('item_sets')
             ->getRepresentation($this->resource->getItemSet());
     }

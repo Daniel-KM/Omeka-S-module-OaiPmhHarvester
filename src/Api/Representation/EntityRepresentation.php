@@ -27,8 +27,9 @@ class EntityRepresentation extends AbstractEntityRepresentation
         return 'o:OaiPmhHarvesterEntity';
     }
 
-    public function harvest(): HarvestRepresentation
+    public function harvest(): ?HarvestRepresentation
     {
+        /** @var ?HarvestRepresentation */
         return $this->getAdapter('oaipmhharvester_harvests')
             ->getRepresentation($this->resource->getHarvest());
     }

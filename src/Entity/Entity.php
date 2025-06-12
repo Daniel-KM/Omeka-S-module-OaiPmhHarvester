@@ -4,7 +4,7 @@ namespace OaiPmhHarvester\Entity;
 
 use DateTime;
 use Omeka\Entity\AbstractEntity;
-use Omeka\Entity\Job;
+use OaiPmhHarvester\Job\Harvest;
 
 /**
  * @Entity
@@ -29,7 +29,7 @@ class Entity extends AbstractEntity
     protected $id;
 
     /**
-     * @var Job
+     * @var Harvest
      *
      * @ManyToOne(
      *     targetEntity=\OaiPmhHarvester\Entity\Harvest::class

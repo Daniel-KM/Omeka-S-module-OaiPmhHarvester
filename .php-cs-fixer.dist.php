@@ -32,7 +32,7 @@ return $config
         'phpdoc_indent' => true,
         'phpdoc_no_empty_return' => true,
         'phpdoc_scalar' => true,
-        'phpdoc_to_comment' => true,
+        'phpdoc_to_comment' => false,
         'phpdoc_trim' => true,
         'return_type_declaration' => true,
         'short_scalar_cast' => true,
