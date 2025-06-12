@@ -444,7 +444,7 @@ class Harvest extends AbstractJob
                 'Start harvesting {oai_url}, format {format}, from {from}.', // @translate
                 ['oai_url' => $args['endpoint'], 'format' => $metadataPrefix, 'from' => $from]
             );
-        } elseif ($from && $until) {
+        } elseif ($until) {
             $this->logger->notice(
                 'Start harvesting {oai_url}, format {format}, until {until}.', // @translate
                 ['oai_url' => $args['endpoint'], 'format' => $metadataPrefix, 'until' => $until]
@@ -546,7 +546,7 @@ class Harvest extends AbstractJob
             }
 
             // Get the resumption token early to manage the do/while loop.
-            $resumptionToken = isset($response->ListRecords->resumptionToken) && $response->ListRecords->resumptionToken !== ''
+            $resumptionToken = isset($response->ListRecords->resumptionToken) && !empty((string) $response->ListRecords->resumptionToken)
                 ? (string) $response->ListRecords->resumptionToken
                 : false;
 

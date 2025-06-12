@@ -2,6 +2,7 @@
 
 namespace OaiPmhHarvester\Job;
 
+use OaiPmhHarvester\Api\Representation\HarvestRepresentation;
 use OaiPmhHarvester\Entity\Harvest;
 use Omeka\Api\Exception\NotFoundException;
 use Omeka\Job\AbstractJob;
@@ -21,7 +22,7 @@ class DeleteHarvestedEntities extends AbstractJob
         $referenceIdProcessor->setReferenceId('oai-pmh/delete/job_' . $this->job->getId());
         $logger->addProcessor($referenceIdProcessor);
 
-        /** @var \OaiPmhHarvester\Api\Representation\HarvestRepresentation $harvest */
+        /** @var ?HarvestRepresentation $harvest */
         $harvest = $this->getArg('harvestId');
         if (!$harvest) {
             $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
