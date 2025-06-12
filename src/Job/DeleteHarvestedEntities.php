@@ -10,12 +10,10 @@ class DeleteHarvestedEntities extends AbstractJob
 {
     public function perform(): void
     {
-        /**
-         * @var \Laminas\Log\LoggerInterface $logger
-         * @var \Omeka\Api\Manager $api
-         */
         $services = $this->getServiceLocator();
+        /**  @var \Laminas\Log\Logger $logger */
         $logger = $services->get('Omeka\Logger');
+        /** @var \Omeka\Api\Manager $api */
         $api = $services->get('Omeka\ApiManager');
 
         // The reference id is the job id for now.

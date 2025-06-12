@@ -7,6 +7,7 @@ use DateTimeZone;
 use OaiPmhHarvester\Entity\Harvest as EntityHarvest;
 use Omeka\Api\Exception\NotFoundException;
 use Omeka\Api\Representation\AbstractRepresentation;
+use Omeka\Api\Representation\ItemRepresentation;
 use Omeka\Job\AbstractJob;
 use SimpleXMLElement;
 
@@ -403,7 +404,7 @@ class Harvest extends AbstractJob
             'imported' => 0, // @translate
             'medias' => 0, // @translate
             'errors' => 0, // @translate
-            'duration' => null, // @translate
+            'duration' => null, // @translateG
         ];
 
         // Only to keep track of translation.
@@ -1070,7 +1071,7 @@ class Harvest extends AbstractJob
     /**
      * The resource is always an item for now.
      */
-    protected function buildImportEntity(AbstractRepresentation $resource, string $identifier): array
+    protected function buildImportEntity(ItemRepresentation $resource, string $identifier): array
     {
         return [
             'o-oai-pmh:harvest' => ['o:id' => $this->harvest->id()],

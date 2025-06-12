@@ -16,7 +16,7 @@ use SimpleXMLElement;
 abstract class AbstractHarvesterMap implements HarvesterMapInterface
 {
     /**
-     * @var \Laminas\ServiceManager\ServiceLocatorInterface;
+     * @var \Laminas\ServiceManager\ServiceLocatorInterface
      */
     protected $services;
 
@@ -62,10 +62,10 @@ abstract class AbstractHarvesterMap implements HarvesterMapInterface
     /**
      * Return whether the record is deleted
      *
-     * @param SimpleXMLIterator The record object
+     * @param SimpleXMLElement $record The record object
      * @return bool
      */
-    public function isDeletedRecord(\SimpleXMLElement $record): bool
+    public function isDeletedRecord(SimpleXMLElement $record): bool
     {
         return isset($record->header->attributes()->status)
             && $record->header->attributes()->status == 'deleted';
