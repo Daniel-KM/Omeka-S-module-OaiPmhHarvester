@@ -331,10 +331,12 @@ class IndexController extends AbstractActionController
         // For testing purpose.
         // Use synchronous dispatcher for quick testing purpose.
         $strategy = null;
+        /*
         // $strategy = 'synchronous';
         $strategy = $strategy === 'synchronous'
             ? $this->api()->read('vocabularies', 1)->getContent()->getServiceLocator()->get(\Omeka\Job\DispatchStrategy\Synchronous::class)
             : null;
+        */
 
         $job = $this->jobDispatcher()->dispatch(\OaiPmhHarvester\Job\Harvest::class, $args, $strategy);
 
@@ -468,7 +470,7 @@ class IndexController extends AbstractActionController
                 }
             }
 
-            if ($hasPredefinedSets && count($originalPredefinedSets) !== count($predefinedSets)) {
+            if (count($originalPredefinedSets) !== count($predefinedSets)) {
                 $result['message'] = $this->translate('The sets you specified are not correctly formatted.'); // @translate
                 $result['redirect'] = 'index';
                 return $result;
@@ -561,7 +563,8 @@ class IndexController extends AbstractActionController
             ->getContent();
     }
 
-    private function setsToHarvestFromFormData(array $formData): array {
+    private function setsToHarvestFromFormData(array $formData): array
+    {
         return array_filter(
             $formData,
             fn ($v) => is_array($v) && !empty($v['harvest'])

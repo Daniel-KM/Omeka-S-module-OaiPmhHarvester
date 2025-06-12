@@ -7,7 +7,6 @@
 namespace OaiPmhHarvester\OaiPmh\HarvesterMap;
 
 use Laminas\ServiceManager\ServiceLocatorInterface;
-use OaiPmhHarvester\Entity\Entity;
 use SimpleXMLElement;
 
 /**
@@ -16,7 +15,7 @@ use SimpleXMLElement;
 abstract class AbstractHarvesterMap implements HarvesterMapInterface
 {
     /**
-     * @var \Laminas\ServiceManager\ServiceLocatorInterface;
+     * @var \Laminas\ServiceManager\ServiceLocatorInterface
      */
     protected $services;
 
@@ -60,45 +59,9 @@ abstract class AbstractHarvesterMap implements HarvesterMapInterface
     }
 
     /**
-     * Checks whether the current record has already been harvested, and
-     * returns the record if it does.
-     *
-     * @param SimpleXMLIterator record to be harvested
-     * @return Entity|false The model object of the record,
-     *      if it exists, or false otherwise.
-     */
-    private function _recordExists($xml)
-    {
-        $identifier = trim((string) $xml->header->identifier);
-
-        /* Ideally, the OAI identifier would be globally-unique, but for
-         poorly configured servers that might not be the case.  However,
-         the identifier is always unique for that repository, so given
-         already-existing identifiers, check against the base URL.
-         */
-        $table = get_db()->getTable('OaipmhHarvester_Record');
-        $record = $table->findBy(
-            [
-                'base_url' => $this->_harvest->base_url,
-                'set_spec' => $this->_harvest->set_spec,
-                'metadata_prefix' => $this->_harvest->metadata_prefix,
-                'identifier' => (string) $identifier,
-            ],
-            1,
-            1
-        );
-
-        // Ugh, gotta be a better way to do this.
-        if ($record) {
-            $record = $record[0];
-        }
-        return $record;
-    }
-
-    /**
      * Return whether the record is deleted
      *
-     * @param SimpleXMLIterator The record object
+     * @param SimpleXMLElement $record The record object
      * @return bool
      */
     public function isDeletedRecord(\SimpleXMLElement $record): bool

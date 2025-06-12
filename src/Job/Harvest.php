@@ -345,7 +345,7 @@ class Harvest extends AbstractJob
             ->innerJoin('oaipmhharvester_entity', 'resource', 'resource', 'resource.id = oaipmhharvester_entity.entity_id')
             ->orderBy('entity_id', 'asc')
         ;
-        $this->harvestedResourceIdentifiers = $connection->executeQuery($qb)->fetchAllKeyValue();
+        $this->harvestedResourceIdentifiers = $connection->executeQuery($qb->getSQL())->fetchAllKeyValue();
 
         $this->propertyIds = $this->getPropertyIds();
 
@@ -370,7 +370,7 @@ class Harvest extends AbstractJob
     {
         $services = $this->getServiceLocator();
 
-        $startTime =  microtime(true);
+        $startTime = microtime(true);
 
         $metadataPrefix = $args['metadata_prefix'] ?? null;
         $from = $args['from'] ?? null;
@@ -407,7 +407,7 @@ class Harvest extends AbstractJob
         ];
 
         // Only to keep track of translation.
-        unset($stats['marked deleted']); // @translate
+        unset($stats['marked_deleted']); // @translate
 
         $harvestData = [
             'o:job' => ['o:id' => $this->job->getId()],
@@ -444,7 +444,7 @@ class Harvest extends AbstractJob
                 'Start harvesting {oai_url}, format {format}, from {from}.', // @translate
                 ['oai_url' => $args['endpoint'], 'format' => $metadataPrefix, 'from' => $from]
             );
-        } elseif ($from && $until) {
+        } elseif ($until) {
             $this->logger->notice(
                 'Start harvesting {oai_url}, format {format}, until {until}.', // @translate
                 ['oai_url' => $args['endpoint'], 'format' => $metadataPrefix, 'until' => $until]
@@ -546,7 +546,8 @@ class Harvest extends AbstractJob
             }
 
             // Get the resumption token early to manage the do/while loop.
-            $resumptionToken = isset($response->ListRecords->resumptionToken) && $response->ListRecords->resumptionToken !== ''
+            $resumptionToken = isset($response->ListRecords->resumptionToken)
+                && !empty((string) $response->ListRecords->resumptionToken)
                 ? (string) $response->ListRecords->resumptionToken
                 : false;
 
@@ -595,7 +596,7 @@ class Harvest extends AbstractJob
                     }
 
                     if ($identifier && $this->modeDelete === EntityHarvest::MODE_DELETE) {
-                        ++ $stats['removed'];
+                        ++$stats['removed'];
                         $result = $this->deleteResources($identifier);
                         if (count($result)) {
                             $stats['deleted'] += count($result);
@@ -630,7 +631,7 @@ class Harvest extends AbstractJob
                     && $isDeletedRecord
                     && $this->modeDelete === EntityHarvest::MODE_DELETE_FILTERED
                 ) {
-                    ++ $stats['removed'];
+                    ++$stats['removed'];
                     $result = $this->deleteResources($identifier);
                     if (count($result)) {
                         $stats['deleted'] += count($result);
@@ -683,7 +684,7 @@ class Harvest extends AbstractJob
                         continue;
                     } elseif (count($resources) > 1) {
                         $this->logger->err(
-                            'The oai record {oai_id} (resource {resource_id} cannot be updated, because it maps to multiple resources.', // @translate
+                            "The oai record {oai_id} (resource {resource_id} cannot be updated, because it maps to multiple resources.", // @translate
                             ['oai_id' => $identifier, 'resource_id' => $harvestedResourceId]
                         );
                         // Error is counted below.
@@ -960,7 +961,6 @@ class Harvest extends AbstractJob
         return $total;
     }
 
-
     protected function updateResource(int $resourceId, array $resource): ?bool
     {
         // The id is already checked.
@@ -1132,7 +1132,7 @@ class Harvest extends AbstractJob
         foreach ([$existingValues, $newValues] as $values) foreach ($values as $value) {
             $storeValue = $value;
             // Common.
-            $storeValue['type'] ??= empty($storeValue['type']) ? 'literal' : (string) $storeValue['type'];;
+            $storeValue['type'] ??= empty($storeValue['type']) ? 'literal' : (string) $storeValue['type'];
             $storeValue['property_id'] = $propertyId;
             $storeValue['is_public'] = !empty($storeValue['is_public']);
             $storeValue['@language'] = empty($storeValue['@language']) ? null : (string) $storeValue['@language'];

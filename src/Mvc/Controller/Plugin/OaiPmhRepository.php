@@ -236,7 +236,8 @@ class OaiPmhRepository extends AbstractPlugin
                 }
             }
 
-            $resumptionToken = isset($response->ListSets->resumptionToken) && $response->ListSets->resumptionToken !== ''
+            $resumptionToken = isset($response->ListSets->resumptionToken)
+                && !empty((string) $response->ListSets->resumptionToken)
                 ? (string) $response->ListSets->resumptionToken
                 : false;
         } while ($resumptionToken && count($sets) <= $this->maxListSets);

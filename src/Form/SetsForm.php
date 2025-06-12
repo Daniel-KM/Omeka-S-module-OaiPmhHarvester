@@ -199,7 +199,7 @@ class SetsForm extends Form
                     'label' => 'Process for oai record marked as deleted', // @translate
                     'value_options' => [
                         Harvest::MODE_SKIP => 'Skip', // @translate
-                        Harvest::MODE_DELETE_FILTERED  => 'Delete resources previously imported', // @translate
+                        Harvest::MODE_DELETE_FILTERED => 'Delete resources previously imported', // @translate
                         Harvest::MODE_DELETE => 'Delete resources previously imported, whatever the filters', // @translate
                     ],
                 ],
@@ -262,11 +262,11 @@ class SetsForm extends Form
         ?array $sets = null,
         ?bool $hasPredefinedSets = null
     ): self {
-        $harvestAllRecords ??= $this->getOption('harvest_all_records', false);
-        $formats ??= $this->getOption('formats', ['oai_dc']);
-        $favoriteFormat ??= $this->getOption('favorite_format', 'oai_dc');
-        $sets ??= $this->getOption('sets', []);
-        $hasPredefinedSets ??= $this->getOption('has_predefined_sets', []);
+        $harvestAllRecords ??= $this->getOption('harvest_all_records') ?? false;
+        $formats ??= $this->getOption('formats') ?? ['oai_dc'];
+        $favoriteFormat ??= $this->getOption('favorite_format') ?? 'oai_dc';
+        $sets ??= $this->getOption('sets') ?? [];
+        $hasPredefinedSets ??= $this->getOption('has_predefined_sets') ?? [];
 
         if ($harvestAllRecords) {
             $this

@@ -2,7 +2,11 @@
 
 namespace OaiPmhHarvester\Api\Adapter;
 
+use Doctrine\ORM\Exception\ORMException;
+use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\QueryBuilder;
+use Doctrine\ORM\TransactionRequiredException;
+use OaiPmhHarvester\Entity\Harvest;
 use Omeka\Api\Adapter\AbstractEntityAdapter;
 use Omeka\Api\Request;
 use Omeka\Entity\EntityInterface;
@@ -88,6 +92,11 @@ class EntityAdapter extends AbstractEntityAdapter
         }
     }
 
+    /**
+     * @throws OptimisticLockException
+     * @throws TransactionRequiredException
+     * @throws ORMException
+     */
     public function hydrate(Request $request, EntityInterface $entity, ErrorStore $errorStore): void
     {
         /** @var \OaiPmhHarvester\Entity\Entity $entity */
@@ -96,7 +105,7 @@ class EntityAdapter extends AbstractEntityAdapter
 
         if (array_key_exists('o-oai-pmh:harvest', $data)) {
             $harvest = isset($data['o-oai-pmh:harvest']['o:id'])
-                ? $this->getEntityManager()->find(\OaiPmhHarvester\Entity\Harvest::class, $data['o-oai-pmh:harvest']['o:id'])
+                ? $this->getEntityManager()->find(Harvest::class, $data['o-oai-pmh:harvest']['o:id'])
                 : null;
             $entity->setHarvest($harvest);
         }

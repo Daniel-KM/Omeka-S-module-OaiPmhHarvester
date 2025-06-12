@@ -56,7 +56,7 @@ class DeleteHarvestedEntities extends AbstractJob
 
         if (!in_array($modeHarvest, $modeHarvests)) {
             $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
-            $this->logger->err(
+            $logger->err(
                 'The harvest mode "{mode}" is not supported.', // @translate
                 ['mode' => $modeHarvest]
             );
@@ -91,7 +91,7 @@ class DeleteHarvestedEntities extends AbstractJob
                     'o-oai-pmh:has_err' => $harvest->hasErr(),
                     'o-oai-pmh:stats' => array_filter($stats),
                 ];
-                $this->api->update('oaipmhharvester_harvests', $harvest->id(), $harvestData);
+                $api->update('oaipmhharvester_harvests', $harvest->id(), $harvestData);
                 return;
             }
 

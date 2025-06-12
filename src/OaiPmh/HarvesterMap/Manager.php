@@ -25,6 +25,6 @@ class Manager extends AbstractPluginManager
         parent::__construct($configOrContainerInstance, $v3config);
         $this->addInitializer(function ($serviceLocator, $instance): void {
             $instance->setServiceLocator($serviceLocator);
-        }, false);
+        });
     }
 }

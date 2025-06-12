@@ -195,7 +195,7 @@ class HarvestForm extends Form
                     'label' => 'Process for oai record marked as deleted', // @translate
                     'value_options' => [
                         Harvest::MODE_SKIP => 'Skip', // @translate
-                        Harvest::MODE_DELETE_FILTERED  => 'Delete resources previously imported', // @translate
+                        Harvest::MODE_DELETE_FILTERED => 'Delete resources previously imported', // @translate
                         Harvest::MODE_DELETE => 'Delete resources previously imported, whatever the filters', // @translate
                     ],
                 ],
