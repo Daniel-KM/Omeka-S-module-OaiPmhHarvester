@@ -345,7 +345,7 @@ class Harvest extends AbstractJob
             ->innerJoin('oaipmhharvester_entity', 'resource', 'resource', 'resource.id = oaipmhharvester_entity.entity_id')
             ->orderBy('entity_id', 'asc')
         ;
-        $this->harvestedResourceIdentifiers = $connection->executeQuery($qb)->fetchAllKeyValue();
+        $this->harvestedResourceIdentifiers = $connection->executeQuery($qb->getSQL())->fetchAllKeyValue();
 
         $this->propertyIds = $this->getPropertyIds();
 
@@ -425,6 +425,8 @@ class Harvest extends AbstractJob
             'o-oai-pmh:set_name' => $args['set_name'],
             'o-oai-pmh:set_description' => $args['set_description'] ?? null,
             'o-oai-pmh:has_err' => false,
+            // FIXME
+            /** @phpstan-ignore arrayFilter.alwaysEmpty */
             'o-oai-pmh:stats' => array_filter($stats),
         ];
 

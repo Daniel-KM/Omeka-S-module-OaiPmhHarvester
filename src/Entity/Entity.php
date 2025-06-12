@@ -4,7 +4,6 @@ namespace OaiPmhHarvester\Entity;
 
 use DateTime;
 use Omeka\Entity\AbstractEntity;
-use OaiPmhHarvester\Job\Harvest;
 
 /**
  * @Entity
