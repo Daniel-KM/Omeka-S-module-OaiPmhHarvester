@@ -29,5 +29,16 @@
     },
     "require": {
         "php": ">=8.1"
+    },
+    "require-dev": {
+        "omeka/omeka-s": "^4.1"
+    },
+    "replace": {
+        "omeka-s-themes/default": "*"
+    },
+    "config": {
+        "allow-plugins": {
+            "omeka/composer-addon-installer": true
+        }
     }
 }
