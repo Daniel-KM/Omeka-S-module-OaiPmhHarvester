@@ -7,7 +7,6 @@
 namespace OaiPmhHarvester\OaiPmh\HarvesterMap;
 
 use Laminas\ServiceManager\ServiceLocatorInterface;
-use OaiPmhHarvester\Entity\Entity;
 use SimpleXMLElement;
 
 /**

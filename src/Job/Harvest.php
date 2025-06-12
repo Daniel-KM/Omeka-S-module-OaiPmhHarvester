@@ -6,7 +6,6 @@ use DateTime;
 use DateTimeZone;
 use OaiPmhHarvester\Entity\Harvest as EntityHarvest;
 use Omeka\Api\Exception\NotFoundException;
-use Omeka\Api\Representation\AbstractRepresentation;
 use Omeka\Api\Representation\ItemRepresentation;
 use Omeka\Job\AbstractJob;
 use SimpleXMLElement;
@@ -652,7 +651,7 @@ class Harvest extends AbstractJob
                     // are duplicated.
                     $harvestedResourceIds = array_keys($this->harvestedResourceIdentifiers, $identifier, true);
                     if (count($harvestedResourceIds) === 1) {
-                        $harvestedResourceId = (int)reset($harvestedResourceIds);
+                        $harvestedResourceId = (int) reset($harvestedResourceIds);
                         switch ($this->modeHarvest) {
                             default:
                             case EntityHarvest::MODE_SKIP:
