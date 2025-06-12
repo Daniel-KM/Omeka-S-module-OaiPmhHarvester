@@ -90,7 +90,6 @@ class HarvestAdapter extends AbstractEntityAdapter
     public function hydrate(Request $request, EntityInterface $entity, ErrorStore $errorStore): void
     {
         /** @var \OaiPmhHarvester\Entity\Harvest $entity */
-
         $data = $request->getContent();
 
         $entityManager = $this->getEntityManager();

@@ -370,7 +370,7 @@ class Harvest extends AbstractJob
     {
         $services = $this->getServiceLocator();
 
-        $startTime =  microtime(true);
+        $startTime = microtime(true);
 
         $metadataPrefix = $args['metadata_prefix'] ?? null;
         $from = $args['from'] ?? null;
@@ -595,7 +595,7 @@ class Harvest extends AbstractJob
                     }
 
                     if ($identifier && $this->modeDelete === EntityHarvest::MODE_DELETE) {
-                        ++ $stats['removed'];
+                        ++$stats['removed'];
                         $result = $this->deleteResources($identifier);
                         if (count($result)) {
                             $stats['deleted'] += count($result);
@@ -630,7 +630,7 @@ class Harvest extends AbstractJob
                     && $isDeletedRecord
                     && $this->modeDelete === EntityHarvest::MODE_DELETE_FILTERED
                 ) {
-                    ++ $stats['removed'];
+                    ++$stats['removed'];
                     $result = $this->deleteResources($identifier);
                     if (count($result)) {
                         $stats['deleted'] += count($result);
@@ -909,7 +909,7 @@ class Harvest extends AbstractJob
                     }
                     // To specify owner avoids doctrine issue after clearing
                     // entity manager.
-                    /** @see \Omeka\Api\Adapter\AbstractEntityAdapter::hydrateOwner() */
+                    /* @see \Omeka\Api\Adapter\AbstractEntityAdapter::hydrateOwner() */
                     $resource['o:owner']['o:id'] = $this->staticEntityIds['user_id'];
                     try {
                         $response = $this->api->create('items', $resource);
@@ -959,7 +959,6 @@ class Harvest extends AbstractJob
         }
         return $total;
     }
-
 
     protected function updateResource(int $resourceId, array $resource): ?bool
     {
@@ -1129,45 +1128,47 @@ class Harvest extends AbstractJob
 
         $result = [];
 
-        foreach ([$existingValues, $newValues] as $values) foreach ($values as $value) {
-            $storeValue = $value;
-            // Common.
-            $storeValue['type'] ??= empty($storeValue['type']) ? 'literal' : (string) $storeValue['type'];;
-            $storeValue['property_id'] = $propertyId;
-            $storeValue['is_public'] = !empty($storeValue['is_public']);
-            $storeValue['@language'] = empty($storeValue['@language']) ? null : (string) $storeValue['@language'];
-            $storeValue['@annotation'] = empty($storeValue['@annotation']) ? [] : $storeValue['@annotation'];
-            // Value.
-            $storeValue['@value'] = !isset($storeValue['@value']) || $storeValue['@value'] === '' ? null : (string) $storeValue['@value'];
-            // Uri.
-            $storeValue['o:label'] = !isset($storeValue['o:label']) || $storeValue['o:label'] === '' ? null : (string) $storeValue['o:label'];
-            $storeValue['o:lang'] = empty($storeValue['o:lang']) ? null : (string) $storeValue['o:lang'];
-            $storeValue['@id'] = empty($storeValue['@id']) ? null : (string) $storeValue['@id'];
-            // Resource.
-            $storeValue['value_resource_id'] = empty($storeValue['value_resource_id']) ? null : (int) $storeValue['value_resource_id'];
-            if (!empty($storeValue['value_resource_id'])) {
-                unset($storeValue['@id']);
+        foreach ([$existingValues, $newValues] as $values) {
+            foreach ($values as $value) {
+                $storeValue = $value;
+                // Common.
+                $storeValue['type'] ??= empty($storeValue['type']) ? 'literal' : (string) $storeValue['type'];
+                $storeValue['property_id'] = $propertyId;
+                $storeValue['is_public'] = !empty($storeValue['is_public']);
+                $storeValue['@language'] = empty($storeValue['@language']) ? null : (string) $storeValue['@language'];
+                $storeValue['@annotation'] = empty($storeValue['@annotation']) ? [] : $storeValue['@annotation'];
+                // Value.
+                $storeValue['@value'] = !isset($storeValue['@value']) || $storeValue['@value'] === '' ? null : (string) $storeValue['@value'];
+                // Uri.
+                $storeValue['o:label'] = !isset($storeValue['o:label']) || $storeValue['o:label'] === '' ? null : (string) $storeValue['o:label'];
+                $storeValue['o:lang'] = empty($storeValue['o:lang']) ? null : (string) $storeValue['o:lang'];
+                $storeValue['@id'] = empty($storeValue['@id']) ? null : (string) $storeValue['@id'];
+                // Resource.
+                $storeValue['value_resource_id'] = empty($storeValue['value_resource_id']) ? null : (int) $storeValue['value_resource_id'];
+                if (!empty($storeValue['value_resource_id'])) {
+                    unset($storeValue['@id']);
+                }
+                unset(
+                    $storeValue['property_label'],
+                    $storeValue['value_resource_name'],
+                    $storeValue['url'],
+                    $storeValue['display_title'],
+                    $storeValue['thumbnail_url'],
+                    $storeValue['thumbnail_title'],
+                    $storeValue['thumbnail_type'],
+                    // Specific for modules.
+                    $storeValue['@type'],
+                    // DataTypeGeometry.
+                    $storeValue['srid'],
+                    $storeValue['geolocation_position'],
+                    // DataTypePlace.
+                    $storeValue['o:data'],
+                    // DataTypeRdf.
+                    // NumericDataTypes.
+                );
+                ksort($storeValue);
+                $values[] = $storeValue;
             }
-            unset(
-                $storeValue['property_label'],
-                $storeValue['value_resource_name'],
-                $storeValue['url'],
-                $storeValue['display_title'],
-                $storeValue['thumbnail_url'],
-                $storeValue['thumbnail_title'],
-                $storeValue['thumbnail_type'],
-                // Specific for modules.
-                $storeValue['@type'],
-                // DataTypeGeometry.
-                $storeValue['srid'],
-                $storeValue['geolocation_position'],
-                // DataTypePlace.
-                $storeValue['o:data'],
-                // DataTypeRdf.
-                // NumericDataTypes.
-            );
-            ksort($storeValue);
-            $values[] = $storeValue;
         }
 
         return array_values(array_map('unserialize', array_unique(array_map('serialize', $result))));

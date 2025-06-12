@@ -324,7 +324,7 @@ class IndexController extends AbstractActionController
             $message = new Message(
                 $this->translate('These whitelist filters are used: %s.'), // @translate
                 implode('", "', $filters['whitelist']
-            ));
+                ));
             $this->messenger()->addSuccess($message);
         }
 
@@ -332,7 +332,7 @@ class IndexController extends AbstractActionController
             $message = new Message(
                 $this->translate('These blacklist filters are used: %s.'), // @translate
                 implode('", "', $filters['blacklist']
-            ));
+                ));
             $this->messenger()->addSuccess($message);
         }
 
