@@ -1,0 +1,20 @@
+parameters:
+  level: 1
+  paths:
+    - config
+    - src
+    - view
+
+  ignoreErrors:
+    # Constant defined in OMEKA-S bootstrap.php
+    - '#Constant OMEKA_PATH not found.#'
+    # Ignore errors from Omeka Magic Helpers methods :/
+    - '#Call to an undefined method [a-zA-Z0-9\\_]+::getForm\(\)#'
+    - '#Call to an undefined method [a-zA-Z0-9\\_]+::messenger\(\)#'
+    - '#Call to an undefined method [a-zA-Z0-9\\_]+::api\(\)#'
+    - '#Call to an undefined method [a-zA-Z0-9\\_]+::translate\(\)#'
+    - '#Call to an undefined method [a-zA-Z0-9\\_]+::jobDispatcher\(\)#'
+    - '#Call to an undefined method [a-zA-Z0-9\\_]+::paginator\(\)#'
+    - '#Call to an undefined method [a-zA-Z0-9\\_]+::oaiPmhRepository\(\)#'
+    # Ignore errors from Common Module "class.notFound" - module not loaded
+    - '#Instantiated class Common\.*#'
