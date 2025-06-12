@@ -90,7 +90,7 @@ class Harvest extends AbstractJob
      *
      * @var array
      */
-    protected $harvestedResourceIdentifiers = [];
+    protected array $harvestedResourceIdentifiers = [];
 
     /**
      * @var bool
@@ -407,7 +407,7 @@ class Harvest extends AbstractJob
         ];
 
         // Only to keep track of translation.
-        unset($stats['marked deleted']); // @translate
+        unset($stats['marked_deleted']); // @translate
 
         $harvestData = [
             'o:job' => ['o:id' => $this->job->getId()],
@@ -642,15 +642,16 @@ class Harvest extends AbstractJob
                     continue;
                 }
 
-                $isToUpdate = false;
                 if ($identifier
                     && in_array($identifier, $this->harvestedResourceIdentifiers)
                 ) {
+                    $isToUpdate = false;
+
                     // Only atomic values are managed. Records for other formats
                     // are duplicated.
                     $harvestedResourceIds = array_keys($this->harvestedResourceIdentifiers, $identifier, true);
                     if (count($harvestedResourceIds) === 1) {
-                        $harvestedResourceId = (int) reset($harvestedResourceIds);
+                        $harvestedResourceId = (int)reset($harvestedResourceIds);
                         switch ($this->modeHarvest) {
                             default:
                             case EntityHarvest::MODE_SKIP:
@@ -673,67 +674,67 @@ class Harvest extends AbstractJob
                                 ++$stats['duplicated'];
                                 break;
                         }
-                    }
-                }
 
-                if ($isToUpdate) {
-                    // Update requires a single resource.
-                    $resources = $harvesterMap->mapRecord($record);
-                    if (!count($resources)) {
-                        continue;
-                    } elseif (count($resources) > 1) {
-                        $this->logger->err(
-                            'The oai record {oai_id} (resource {resource_id} cannot be updated, because it maps to multiple resources.', // @translate
-                            ['oai_id' => $identifier, 'resource_id' => $harvestedResourceId]
-                        );
-                        // Error is counted below.
-                        continue;
-                    }
-                    $result = $this->updateResource($harvestedResourceId, reset($resources));
-                    if ($result === null) {
-                        ++$stats['updated'];
-                        $this->logger->info(
-                            'The oai record {oai_id} was already imported as resource {resource_id}. There is no change.', // @translate
-                            ['oai_id' => $identifier, 'resource_id' => $harvestedResourceId]
-                        );
-                    } elseif ($result) {
-                        ++$stats['updated'];
-                        switch ($this->modeHarvest) {
-                            default:
-                            case EntityHarvest::MODE_APPEND:
-                                $this->logger->info(
-                                    'The oai record {oai_id} was already imported as resource {resource_id}. The resource was completed.', // @translate
+                        if ($isToUpdate) {
+                            // Update requires a single resource.
+                            $resources = $harvesterMap->mapRecord($record);
+                            if (!count($resources)) {
+                                continue;
+                            } elseif (count($resources) > 1) {
+                                $this->logger->err(
+                                    'The oai record {oai_id} (resource {resource_id} cannot be updated, because it maps to multiple resources.', // @translate
                                     ['oai_id' => $identifier, 'resource_id' => $harvestedResourceId]
                                 );
-                                break;
-                            case EntityHarvest::MODE_UPDATE:
+                                // Error is counted below.
+                                continue;
+                            }
+                            $result = $this->updateResource($harvestedResourceId, reset($resources));
+                            if ($result === null) {
+                                ++$stats['updated'];
                                 $this->logger->info(
-                                    'The oai record {oai_id} was already imported as resource {resource_id}. The resource was updated.', // @translate
+                                    'The oai record {oai_id} was already imported as resource {resource_id}. There is no change.', // @translate
                                     ['oai_id' => $identifier, 'resource_id' => $harvestedResourceId]
                                 );
-                                break;
-                            case EntityHarvest::MODE_REPLACE:
-                                $this->logger->info(
-                                    'The oai record {oai_id} was already imported as resource {resource_id}. The resource was replaced.', // @translate
+                            } elseif ($result) {
+                                ++$stats['updated'];
+                                switch ($this->modeHarvest) {
+                                    default:
+                                    case EntityHarvest::MODE_APPEND:
+                                        $this->logger->info(
+                                            'The oai record {oai_id} was already imported as resource {resource_id}. The resource was completed.', // @translate
+                                            ['oai_id' => $identifier, 'resource_id' => $harvestedResourceId]
+                                        );
+                                        break;
+                                    case EntityHarvest::MODE_UPDATE:
+                                        $this->logger->info(
+                                            'The oai record {oai_id} was already imported as resource {resource_id}. The resource was updated.', // @translate
+                                            ['oai_id' => $identifier, 'resource_id' => $harvestedResourceId]
+                                        );
+                                        break;
+                                    case EntityHarvest::MODE_REPLACE:
+                                        $this->logger->info(
+                                            'The oai record {oai_id} was already imported as resource {resource_id}. The resource was replaced.', // @translate
+                                            ['oai_id' => $identifier, 'resource_id' => $harvestedResourceId]
+                                        );
+                                        break;
+                                }
+                            } else {
+                                $this->logger->warn(
+                                    'The oai record {oai_id} was already imported as resource {resource_id}. The resource cannot be updated.', // @translate
                                     ['oai_id' => $identifier, 'resource_id' => $harvestedResourceId]
                                 );
-                                break;
+                            }
+                        } else {
+                            $toInsert[$identifier] = [];
+                            $resources = $harvesterMap->mapRecord($record);
+                            foreach ($resources as $resource) {
+                                $toInsert[$identifier][] = $resource;
+                                $stats['medias'] += !empty($resource['o:media']) ? count($resource['o:media']) : 0;
+                                ++$stats['imported'];
+                            }
+                            ++$stats['processed'];
                         }
-                    } else {
-                        $this->logger->warn(
-                            'The oai record {oai_id} was already imported as resource {resource_id}. The resource cannot be updated.', // @translate
-                            ['oai_id' => $identifier, 'resource_id' => $harvestedResourceId]
-                        );
                     }
-                } else {
-                    $toInsert[$identifier] = [];
-                    $resources = $harvesterMap->mapRecord($record);
-                    foreach ($resources as $resource) {
-                        $toInsert[$identifier][] = $resource;
-                        $stats['medias'] += !empty($resource['o:media']) ? count($resource['o:media']) : 0;
-                        ++$stats['imported'];
-                    }
-                    ++$stats['processed'];
                 }
             }
 
