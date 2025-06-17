@@ -153,7 +153,8 @@ class IndexController extends AbstractActionController
             ]);
         }
 
-        if (!$harvestAllRecords && !$predefinedSets && empty($data['harvest'])) {
+        $toHarvest = $this->setsToHarvestFromFormData($data);
+        if (!$harvestAllRecords && !$predefinedSets && empty($toHarvest)) {
             $this->messenger()->addError('At least one repository should be selected.'); // @translate
             return new ViewModel([
                 'form' => $form,
@@ -224,19 +225,6 @@ class IndexController extends AbstractActionController
         // Process List Sets form.
         $data = $form->getData();
 
-        // TODO Fix get data for namespace. Use fieldset/collection.
-        $data['namespace'] = $post['namespace'] ?? [];
-        $data['setSpec'] = $post['setSpec'] ?? [];
-        $data['harvest'] = $post['harvest'] ?? [];
-        foreach (array_keys($data) as $k) {
-            if (strpos($k, 'namespace[') === 0
-                || strpos($k, 'setSpec[') === 0
-                || strpos($k, 'harvest[') === 0
-            ) {
-                unset($data[$k]);
-            }
-        }
-
         $from = $data['from'] ?? null;
         if ($from && !empty($data['from_time'])) {
             $from = $from . 'T' . $data['from_time'] . 'Z';
@@ -277,10 +265,11 @@ class IndexController extends AbstractActionController
                 'item_set_id' => $itemSet ? $itemSet->id() : null,
             ];
         } else {
-            foreach (array_keys($data['harvest'] ?? []) as $setSpec) {
-                $setSpec = (string) $setSpec;
-                $prefix = $data['namespace'][$setSpec];
-                $label = $data['setSpec'][$setSpec];
+            $toHarvest = $this->setsToHarvestFromFormData($data);
+
+            foreach (array_keys($toHarvest) as $setSpec) {
+                $prefix = $toHarvest[$setSpec]['namespace'];
+                $label = $toHarvest[$setSpec]['label'];
                 $message .= sprintf(
                     $this->translate('%s as %s'), // @translate
                     $label,
@@ -585,5 +574,12 @@ class IndexController extends AbstractActionController
         return $this->api()
             ->create('item_sets', $toCreate)
             ->getContent();
+    }
+
+    private function setsToHarvestFromFormData(array $formData): array {
+        return array_filter(
+            $formData,
+            fn ($v) => is_array($v) && !empty($v['harvest'])
+        );
     }
 }
