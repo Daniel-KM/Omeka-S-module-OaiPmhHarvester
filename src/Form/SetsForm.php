@@ -326,6 +326,11 @@ class SetsForm extends Form
                 "label" => $label,
             ]
         );
+
+        $classList = $fieldset->getAttribute('class') ?? '';
+        $classList .= ' set';
+        $fieldset->setAttribute('class', $classList);
+
         $this->add($fieldset);
 
         $fieldset
@@ -337,7 +342,6 @@ class SetsForm extends Form
                     'value_options' => $availableFormats,
                 ],
                 'attributes' => [
-                    'class' => 'hidden',
                     'display' => 'none',
                     'id' => 'namespace-' . $setIdentifier,
                     'value' => $preSelectedFormat,
@@ -362,6 +366,7 @@ class SetsForm extends Form
                 'attributes' => [
                     'id' => 'harvest-' . $setIdentifier,
                     'value' => $isChecked,
+                    'class' => 'fieldset-checkbox',
                 ],
             ]);
         return $this;

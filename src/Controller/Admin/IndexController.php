@@ -14,19 +14,6 @@ use Omeka\Stdlib\Message;
 class IndexController extends AbstractActionController
 {
     /**
-     * A standard php server allows only 1000 fields, and there are three fields
-     * by set (prefix, hidden, harvest).
-     *
-     * TODO Add a js to return a json and avoid limit of 250 repository sets to harvest.
-     *
-     * Warning: the repository Calames used for tests is wrong: setSpec are not unique.
-     * @link http://www.calames.abes.fr/oai/oai2.aspx?verb=ListSets
-     *
-     * @var int
-     */
-    protected $maxListSets = 250;
-
-    /**
      * Main form to set the url.
      */
     public function indexAction()
@@ -136,9 +123,7 @@ class IndexController extends AbstractActionController
         $form
             ->setData($optionsData);
 
-        if ((!$predefinedSets && $optionsData['total'] <= $this->maxListSets && !empty($optionsData['sets']) && count($optionsData['sets']) !== $optionsData['total'])
-            || (!$predefinedSets && $optionsData['total'] > $this->maxListSets && !empty($optionsData['sets']) && count($optionsData['sets']) !== $this->maxListSets)
-        ) {
+        if (!$predefinedSets && !empty($optionsData['sets']) && count($optionsData['sets']) !== $optionsData['total']) {
             $this->messenger()->addWarning('This repository has duplicate identifiers for sets, so they are not all displayed. You may warn the admin of the repository.'); // @translate
         }
 
@@ -507,7 +492,7 @@ class IndexController extends AbstractActionController
         } else {
             $setsTotals = $oaiPmhRepository->listOaiPmhSets();
             $total = $setsTotals['total'];
-            $sets = $predefinedSets ?: array_slice($setsTotals['sets'], 0, $this->maxListSets, true);
+            $sets = $predefinedSets ?: $setsTotals['sets'];
         }
 
         // TODO Normalize sets form with fieldsets and better names.
