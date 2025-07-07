@@ -44,6 +44,11 @@ class Harvest extends AbstractJob
     protected $api;
 
     /**
+     * @var \Common\Stdlib\EasyMeta
+     */
+    protected $easyMeta;
+
+    /**
      * @var \Doctrine\ORM\EntityManager
      */
     protected $entityManager;
@@ -139,6 +144,7 @@ class Harvest extends AbstractJob
         $services = $this->getServiceLocator();
         $this->api = $services->get('Omeka\ApiManager');
         $this->logger = $services->get('Omeka\Logger');
+        $this->easyMeta = $services->get('Common\EasyMeta');
         $this->entityManager = $services->get('Omeka\EntityManager');
         $this->harvesterMapManager = $services->get(\OaiPmhHarvester\OaiPmh\HarvesterMap\Manager::class);
 
@@ -347,7 +353,7 @@ class Harvest extends AbstractJob
         ;
         $this->harvestedResourceIdentifiers = $connection->executeQuery($qb->getSQL())->fetchAllKeyValue();
 
-        $this->propertyIds = $this->getPropertyIds();
+        $this->propertyIds = $this->easyMeta->propertyIds();
 
         // Prepare data to refresh entity manager.
         $this->staticEntityIds = [
@@ -684,7 +690,7 @@ class Harvest extends AbstractJob
                         continue;
                     } elseif (count($resources) > 1) {
                         $this->logger->err(
-                            "The oai record {oai_id} (resource {resource_id} cannot be updated, because it maps to multiple resources.", // @translate
+                            'The oai record {oai_id} (resource {resource_id} cannot be updated, because it maps to multiple resources.', // @translate
                             ['oai_id' => $identifier, 'resource_id' => $harvestedResourceId]
                         );
                         // Error is counted below.
@@ -964,6 +970,7 @@ class Harvest extends AbstractJob
     protected function updateResource(int $resourceId, array $resource): ?bool
     {
         // The id is already checked.
+        // TODO Don't use json_decode(json_encode()).
         // The method JsonSerialize() does not encode objects as array (owner,
         // resource template, etc.) currently.
         $existingResource = $this->api->read('resources', $resourceId)->getContent();
@@ -1189,34 +1196,6 @@ class Harvest extends AbstractJob
             $this->job->setOwner($user);
             $this->entityManager->persist($this->job);
         }
-    }
-
-    /**
-     * Get all property ids by term.
-     *
-     * @return array Associative array of ids by term.
-     *
-     * @todo Use \Common\Stdlib\EasyMeta.
-     */
-    protected function getPropertyIds(): array
-    {
-        $connection = $this->getServiceLocator()->get('Omeka\Connection');
-        $qb = $connection->createQueryBuilder();
-        $qb
-            ->select(
-                'DISTINCT CONCAT(vocabulary.prefix, ":", property.local_name) AS term',
-                'property.id AS id',
-                // Only the two first selects are needed, but some databases
-                // require "order by" or "group by" value to be in the select.
-                'vocabulary.id'
-            )
-            ->from('property', 'property')
-            ->innerJoin('property', 'vocabulary', 'vocabulary', 'property.vocabulary_id = vocabulary.id')
-            ->orderBy('vocabulary.id', 'asc')
-            ->addOrderBy('property.id', 'asc')
-            ->addGroupBy('property.id')
-        ;
-        return array_map('intval', $connection->executeQuery($qb)->fetchAllKeyValue());
     }
 
     /**

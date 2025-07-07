@@ -224,9 +224,9 @@ class IndexController extends AbstractActionController
             'blacklist' => $data['filters_blacklist'] ?? [],
         ];
 
-        $message = new Message(
-            $this->translate('Harvesting from "%s" sets'), // @translate
-            $data['endpoint']
+        $message = new PsrMessage(
+            $this->translate('Harvesting from endpoint {url}'), // @translate
+            ['url' => $data['endpoint']]
         );
         $message .= ': ';
 
@@ -295,18 +295,18 @@ class IndexController extends AbstractActionController
         }
 
         if ($filters['whitelist']) {
-            $message = new Message(
-                $this->translate('These whitelist filters are used: %s.'), // @translate
-                implode('", "', $filters['whitelist']
-            ));
+            $message = new PsrMessage(
+                $this->translate('These whitelist filters are used: {list}.'), // @translate
+                ['list' => implode(', ', $filters['whitelist'])]
+            );
             $this->messenger()->addSuccess($message);
         }
 
         if ($filters['blacklist']) {
-            $message = new Message(
-                $this->translate('These blacklist filters are used: %s.'), // @translate
-                implode('", "', $filters['blacklist']
-            ));
+            $message = new PsrMessage(
+                $this->translate('These blacklist filters are used: {list}.'), // @translate
+                ['list' => implode(', ', $filters['blacklist'])]
+            );
             $this->messenger()->addSuccess($message);
         }
 
@@ -332,10 +332,7 @@ class IndexController extends AbstractActionController
         // Use synchronous dispatcher for quick testing purpose.
         $strategy = null;
         /*
-        // $strategy = 'synchronous';
-        $strategy = $strategy === 'synchronous'
-            ? $this->api()->read('vocabularies', 1)->getContent()->getServiceLocator()->get(\Omeka\Job\DispatchStrategy\Synchronous::class)
-            : null;
+        $strategy = $this->api()->read('vocabularies', 1)->getContent()->getServiceLocator()->get(\Omeka\Job\DispatchStrategy\Synchronous::class);
         */
 
         $job = $this->jobDispatcher()->dispatch(\OaiPmhHarvester\Job\Harvest::class, $args, $strategy);
@@ -371,9 +368,9 @@ class IndexController extends AbstractActionController
                     $undoJobIds[] = $undoJob->getId();
                 }
             }
-            $this->messenger()->addSuccess(new Message(
-                'Undo in progress in the following jobs: %s', // @translate
-                implode(', ', $undoJobIds)
+            $this->messenger()->addSuccess(new PsrMessage(
+                'Undo in progress in the following jobs: {job_ids}.', // @translate
+                ['job_ids' => implode(', ', $undoJobIds)]
             ));
         }
 
@@ -480,10 +477,10 @@ class IndexController extends AbstractActionController
             $checks = array_filter($formats, fn ($v, $k) => $v === $k, ARRAY_FILTER_USE_BOTH);
             $unmanaged = array_filter($predefinedSets, fn ($v) => !in_array($v, $checks));
             if ($unmanaged) {
-                $result['message'] = new Message(
-                    $this->translate('The following formats are not managed: "%s".'), // @translate
-                    implode('", "', $unmanaged)
-                );
+                $result['message'] = (new PsrMessage(
+                    'The following formats are not managed: {list}.', // @translate
+                    ['list' => implode(', ', $unmanaged)]
+                ))->setTranslator($this->translator());
                 return $result;
             }
         }

@@ -8,6 +8,11 @@ use Omeka\Api\Representation\JobRepresentation;
 
 class EntityRepresentation extends AbstractEntityRepresentation
 {
+    /**
+     * @var \OaiPmhHarvester\Entity\Entity
+     */
+    protected $resource;
+
     public function getJsonLd()
     {
         return [

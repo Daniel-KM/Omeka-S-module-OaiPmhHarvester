@@ -9,6 +9,11 @@ use Omeka\Api\Representation\JobRepresentation;
 
 class HarvestRepresentation extends AbstractEntityRepresentation
 {
+    /**
+     * @var \OaiPmhHarvester\Entity\Harvest
+     */
+    protected $resource;
+
     public function getJsonLd()
     {
         $undoJob = $this->undoJob();
