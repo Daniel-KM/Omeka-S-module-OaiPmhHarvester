@@ -306,7 +306,8 @@ class SetsForm extends Form
     }
 
     /**
-     * Add an OAI-PMH set to the form
+     * Add an OAI-PMH set to the form.
+     *
      * @param string $setIdentifier the OAI-PMH set identifier
      * @param string $setName the OAI-PMH set name
      * @param array $availableFormats the list of available formats

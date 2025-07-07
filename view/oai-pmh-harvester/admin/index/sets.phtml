@@ -51,10 +51,8 @@ $sets = $form->getOption('sets') ?: [];
 </p>
 <?php endif; ?>
 
-<?= $this->form($form) ?>
-
-<div style="float: right">
-    <label for="nbrPerPage">Number of Sets per page:</label>
+<div class="pagination pagination-header" style="float: right">
+    <label for="nbrPerPage"><?= $translate('Number of oai sets per page') ?></label>
     <select onclick="updateNbrPerPage()" name="nbrPerPage" id="pagination_nbrPerPage">
         <option value="5">5</option>
         <option value="10">10</option>
@@ -66,86 +64,107 @@ $sets = $form->getOption('sets') ?: [];
         <option value="1000">1000</option>
     </select>
 
-    <button id="pagination_prev_button" onclick="prevPage()">Previous Page</button>
-    <span id="pagination_page_idx">1</span>
-    <button id="pagination_next_button" onclick="nextPage()">Next Page</button>
+    <button type="button" class="button button-previous" onclick="prevPage()"><?= $translate('Previous') ?></button>
+    <span class="pagination-page-index">1</span>
+    <button type="button" class="button button-next" onclick="nextPage()"><?= $translate('Next') ?></button>
+</div>
+
+<?= $this->form($form) ?>
+
+<div class="pagination pagination-footer" style="float: right">
+    <label for="nbrPerPage"><?= $translate('Number of oai sets per page') ?></label>
+    <select onclick="updateNbrPerPage()" name="nbrPerPage" id="pagination_nbrPerPage">
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option selected value="25">25</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+        <option value="250">250</option>
+        <option value="500">500</option>
+        <option value="1000">1000</option>
+    </select>
+
+    <button type="button" class="button button-previous" onclick="prevPage()"><?= $translate('Previous') ?></button>
+    <span class="pagination-page-index">1</span>
+    <button type="button" class="button button-next" onclick="nextPage()"><?= $translate('Next') ?></button>
 </div>
 
 <script>
-    function updateVisibility(fieldsetArray, pageIdx, nbrPerPage) {
-        document.getElementById("pagination_page_idx").textContent = "" + (pageIdx + 1);
-        document.getElementById("pagination_prev_button").disabled = pageIdx == 0;
-        document.getElementById("pagination_next_button").disabled = (pageIdx+1) * parseInt(nbrPerPage) >= fieldsets.length;
-
-        let startIdx = pageIdx * parseInt(nbrPerPage);
-        let endIdx = startIdx + parseInt(nbrPerPage);
-        for (let i = 0; i < fieldsetArray.length; ++i) {
-            if (i >= startIdx && i < endIdx) {
-                fieldsetArray[i].classList.remove('hidden');
-            } else {
-                fieldsetArray[i].classList.add('hidden');
-            }
-        }
-    }
-
+document.addEventListener('DOMContentLoaded', function () {
+    const paginationHeaders = document.querySelectorAll('.pagination.pagination-header');
     const fieldsets = document.querySelectorAll('form fieldset.set');
+    const paginationPageIndexes = document.querySelectorAll('.pagination-page-index');
+    const paginationPrevButtons = document.querySelectorAll('.button-previous');
+    const paginationNextButtons = document.querySelectorAll('.button-next');
+    const paginationNbrPerPages = document.querySelectorAll('.pagination_nbrPerPage');
     let pageIdx = 0;
-    let nbrPerPage = document.getElementById("pagination_nbrPerPage").value;
-    updateVisibility(fieldsets, pageIdx, nbrPerPage)
+    let nbrPerPage = parseInt(paginationNbrPerPages[0]?.value || 25);
+
+    if (paginationHeaders.length && fieldsets.length) {
+        fieldsets[0].parentNode.insertBefore(paginationHeaders[0], fieldsets[0]);
+    }
+
+    function updateVisibility() {
+        const startIdx = pageIdx * nbrPerPage;
+        const endIdx = startIdx + nbrPerPage;
+
+        paginationPageIndexes.forEach(idx => idx.textContent = pageIdx + 1);
+        paginationPrevButtons.forEach(btn => btn.disabled = pageIdx === 0);
+        paginationNextButtons.forEach(btn => btn.disabled = endIdx >= fieldsets.length);
+
+        fieldsets.forEach((fieldset, idx) => {
+            fieldset.classList.toggle('hidden', idx < startIdx || idx >= endIdx);
+        });
+    }
+
     function fixPageIdx() {
-        if(pageIdx < 0) {
-            pageIdx = 0;
-        } else if (pageIdx * nbrPerPage >= fieldsets.length) {
-            pageIdx = Math.floor((fieldsets.length-1) / nbrPerPage);
-        }
+        pageIdx = Math.max(0, Math.min(pageIdx, Math.floor((fieldsets.length - 1) / nbrPerPage)));
     }
+
     function updateNbrPerPage() {
-        nbrPerPage = document.getElementById("pagination_nbrPerPage").value;
+        nbrPerPage = parseInt(paginationNbrPerPages[0]?.value || 25);
         fixPageIdx();
-        updateVisibility(fieldsets, pageIdx, nbrPerPage)
+        updateVisibility();
     }
-    function page(delta) {
+
+    function changePage(delta) {
         pageIdx += delta;
         fixPageIdx();
-        updateVisibility(fieldsets, pageIdx, nbrPerPage);
-    }
-    function nextPage() {
-        page(+1);
-    }
-    function prevPage() {
-        page(-1);
+        updateVisibility();
     }
 
+    paginationNbrPerPages.forEach(select => select.addEventListener('change', updateNbrPerPage));
+    paginationPrevButtons.forEach(btn => btn.addEventListener('click', () => changePage(-1)));
+    paginationNextButtons.forEach(btn => btn.addEventListener('click', () => changePage(1)));
 
     // This snippet of code remove useless POST attributes in order to don't exceed the limit of the php server
     // A typical default configuration of max field for a php server is 1000
-    document.getElementById("harvest-list-sets-form").addEventListener(
-        'submit',
-        function(e) {
-            e.preventDefault();
-            document.querySelectorAll('fieldset.set').forEach(fieldset => {
-                // Cherche la checkbox "harvest" dans le fieldset
-                const checkbox = fieldset.querySelector('.fieldset-checkbox');
+    document.getElementById("harvest-list-sets-form").addEventListener('submit', function (e) {
+        e.preventDefault();
 
-                if (checkbox && !checkbox.checked) {
-                    // Si présent et non cochée : supprimer tous les champs nommés dans ce fieldset
-                    fieldset.querySelectorAll('[name]').forEach(el => el.remove());
-                }
-            });
-
-            let cpt = 0;
-            new FormData(this).forEach(() => ++cpt); // count how many fields will be sent in the POST request.
-            if(cpt > 999) {
-                let text = "More than 999 fields have been submitted in the request; it's possible that not all the data will be taken into account. "
-                    + "\nDo you want to continue?";
-                if (!confirm(text)) {
-                    return;
-                }
+        fieldsets.forEach(fieldset => {
+            // Cherche la checkbox "harvest" dans le fieldset
+            const checkbox = fieldset.querySelector('.fieldset-checkbox');
+            if (checkbox && !checkbox.checked) {
+                // Si présent et non cochée : supprimer tous les champs nommés dans ce fieldset
+                fieldset.querySelectorAll('[name]').forEach(el => el.remove());
             }
+        });
 
-            this.submit();
+        // Count how many fields will be sent in the POST request.
+        if (new FormData(this).entries().length > 999) {
+            let text = "More than 1000 fields have been submitted in the request; it's possible that not all the data will be taken into account. "
+                + "\nDo you want to continue?";
+            if (!confirm(text)) {
+                return;
+            }
         }
-    );
+
+        this.submit();
+    });
+
+    updateVisibility();
+});
 </script>
 
 
