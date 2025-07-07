@@ -289,11 +289,11 @@ class SetsForm extends Form
             // The predefined sets are already formatted, but have no label.
             // So we use the set identifier as label too
             foreach ($sets as $setIdentifier => $format) {
-                $this->appendSet($setIdentifier, $setIdentifier, $formats, $format, true);
+                $this->appendSet((string) $setIdentifier, $setIdentifier, $formats, $format, true);
             }
         } elseif (!empty($sets)) {
             foreach ($sets as $setIdentifier => $setName) {
-                $this->appendSet($setIdentifier, $setName, $formats, $favoriteFormat, false);
+                $this->appendSet((string) $setIdentifier, $setName, $formats, $favoriteFormat, false);
             }
         } else {
             $fieldset = new Fieldset("error",
