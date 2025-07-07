@@ -4,6 +4,7 @@ namespace OaiPmhHarvester;
 
 use Laminas\EventManager\Event;
 use Laminas\EventManager\SharedEventManagerInterface;
+use Laminas\Mvc\MvcEvent;
 use Laminas\ServiceManager\ServiceLocatorInterface;
 use Omeka\Module\AbstractModule;
 use Omeka\Stdlib\Message;
@@ -13,6 +14,25 @@ class Module extends AbstractModule
     public function getConfig()
     {
         return include __DIR__ . '/config/module.config.php';
+    }
+
+    public function onBootstrap(MvcEvent $event): void
+    {
+        parent::onBootstrap($event);
+
+        /** @var \Omeka\Permissions\Acl $acl */
+        $acl = $this->getServiceLocator()->get('Omeka\Acl');
+        $roles = $acl->getRoles();
+
+        $acl
+            ->allow(
+                $roles,
+                [
+                    \OaiPmhHarvester\Api\Adapter\HarvestAdapter::class,
+                ],
+                ['read', 'search']
+            )
+        ;
     }
 
     public function install(ServiceLocatorInterface $services): void
