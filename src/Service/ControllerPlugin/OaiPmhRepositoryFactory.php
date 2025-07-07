@@ -2,9 +2,9 @@
 
 namespace OaiPmhHarvester\Service\ControllerPlugin;
 
-use Interop\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use OaiPmhHarvester\Mvc\Controller\Plugin\OaiPmhRepository;
+use Psr\Container\ContainerInterface;
 
 class OaiPmhRepositoryFactory implements FactoryInterface
 {

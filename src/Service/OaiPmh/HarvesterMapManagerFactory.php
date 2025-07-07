@@ -2,10 +2,10 @@
 
 namespace OaiPmhHarvester\Service\OaiPmh;
 
-use Interop\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use OaiPmhHarvester\OaiPmh\HarvesterMap\Manager;
 use Omeka\Service\Exception\ConfigException;
+use Psr\Container\ContainerInterface;
 
 class HarvesterMapManagerFactory implements FactoryInterface
 {
