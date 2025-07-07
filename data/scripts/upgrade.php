@@ -349,3 +349,10 @@ if (version_compare($oldVersion, '3.4.19', '<')) {
     );
     $messenger->addWarning($message);
 }
+
+if (version_compare($oldVersion, '3.4.22', '<')) {
+    $message = new Message(
+        'It is now possible to harvest a repository bigger than 250 sets.' // @translate
+    );
+    $messenger->addSuccess($message);
+}
