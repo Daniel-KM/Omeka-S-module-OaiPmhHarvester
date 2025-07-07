@@ -11,12 +11,12 @@ class EntityRepresentation extends AbstractEntityRepresentation
     public function getJsonLd()
     {
         return [
-            'o-oai-pmh:harvest' => $this->harvest()->getReference(),
+            'o-oai-pmh:harvest' => $this->harvest()->getReference()->jsonSerialize(),
             'o-oai-pmh:entity_id' => $this->entityId(),
             'o-oai-pmh:entity_name' => $this->entityName(),
             'o-oai-pmh:identifier' => $this->identifier(),
             'o:created' => [
-                '@value' => $this->getDateTime($this->created()),
+                '@value' => $this->getDateTime($this->created())->jsonSerialize(),
                 '@type' => 'http://www.w3.org/2001/XMLSchema#dateTime',
             ],
         ];

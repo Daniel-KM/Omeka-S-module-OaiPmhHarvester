@@ -12,27 +12,30 @@ class HarvestRepresentation extends AbstractEntityRepresentation
     public function getJsonLd()
     {
         $undoJob = $this->undoJob();
-        if ($undoJob) {
-            $undoJob = $undoJob->getReference();
-        }
-
         $itemSet = $this->itemSet();
-        if ($itemSet) {
-            $itemSet = $itemSet->getReference();
-        }
+        $from = $this->from();
+        $until = $this->until();
 
         return [
-            'o:job' => $this->job()->getReference(),
-            'o:undo_job' => $undoJob,
+            'o:job' => $this->job()->getReference()->jsonSerialize(),
+            'o:undo_job' => $undoJob ? $undoJob->getReference()->jsonSerialize() : null,
             'o-oai-pmh:message' => $this->message(),
             'o-oai-pmh:endpoint' => $this->endpoint(),
             'o-oai-pmh:entity_name' => $this->entityName(),
-            'o:item_set' => $itemSet(),
+            'o:item_set' => $itemSet ? $itemSet->getReference()->jsonSerialize() : null,,
             'o-oai-pmh:metadata_prefix' => $this->metadataPrefix(),
             'o-oai-pmh:mode_harvest' => $this->modeHarvest(),
             'o-oai-pmh:mode_delete' => $this->modeDelete(),
-            'o-oai-pmh:from' => $this->from(),
-            'o-oai-pmh:until' => $this->until(),
+            'o-oai-pmh:from' => $from
+                ? [
+                    '@value' => $this->getDateTime($from)->jsonSerialize(),
+                    '@type' => 'http://www.w3.org/2001/XMLSchema#dateTime',
+                ] : null,
+            'o-oai-pmh:until' => $until
+                ? [
+                    '@value' => $this->getDateTime($until)->jsonSerialize(),
+                    '@type' => 'http://www.w3.org/2001/XMLSchema#dateTime',
+                ] : null,
             'o-oai-pmh:set_spec' => $this->getSetSpec(),
             'o-oai-pmh:set_name' => $this->getSetName(),
             'o-oai-pmh:set_description' => $this->getSetDescription(),
