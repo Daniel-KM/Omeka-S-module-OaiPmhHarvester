@@ -1094,19 +1094,31 @@ class Harvest extends AbstractJob
 
             // Explode last part of the to like the general mapper.
             // TODO Use the mapper from AdvancedResourceTemplate or BulkImport.
-            [$from, $value] = explode(' ~ ', $from, 2);
-
-            $recordMetadata = $record->metadata;
-            $metas = $recordMetadata->xpath($from);
-            if (!count($metas)) {
-                continue;
+            $pattern = null;
+            $posPattern = mb_strrpos($from, '~');
+            if ($posPattern !== false) {
+                if ($posPattern === 0) {
+                    $pattern = $from;
+                    $from = null;
+                } else {
+                    $pattern = trim(mb_substr($from, $posPattern + 1));
+                    $from = trim(mb_subst($from, 0, $posPattern));
+                }
             }
 
-            $hasValue = $value !== null && $value !== '';
+            if ($from) {
+                $recordMetadata = $record->metadata;
+                $metas = $recordMetadata->xpath($from);
+                if (!count($metas)) {
+                    continue;
+                }
+            }
+
+            $hasPattern = $pattern !== null;
 
             /** @var \SimpleXMLElement $meta */
             foreach ($metas as $meta) {
-                $meta = $hasValue ? $value : (string) $meta;
+                $meta = $hasPattern ? $pattern : (string) $meta;
                 switch ($to) {
                     case 'o:resource_template':
                     case 'o:resource_template/o:label':
