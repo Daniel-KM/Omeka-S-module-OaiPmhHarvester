@@ -72,18 +72,40 @@ class HarvestAdapter extends AbstractEntityAdapter
     {
         $expr = $qb->expr();
 
-        if (!empty($query['job_id'])) {
-            $qb->andWhere($expr->eq(
+        if (isset($query['job_id'])
+            && $query['job_id'] !== ''
+            && $query['job_id'] !== []
+        ) {
+            if (!is_array($query['job_id'])) {
+                $query['job_id'] = [$query['job_id']];
+            }
+            $resourceAlias = $this->createAlias();
+            $qb->innerJoin(
                 'omeka_root.job',
-                $this->createNamedParameter($qb, $query['job_id']))
+                $resourceAlias
             );
+            $qb->andWhere($expr->in(
+                $resourceAlias . '.id',
+                $this->createNamedParameter($qb, $query['job_id'])
+            ));
         }
 
-        if (!empty($query['entity_name'])) {
-            $qb->andWhere($expr->eq(
+        if (isset($query['entity_name'])
+            && $query['entity_name'] !== ''
+            && $query['entity_name'] !== []
+        ) {
+            if (!is_array($query['entity_name'])) {
+                $query['entity_name'] = [$query['entity_name']];
+            }
+            $resourceAlias = $this->createAlias();
+            $qb->innerJoin(
                 'omeka_root.entityName',
-                $this->createNamedParameter($qb, $query['entity_name']))
+                $resourceAlias
             );
+            $qb->andWhere($expr->in(
+                $resourceAlias . '.id',
+                $this->createNamedParameter($qb, $query['entity_name'])
+            ));
         }
     }
 
