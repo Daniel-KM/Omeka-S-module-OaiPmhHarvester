@@ -108,6 +108,11 @@ class Harvest extends AbstractJob
     protected $itemSetDefault;
 
     /**
+     * @var \Table\Api\Representation\TableRepresentation|null
+     */
+    protected $mappingTable;
+
+    /**
      * @var string
      */
     protected $modeDelete = EntityHarvest::MODE_SKIP;
@@ -279,6 +284,20 @@ class Harvest extends AbstractJob
                 'The option "{mode}" for item set is not supported.', // @translate
                 ['mode' => $this->itemSetDefault]
             );
+        }
+
+        // Check mapping.
+        $this->mappingTable = $args['mapping'] ?? null;
+        if ($this->mappingTable) {
+            try {
+                $this->mappingTable = $this->api->read('tables', is_numeric($this->mappingTable) ? ['id' => $this->mappingTable] : ['slug' => $this->mappingTable])->getContent();
+            } catch (NotFoundException $e) {
+                $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
+                $this->logger->err(
+                    'The mapping table "{tablej}" does not exist.', // @translate
+                    ['table' => $args['mapping']]
+                );
+            }
         }
 
         // Check directory to store xmls.
@@ -697,6 +716,7 @@ class Harvest extends AbstractJob
                         continue;
                     }
                     $result = $this->updateResource($harvestedResourceId, reset($resources));
+                    // TODO Manage option Mapping for update.
                     if ($result === null) {
                         ++$stats['updated'];
                         $this->logger->info(
@@ -736,6 +756,7 @@ class Harvest extends AbstractJob
                     $toInsert[$identifier] = [];
                     $resources = $harvesterMap->mapRecord($record);
                     foreach ($resources as $resource) {
+                        $resource = $this->fillResourceWithMapping($resource, $record);
                         $toInsert[$identifier][] = $resource;
                         $stats['medias'] += !empty($resource['o:media']) ? count($resource['o:media']) : 0;
                         ++$stats['imported'];
@@ -1056,6 +1077,57 @@ class Harvest extends AbstractJob
         }
 
         return $resourceIds;
+    }
+
+    protected function fillResourceWithMapping(array $resource, SimpleXMLElement $record): array
+    {
+        if (!$this->mappingTable) {
+            return $resource;
+        }
+
+        foreach ($this->mappingTable->codesData() as $codeData) {
+            $to = $codeData['code'];
+            $from = $codeData['label'];
+            if (!$to || !$from) {
+                continue;
+            }
+
+            // Explode last part of the to like the general mapper.
+            // TODO Use the mapper from AdvancedResourceTemplate or BulkImport.
+            [$from, $value] = explode(' ~ ', $from, 2);
+
+            $recordMetadata = $record->metadata;
+            $metas = $recordMetadata->xpath($from);
+            if (!count($metas)) {
+                continue;
+            }
+
+            $hasValue = $value !== null && $value !== '';
+
+            /** @var \SimpleXMLElement $meta */
+            foreach ($metas as $meta) {
+                $meta = $hasValue ? $value : (string) $meta;
+                switch ($to) {
+                    case 'o:resource_template':
+                    case 'o:resource_template/o:label':
+                    case 'o:resource_template/o:id':
+                        $id = $this->easyMeta->resourceTemplateId($meta);
+                        if ($id) {
+                            $resource['o:resource_template'] = ['o:id' => $id];
+                        }
+                        break;
+                    default:
+                        if (substr($to, -2) === '[]') {
+                            $resource[$to][] = $meta;
+                        } else {
+                            $resource[$to] = $meta;
+                        }
+                        break;
+                }
+            }
+        }
+
+        return $resource;
     }
 
     protected function createRollback(array $resources, string $identifier)

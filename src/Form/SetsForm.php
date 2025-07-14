@@ -248,7 +248,30 @@ class SetsForm extends Form
                     'id' => 'step',
                     'value' => 'harvest-list-sets',
                 ],
-            ]);
+            ])
+        ;
+
+        // Quick check on table module, because the select may not be loaded.
+        if (class_exists('Table\Module', false)) {
+            $this
+                ->add([
+                    'name' => 'mapping',
+                    'type' => \Table\Form\Element\TablesSelect::class,
+                    'options' => [
+                        'label' => 'Map specific metadata from source to resource with a table', // @translate
+                        'info' => 'The source should be a xpath matching each oai item and the destination should be the json-ld key of the metadata.', // @translate
+                        'disable_group_by_owner' => true,
+                        'slug_as_value' => true,
+                        'empty_option' => '',
+                    ],
+                    'attributes' => [
+                        'id' => 'mapping',
+                        'class' => 'chosen-select',
+                        'data-placeholder' => 'Select a table…', // @translate
+                    ],
+                ]);
+            }
+
         return $this;
     }
 

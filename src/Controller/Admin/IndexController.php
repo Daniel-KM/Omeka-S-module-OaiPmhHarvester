@@ -320,6 +320,7 @@ class IndexController extends AbstractActionController
             'has_err' => false,
             'entity_name' => 'items',
             'filters' => $filters,
+            'mapping' => empty($data['mapping']) ? null : $data['mapping'],
             'mode_harvest' => ($data['mode_harvest'] ?? 'skip') ?: 'skip',
             'mode_delete' => ($data['mode_delete'] ?? 'skip') ?: 'skip',
             // Already checked and set in sets, so just for info.
