@@ -27,7 +27,7 @@ class HarvestRepresentation extends AbstractEntityRepresentation
             'o-oai-pmh:message' => $this->message(),
             'o-oai-pmh:endpoint' => $this->endpoint(),
             'o-oai-pmh:entity_name' => $this->entityName(),
-            'o:item_set' => $itemSet ? $itemSet->getReference()->jsonSerialize() : null,,
+            'o:item_set' => $itemSet ? $itemSet->getReference()->jsonSerialize() : null,
             'o-oai-pmh:metadata_prefix' => $this->metadataPrefix(),
             'o-oai-pmh:mode_harvest' => $this->modeHarvest(),
             'o-oai-pmh:mode_delete' => $this->modeDelete(),
