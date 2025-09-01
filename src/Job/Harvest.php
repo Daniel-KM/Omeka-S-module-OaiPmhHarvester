@@ -583,7 +583,7 @@ class Harvest extends AbstractJob
 
             $records = $response->ListRecords;
 
-            if (is_null($stats['records'])) {
+            if ($stats['records'] === null) {
                 $stats['records'] = $resumptionToken
                     ? (int) $records->resumptionToken['completeListSize']
                     : count($response->ListRecords->record);

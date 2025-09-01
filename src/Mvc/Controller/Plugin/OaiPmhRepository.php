@@ -84,7 +84,7 @@ class OaiPmhRepository extends AbstractPlugin
      */
     public function __invoke(?string $endpoint = null): self
     {
-        if (!is_null($endpoint)) {
+        if ($endpoint !== null) {
             $this->endpoint = $endpoint;
         }
         return $this;
@@ -223,7 +223,7 @@ class OaiPmhRepository extends AbstractPlugin
                 $this->storeXml($response, 'ListSets', $index);
             }
 
-            if (is_null($totalSets)) {
+            if ($totalSets === null) {
                 $totalSets = isset($response->ListSets->resumptionToken)
                     ? (int) $response->ListSets->resumptionToken['completeListSize']
                     : count($response->ListSets->set);

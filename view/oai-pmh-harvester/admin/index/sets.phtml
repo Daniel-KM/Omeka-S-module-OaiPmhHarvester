@@ -35,7 +35,7 @@ $sets = $form->getOption('sets') ?: [];
 
 <h2><?= $repositoryName ?></h2>
 <p>
-    <?php if (is_null($total)): ?>
+    <?php if ($total === null): ?>
         <?= sprintf($translate('The repository %1$s (%2$s) has an undefined number of sets.'), $repositoryName, $endpoint) ?>
     <?php else: ?>
         <?= sprintf($translate('The repository %1$s (%2$s) has %3$d sets.'), $repositoryName, $endpoint, $total) ?>
