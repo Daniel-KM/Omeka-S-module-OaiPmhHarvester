@@ -75,8 +75,8 @@ class Module extends AbstractModule
         // Manage the deletion of an item.
         $sharedEventManager->attach(
             \Omeka\Api\Adapter\ItemAdapter::class,
-            'api.delete.pre',
-            [$this, 'handleBeforeDelete'],
+            'api.delete.post',
+            [$this, 'handleDeletePost'],
         );
 
         // Manage search items with harvests.
@@ -127,7 +127,7 @@ class Module extends AbstractModule
         return $result;
     }
 
-    public function handleBeforeDelete(Event $event): void
+    public function handleDeletePost(Event $event): void
     {
         /**
          * @var \Omeka\Api\Manager $api
@@ -137,22 +137,18 @@ class Module extends AbstractModule
         $request = $event->getParam('request');
         $resourceId = $request->getId();
         $resourceName = $request->getResource();
-        try {
-            $api
-                ->delete(
-                    'oaipmhharvester_entities',
-                    [
-                        'entityId' => $resourceId,
-                        'entityName' => $resourceName,
-                    ],
-                    [],
-                    [
-                        // The flush is automatically done on main resource
-                        // execution, or skipped when failing.
-                        'flushEntityManager' => false,
-                    ]
-                );
-        } catch (\Omeka\Api\Exception\NotFoundException $e) {
+        if ($resourceId && $resourceName) {
+            try {
+                $api
+                    ->delete(
+                        'oaipmhharvester_entities',
+                        [
+                            'entityId' => $resourceId,
+                            'entityName' => $resourceName,
+                        ],
+                    );
+            } catch (\Exception $e) {
+            }
         }
     }
 
