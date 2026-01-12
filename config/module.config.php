@@ -134,6 +134,11 @@ return [
             'mets' => OaiPmh\HarvesterMap\Mets::class,
             // 'mock' => OaiPmh\HarvesterMap\Mock::class,
         ],
+        // Formats using Mapper module (registered dynamically if Mapper is available).
+        // @see \OaiPmhHarvester\Module::onBootstrap()
+        'abstract_factories' => [
+            Service\OaiPmh\MapperFormatFactory::class,
+        ],
         'aliases' => [
             'dc' => 'oai_dc',
             'dcterms' => 'oai_dcterms',
@@ -141,6 +146,11 @@ return [
             'oai_qdc' => 'oai_dcterms',
             'dcq' => 'oai_dcterms',
             'qdc' => 'oai_dcterms',
+            // Mapper-based formats (available when Mapper module is installed).
+            'oai_ead' => 'ead',
+            'oai_lido' => 'lido',
+            'lido-mc' => 'lido_mc',
+            'lidoMC' => 'lido_mc',
         ],
     ],
 

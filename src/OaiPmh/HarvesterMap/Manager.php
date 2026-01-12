@@ -7,13 +7,17 @@ use Omeka\ServiceManager\AbstractPluginManager;
 class Manager extends AbstractPluginManager
 {
     /**
-     * Keep oai dc / dcterms first.
+     * Keep oai dc / dcterms first, then common formats.
      *
      * @var array
      */
     protected $sortedNames = [
         'oai_dc',
         'oai_dcterms',
+        'mets',
+        'ead',
+        'lido',
+        'lido_mc',
     ];
 
     protected $autoAddInvokableClass = false;
