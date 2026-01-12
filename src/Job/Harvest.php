@@ -294,7 +294,7 @@ class Harvest extends AbstractJob
             } catch (NotFoundException $e) {
                 $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
                 $this->logger->err(
-                    'The mapping table "{tablej}" does not exist.', // @translate
+                    'The mapping table "{table}" does not exist.', // @translate
                     ['table' => $args['mapping']]
                 );
             }
