@@ -1102,7 +1102,7 @@ class Harvest extends AbstractJob
                     $from = null;
                 } else {
                     $pattern = trim(mb_substr($from, $posPattern + 1));
-                    $from = trim(mb_subst($from, 0, $posPattern));
+                    $from = trim(mb_substr($from, 0, $posPattern));
                 }
             }
 
@@ -1258,7 +1258,7 @@ class Harvest extends AbstractJob
                 // NumericDataTypes.
             );
             ksort($storeValue);
-            $values[] = $storeValue;
+            $result[] = $storeValue;
         }
 
         return array_values(array_map('unserialize', array_unique(array_map('serialize', $result))));
