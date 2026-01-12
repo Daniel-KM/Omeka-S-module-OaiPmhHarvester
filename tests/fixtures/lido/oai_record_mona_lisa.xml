@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    OAI-PMH GetRecord response containing a LIDO record for La Joconde (Mona Lisa)
+    Used for testing OaiPmhHarvester with Mapper module integration.
+-->
+<OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
+    <responseDate>2024-01-15T12:00:00Z</responseDate>
+    <request verb="GetRecord" metadataPrefix="lido" identifier="louvre:INV779">
+        https://collections.louvre.fr/oai
+    </request>
+    <GetRecord>
+        <record>
+            <header>
+                <identifier>louvre:INV779</identifier>
+                <datestamp>2024-01-15</datestamp>
+                <setSpec>paintings</setSpec>
+            </header>
+            <metadata>
+                <lido:lido
+                    xmlns:lido="http://www.lido-schema.org"
+                    xmlns:gml="http://www.opengis.net/gml"
+                    xmlns:skos="http://www.w3.org/2004/02/skos/core#"
+                    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+
+                    <lido:lidoRecID lido:type="http://terminology.lido-schema.org/lido00099">
+                        louvre.fr/oeuvre/INV779
+                    </lido:lidoRecID>
+
+                    <lido:objectPublishedID lido:type="http://terminology.lido-schema.org/lido00099">
+                        https://collections.louvre.fr/ark:/53355/cl010062370
+                    </lido:objectPublishedID>
+
+                    <lido:descriptiveMetadata xml:lang="fr">
+                        <lido:objectClassificationWrap>
+                            <lido:objectWorkTypeWrap>
+                                <lido:objectWorkType lido:sortorder="1">
+                                    <lido:term lido:pref="preferred" xml:lang="fr">Peinture</lido:term>
+                                </lido:objectWorkType>
+                            </lido:objectWorkTypeWrap>
+                        </lido:objectClassificationWrap>
+
+                        <lido:objectIdentificationWrap>
+                            <lido:titleWrap>
+                                <lido:titleSet lido:type="preferred">
+                                    <lido:appellationValue lido:pref="preferred" xml:lang="fr">
+                                        La Joconde
+                                    </lido:appellationValue>
+                                </lido:titleSet>
+                                <lido:titleSet lido:type="alternate">
+                                    <lido:appellationValue lido:pref="alternate" xml:lang="en">
+                                        Mona Lisa
+                                    </lido:appellationValue>
+                                </lido:titleSet>
+                            </lido:titleWrap>
+
+                            <lido:repositoryWrap>
+                                <lido:repositorySet lido:type="current">
+                                    <lido:repositoryName>
+                                        <lido:legalBodyName>
+                                            <lido:appellationValue lido:pref="preferred" xml:lang="fr">
+                                                Musee du Louvre
+                                            </lido:appellationValue>
+                                        </lido:legalBodyName>
+                                    </lido:repositoryName>
+                                    <lido:workID lido:type="inventory number">INV. 779</lido:workID>
+                                </lido:repositorySet>
+                            </lido:repositoryWrap>
+
+                            <lido:objectDescriptionWrap>
+                                <lido:objectDescriptionSet lido:type="description">
+                                    <lido:descriptiveNoteValue xml:lang="fr">
+                                        Portrait en buste de Lisa Gherardini, epouse de Francesco del Giocondo.
+                                    </lido:descriptiveNoteValue>
+                                </lido:objectDescriptionSet>
+                            </lido:objectDescriptionWrap>
+
+                            <lido:objectMeasurementsWrap>
+                                <lido:objectMeasurementsSet>
+                                    <lido:displayObjectMeasurements xml:lang="fr">
+                                        Hauteur : 77 cm ; Largeur : 53 cm
+                                    </lido:displayObjectMeasurements>
+                                </lido:objectMeasurementsSet>
+                            </lido:objectMeasurementsWrap>
+                        </lido:objectIdentificationWrap>
+
+                        <lido:eventWrap>
+                            <lido:eventSet lido:sortorder="1">
+                                <lido:event>
+                                    <lido:eventType>
+                                        <lido:term xml:lang="fr">Production</lido:term>
+                                    </lido:eventType>
+                                    <lido:eventActor lido:sortorder="1">
+                                        <lido:actorInRole>
+                                            <lido:actor lido:type="http://terminology.lido-schema.org/lido00413">
+                                                <lido:actorID lido:type="http://terminology.lido-schema.org/lido00099">
+                                                    http://viaf.org/viaf/24604287
+                                                </lido:actorID>
+                                                <lido:nameActorSet>
+                                                    <lido:appellationValue lido:pref="preferred" xml:lang="fr">
+                                                        Leonard de Vinci
+                                                    </lido:appellationValue>
+                                                </lido:nameActorSet>
+                                            </lido:actor>
+                                            <lido:roleActor>
+                                                <lido:term xml:lang="fr">Peintre</lido:term>
+                                            </lido:roleActor>
+                                        </lido:actorInRole>
+                                    </lido:eventActor>
+                                    <lido:eventDate>
+                                        <lido:displayDate xml:lang="fr">Entre 1503 et 1519</lido:displayDate>
+                                        <lido:date>
+                                            <lido:earliestDate>1503</lido:earliestDate>
+                                            <lido:latestDate>1519</lido:latestDate>
+                                        </lido:date>
+                                    </lido:eventDate>
+                                    <lido:eventPlace>
+                                        <lido:place>
+                                            <lido:namePlaceSet>
+                                                <lido:appellationValue xml:lang="fr">Florence</lido:appellationValue>
+                                            </lido:namePlaceSet>
+                                        </lido:place>
+                                    </lido:eventPlace>
+                                    <lido:eventMaterialsTech>
+                                        <lido:displayMaterialsTech xml:lang="fr">
+                                            Huile sur panneau de peuplier
+                                        </lido:displayMaterialsTech>
+                                    </lido:eventMaterialsTech>
+                                </lido:event>
+                            </lido:eventSet>
+                        </lido:eventWrap>
+
+                        <lido:objectRelationWrap>
+                            <lido:subjectWrap>
+                                <lido:subjectSet lido:sortorder="1">
+                                    <lido:subject lido:type="http://terminology.lido-schema.org/lido00136">
+                                        <lido:subjectActor>
+                                            <lido:actor>
+                                                <lido:nameActorSet>
+                                                    <lido:appellationValue xml:lang="fr">
+                                                        Lisa Gherardini
+                                                    </lido:appellationValue>
+                                                </lido:nameActorSet>
+                                            </lido:actor>
+                                        </lido:subjectActor>
+                                    </lido:subject>
+                                </lido:subjectSet>
+                            </lido:subjectWrap>
+                        </lido:objectRelationWrap>
+                    </lido:descriptiveMetadata>
+
+                    <lido:administrativeMetadata xml:lang="fr">
+                        <lido:rightsWorkWrap>
+                            <lido:rightsWorkSet>
+                                <lido:rightsType>
+                                    <lido:term xml:lang="fr">Domaine public</lido:term>
+                                </lido:rightsType>
+                            </lido:rightsWorkSet>
+                        </lido:rightsWorkWrap>
+
+                        <lido:recordWrap>
+                            <lido:recordID lido:type="local">louvre-inv779</lido:recordID>
+                            <lido:recordType>
+                                <lido:term xml:lang="fr">Notice d'oeuvre</lido:term>
+                            </lido:recordType>
+                            <lido:recordSource>
+                                <lido:legalBodyName>
+                                    <lido:appellationValue xml:lang="fr">Musee du Louvre</lido:appellationValue>
+                                </lido:legalBodyName>
+                            </lido:recordSource>
+                        </lido:recordWrap>
+
+                        <lido:resourceWrap>
+                            <lido:resourceSet lido:sortorder="1">
+                                <lido:resourceRepresentation lido:type="image_master">
+                                    <lido:linkResource lido:formatResource="image/jpeg">
+                                        https://collections.louvre.fr/media/cache/small/mona_lisa.jpg
+                                    </lido:linkResource>
+                                </lido:resourceRepresentation>
+                                <lido:resourceDescription lido:type="description" xml:lang="fr">
+                                    Vue de face de La Joconde
+                                </lido:resourceDescription>
+                            </lido:resourceSet>
+                        </lido:resourceWrap>
+                    </lido:administrativeMetadata>
+                </lido:lido>
+            </metadata>
+        </record>
+    </GetRecord>
+</OAI-PMH>

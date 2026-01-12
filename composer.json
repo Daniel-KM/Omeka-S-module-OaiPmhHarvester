@@ -1,0 +1,44 @@
+{
+    "name": "daniel-km/omeka-s-module-oai-pmh-harvester",
+    "type": "omeka-s-module",
+    "description": "Module for Omeka S that fetch records from remote OAI-PMH repositories",
+    "license": "GPL-3.0-or-later",
+    "authors": [
+        {
+            "name": "Daniel Berthereau",
+            "homepage": "https://gitlab.com/Daniel-KM",
+            "role": "Maintainer"
+        },
+        {
+            "name": "Vincent Buard",
+            "homepage": "https://omeka.numerizen.com",
+            "role": "Developer"
+        },
+        {
+            "name": "Roy Rosenzweig Center for History and New Media",
+            "homepage": "https://rrchnm.org",
+            "role": "Original Author"
+        }
+    ],
+    "homepage": "https://gitlab.com/Daniel-KM/Omeka-S-module-OaiPmhHarvester",
+    "support": {
+        "issues": "https://gitlab.com/Daniel-KM/Omeka-S-module-OaiPmhHarvester/-/issues",
+        "source": "https://gitlab.com/Daniel-KM/Omeka-S-module-OaiPmhHarvester"
+    },
+    "require": {
+        "php": "^7.4 || ^8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "OaiPmhHarvester\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "OaiPmhHarvesterTest\\": "tests/OaiPmhHarvesterTest/"
+        }
+    },
+    "extra": {
+        "installer-name": "OaiPmhHarvester"
+    }
+}
