@@ -180,6 +180,8 @@ class Module extends AbstractModule
             $adapter = $event->getTarget();
             $qb = $event->getParam('queryBuilder');
             $expr = $qb->expr();
+
+            // TODO Why use a dynamic alias instead of a fixed alias?
             $entityAlias = $adapter->createAlias();
 
             if (empty($query['harvest_id']) || $query['harvest_id'] === [0] || $query['harvest_id'] === ['0']) {
