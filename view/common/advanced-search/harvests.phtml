@@ -9,7 +9,7 @@ $translate = $plugins->get('translate');
 $resourceSelect = $plugins->get('resourceSelect');
 
 $ids = $query['harvest_id'] ?? [];
-$ids = array_filter($ids);
+$ids = is_array($ids) ? array_filter($ids) : [$ids];
 ?>
 
 <div id="harvests" class="field" role="group" aria-labelledby="by-harvest-label">

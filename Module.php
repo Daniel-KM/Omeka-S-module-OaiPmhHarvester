@@ -40,6 +40,7 @@ class Module extends AbstractModule
         $this->setServiceLocator($services);
         $plugins = $services->get('ControllerPluginManager');
         $messenger = $plugins->get('messenger');
+        $settings = $services->get('Omeka\Settings');
 
         $this->execSqlFromFile(__DIR__ . '/data/install/schema.sql');
 
@@ -55,6 +56,12 @@ class Module extends AbstractModule
         $dir = $basePath . '/oai-pmh-harvest';
         if (!file_exists($dir)) {
             mkdir($dir);
+        }
+
+        $searchFields = $settings->get('advancedsearch_search_fields');
+        if ($searchFields !== null) {
+            $searchFields[] = 'common/advanced-search/harvests';
+            $settings->set('advancedsearch_search_fields', $searchFields);
         }
     }
 

@@ -326,9 +326,11 @@ if (version_compare($oldVersion, '3.4.19', '<')) {
         ['`class`' => 'OaiPmhHarvester\Job\Undo']
     );
 
-    $advancedSearchFields = $settings->get('advancedsearch_search_fields', []) ?: [];
-    $advancedSearchFields[] = 'common/advanced-search/harvests';
-    $settings->set('advancedsearch_search_fields', $advancedSearchFields);
+    $searchFields = $settings->get('advancedsearch_search_fields');
+    if ($searchFields !== null) {
+        $searchFields[] = 'common/advanced-search/harvests';
+        $settings->set('advancedsearch_search_fields', $searchFields);
+    }
 
     $message = new Message(
         'It is now possible to search items by harvest.' // @translate
