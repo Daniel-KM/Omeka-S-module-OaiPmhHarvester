@@ -30,6 +30,18 @@ Uncompress files and rename module folder `OaiPmhHarvester`.
 See general end user documentation for [installing a module] and follow the
 config instructions.
 
+- For test
+
+The module includes a comprehensive test suite with unit and functional tests.
+Run them from the root of Omeka:
+
+```sh
+vendor/bin/phpunit -c modules/OaiPmhHarvester/phpunit.xml --testdox
+```
+
+The tests requires the module [Common].
+The `mapper` test suite requires the [Mapper] module to be installed.
+
 
 Usage
 -----
@@ -123,5 +135,7 @@ This module has first been built by [Numerizen] as a simplified version of the
 [Bibliothèque nationale universiaire de Strasbourg]: https://www.bnu.fr
 [Numistral]: https://omeka.numistral.fr
 [Numerizen]: http://omeka.numerizen.com
+[Common]: https://gitlab.com/Daniel-KM/Omeka-S-module-Common
+[Mapper]: https://gitlab.com/Daniel-KM/Omeka-S-module-Mapper
 [GitLab]: https://gitlab.com/Daniel-KM
 [Daniel-KM]: https://gitlab.com/Daniel-KM "Daniel Berthereau"
