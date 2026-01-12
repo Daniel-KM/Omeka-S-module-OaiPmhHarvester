@@ -111,7 +111,7 @@ Copyright
 
 * Copyright 2008-2013 Roy Rosenzweig Center for History and New Media
 * Copyright Vincent Buard, 2017 (see [Numerizen])
-* Copyright Daniel Berthereau, 2014-2025 (see [Daniel-KM])
+* Copyright Daniel Berthereau, 2014-2026 (see [Daniel-KM])
 
 This module has first been built by [Numerizen] as a simplified version of the
 [plugin] for [Omeka Classic], for PSL University. Then, it was improved for the

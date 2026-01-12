@@ -2,6 +2,7 @@
 
 namespace OaiPmhHarvester;
 
+use Common\Stdlib\PsrMessage;
 use Omeka\Stdlib\Message;
 
 /**
@@ -358,3 +359,16 @@ if (version_compare($oldVersion, '3.4.22', '<')) {
     );
     $messenger->addSuccess($message);
 }
+
+if (version_compare($oldVersion, '3.4.25', '<')) {
+    $message = new PsrMessage(
+        'It is now possible to harvest EAD and LIDO via module {link}Mapper{link_end}. This feature is still experimental.', // @translate
+        [
+            'link' => '<a href="https://gitlab.com/Daniel-KM/Omeka-S-module-Mapper" target="_blank" rel="noopener">',
+            'link_end' => '</a>',
+        ]
+    );
+    $message->setEscapeHtml(false);
+    $messenger->addSuccess($message);
+}
+
