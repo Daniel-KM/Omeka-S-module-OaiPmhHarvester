@@ -99,15 +99,16 @@ class EntityAdapter extends AbstractEntityAdapter
      */
     public function hydrate(Request $request, EntityInterface $entity, ErrorStore $errorStore): void
     {
-        /** @var \OaiPmhHarvester\Entity\Entity $entity */
-
+        /** @var Entity $entity */
         $data = $request->getContent();
 
         if (array_key_exists('o-oai-pmh:harvest', $data)) {
             $harvest = isset($data['o-oai-pmh:harvest']['o:id'])
                 ? $this->getEntityManager()->find(Harvest::class, $data['o-oai-pmh:harvest']['o:id'])
                 : null;
-            $entity->setHarvest($harvest);
+            if ($harvest) {
+                $entity->setHarvest($harvest);
+            }
         }
 
         if (array_key_exists('o-oai-pmh:entity_id', $data)) {

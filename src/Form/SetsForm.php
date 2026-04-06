@@ -10,11 +10,13 @@ use Omeka\Form\Element as OmekaElement;
 
 class SetsForm extends Form
 {
+    /**
+     * @param  null|int|string  $name Optional name for the element
+     * @param  array            $options Optional options for the element
+     */
     public function __construct($name = null, $options = [])
     {
-        is_array($name)
-            ? parent::__construct($name['name'] ?? null, $name)
-            : parent::__construct($name, $options ?? []);
+        parent::__construct($name, $options);
     }
 
     public function init(): void

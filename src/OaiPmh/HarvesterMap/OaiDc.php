@@ -53,6 +53,8 @@ class OaiDc extends AbstractHarvesterMap
 
         foreach (self::DUBLIN_CORE_ELEMENTS as $localName) {
             // The first check avoids an xml issue "Node no longer exists".
+            // TODO check if the comment above is still true, phpstan says "Left side of && is always true."
+            /** @phpstan-ignore booleanAnd.leftAlwaysTrue */
             if (strlen((string) $localName) && isset($metadata->$localName)) {
                 $resource["dcterms:$localName"] = $this->extractValues($metadata, "dcterms:$localName");
             }

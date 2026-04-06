@@ -64,7 +64,7 @@ abstract class AbstractHarvesterMap implements HarvesterMapInterface
      * @param SimpleXMLElement $record The record object
      * @return bool
      */
-    public function isDeletedRecord(\SimpleXMLElement $record): bool
+    public function isDeletedRecord(SimpleXMLElement $record): bool
     {
         return isset($record->header->attributes()->status)
             && $record->header->attributes()->status == 'deleted';

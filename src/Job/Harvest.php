@@ -6,7 +6,7 @@ use DateTime;
 use DateTimeZone;
 use OaiPmhHarvester\Entity\Harvest as EntityHarvest;
 use Omeka\Api\Exception\NotFoundException;
-use Omeka\Api\Representation\AbstractRepresentation;
+use Omeka\Api\Representation\ItemRepresentation;
 use Omeka\Job\AbstractJob;
 use SimpleXMLElement;
 
@@ -450,6 +450,8 @@ class Harvest extends AbstractJob
             'o-oai-pmh:set_name' => $args['set_name'],
             'o-oai-pmh:set_description' => $args['set_description'] ?? null,
             'o-oai-pmh:has_err' => false,
+            // FIXME
+            /** @phpstan-ignore arrayFilter.alwaysEmpty */
             'o-oai-pmh:stats' => array_filter($stats),
         ];
 
@@ -1050,7 +1052,7 @@ class Harvest extends AbstractJob
         }
 
         // Some resource may have been deleted.
-        // Be sure this is not an empty array, else everything will be deleted..
+        // Be sure this is not an empty array, else everything will be deleted.
         $resourceIds = array_values(array_unique(array_filter(array_map('intval', $resourceIds))));
 
         // For now, only items can be imported, so deleted. Media will be
@@ -1161,7 +1163,7 @@ class Harvest extends AbstractJob
     /**
      * The resource is always an item for now.
      */
-    protected function buildImportEntity(AbstractRepresentation $resource, string $identifier): array
+    protected function buildImportEntity(ItemRepresentation $resource, string $identifier): array
     {
         return [
             'o-oai-pmh:harvest' => ['o:id' => $this->harvest->id()],

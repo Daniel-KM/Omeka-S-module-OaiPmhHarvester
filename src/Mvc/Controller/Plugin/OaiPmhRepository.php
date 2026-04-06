@@ -114,12 +114,10 @@ class OaiPmhRepository extends AbstractPlugin
     public function hasNoQueryAndNoFragment(?string $endpoint = null): bool
     {
         $endpoint ??= $this->endpoint;
-        if (!$endpoint) {
-            return false;
-        }
+
         return $endpoint
-            && strpos($endpoint, '?') === false
-            && strpos($endpoint, '#') === false;
+            && !str_contains($endpoint, '?')
+            && !str_contains($endpoint, '#');
     }
 
     public function isXmlEndpoint(?string $endpoint = null): bool

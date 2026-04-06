@@ -10,6 +10,11 @@
             "role": "Maintainer"
         },
         {
+            "name": "Clément SIPIETER - 6πTech",
+            "email": "clement@6pi.tech",
+            "homepage": "https://6pi.tech"
+        },
+        {
             "name": "Vincent Buard",
             "homepage": "https://omeka.numerizen.com",
             "role": "Developer"
@@ -28,6 +33,10 @@
     "require": {
         "php": "^7.4 || ^8.0"
     },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.75",
+        "phpstan/phpstan": "^2.1"
+    },
     "autoload": {
         "psr-4": {
             "OaiPmhHarvester\\": "src/"
@@ -37,6 +46,11 @@
         "psr-4": {
             "OaiPmhHarvesterTest\\": "tests/OaiPmhHarvesterTest/"
         }
+    },
+    "scripts": {
+        "cs:check": "php-cs-fixer fix --dry-run --diff",
+        "cs:fix": "php-cs-fixer fix",
+        "stan:check": "phpstan analyse"
     },
     "extra": {
         "installer-name": "OaiPmhHarvester"

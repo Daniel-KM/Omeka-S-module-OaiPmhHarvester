@@ -1,0 +1,33 @@
+stages:
+  - install
+  - test
+variables:
+  IMAGE: php:8.2-cli
+
+composer-install:
+  image: $IMAGE
+  stage: install
+  script:
+    - apt-get update && apt-get install -y unzip git zip libicu-dev pkg-config libxml2-dev default-mysql-client build-essential
+    - docker-php-ext-install intl pdo_mysql
+    - curl -sS https://getcomposer.org/installer | php
+    - php composer.phar install
+    - php -m | grep intl
+    - php -m | grep pdo_mysql
+  artifacts:
+    paths:
+      - vendor/
+
+phpstan:
+  image: $IMAGE
+  stage: test
+  needs: ["composer-install"]
+  script:
+    - php vendor/bin/phpstan analyse --memory-limit=1024M
+
+php-cs-fixer:
+  image: $IMAGE
+  stage: test
+  needs: ["composer-install"]
+  script:
+    - php vendor/bin/php-cs-fixer fix --dry-run --diff

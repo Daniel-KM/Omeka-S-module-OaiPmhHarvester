@@ -333,9 +333,8 @@ class IndexController extends AbstractActionController
         // Use synchronous dispatcher for quick testing purpose.
         $strategy = null;
         /*
-        $strategy = $this->api()->read('vocabularies', 1)->getContent()->getServiceLocator()->get(\Omeka\Job\DispatchStrategy\Synchronous::class);
+        $strategy = $this->getEvent()->getApplication()->getServiceManager()->get(\Omeka\Job\DispatchStrategy\Synchronous::class);
         */
-
         $job = $this->jobDispatcher()->dispatch(\OaiPmhHarvester\Job\Harvest::class, $args, $strategy);
 
         $urlPlugin = $this->url();
