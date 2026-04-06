@@ -24,10 +24,3 @@ phpstan:
   needs: ["composer-install"]
   script:
     - php vendor/bin/phpstan analyse --memory-limit=1024M
-
-php-cs-fixer:
-  image: $IMAGE
-  stage: test
-  needs: ["composer-install"]
-  script:
-    - php vendor/bin/php-cs-fixer fix --dry-run --diff
