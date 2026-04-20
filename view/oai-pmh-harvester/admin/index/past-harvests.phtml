@@ -96,7 +96,7 @@ $this->headLink()
                 <span><?= $escape(sprintf($translate('Deletion: %s'), $translate($harvest->modeDelete()))) ?></span>
             </td>
             <td>
-                <?= $translate($harvest->message()) ?>
+                <?= $escape($harvest->message()) ?>
                 <?php if ($harvest->hasErr()): ?>
                     <p><?= $translate('Problems were detected with the import. Check the job’s log for details.') ?></p>
                 <?php endif; ?>

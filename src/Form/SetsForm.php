@@ -272,7 +272,7 @@ class SetsForm extends Form
                         'data-placeholder' => 'Select a table…', // @translate
                     ],
                 ]);
-            }
+        }
 
         return $this;
     }

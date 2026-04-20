@@ -80,7 +80,7 @@ class Mets extends AbstractHarvesterMap
                 'o:source' => $href,
             ];
             $resource['o:media'][] = $baseMedia
-                + ($title && !$dmdId ? ['dctems:title' => [$title]] : [])
+                + ($title && !$dmdId ? ['dcterms:title' => [$title]] : [])
                 + ($dmdId ? $dmdSection[$dmdId] : []);
         }
 

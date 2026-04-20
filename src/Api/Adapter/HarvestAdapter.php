@@ -97,13 +97,8 @@ class HarvestAdapter extends AbstractEntityAdapter
             if (!is_array($query['entity_name'])) {
                 $query['entity_name'] = [$query['entity_name']];
             }
-            $resourceAlias = $this->createAlias();
-            $qb->innerJoin(
-                'omeka_root.entityName',
-                $resourceAlias
-            );
             $qb->andWhere($expr->in(
-                $resourceAlias . '.id',
+                'omeka_root.entityName',
                 $this->createNamedParameter($qb, $query['entity_name'])
             ));
         }

@@ -62,7 +62,7 @@ class HarvestForm extends Form
                 ],
                 'attributes' => [
                     'id' => 'predefined_sets',
-                    'row' => 10,
+                    'rows' => 10,
                     'placeholder' => <<<'TXT'
                         digital:serie-alpha = mets
                         humanities:serie-beta

@@ -21,7 +21,7 @@ abstract class AbstractHarvesterMap implements HarvesterMapInterface
 
     protected $options = [
         'o:is_public' => false,
-        'o:item_sets' => [],
+        'o:item_set' => [],
     ];
 
     public function setServiceLocator(ServiceLocatorInterface $services): HarvesterMapInterface

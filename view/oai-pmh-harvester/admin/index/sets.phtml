@@ -33,12 +33,12 @@ $sets = $form->getOption('sets') ?: [];
     <?= $this->navigation('Laminas\Navigation\OaiPmhHarvester')->menu() ?>
 </nav>
 
-<h2><?= $repositoryName ?></h2>
+<h2><?= $escape($repositoryName) ?></h2>
 <p>
     <?php if ($total === null): ?>
-        <?= sprintf($translate('The repository %1$s (%2$s) has an undefined number of sets.'), $repositoryName, $endpoint) ?>
+        <?= sprintf($translate('The repository %1$s (%2$s) has an undefined number of sets.'), $escape($repositoryName), $escape($endpoint)) ?>
     <?php else: ?>
-        <?= sprintf($translate('The repository %1$s (%2$s) has %3$d sets.'), $repositoryName, $endpoint, $total) ?>
+        <?= sprintf($translate('The repository %1$s (%2$s) has %3$d sets.'), $escape($repositoryName), $escape($endpoint), $total) ?>
         <?php if ($total && $total > count($sets)): ?>
             <?= sprintf($translate('Only the first %d are displayed.'), count($sets)) ?>
         <?php endif; ?>
@@ -53,7 +53,7 @@ $sets = $form->getOption('sets') ?: [];
 
 <div class="pagination pagination-header" style="float: right">
     <label for="nbrPerPage"><?= $translate('Number of oai sets per page') ?></label>
-    <select onclick="updateNbrPerPage()" name="nbrPerPage" id="pagination_nbrPerPage">
+    <select class="pagination_nbrPerPage" name="nbrPerPage">
         <option value="5">5</option>
         <option value="10">10</option>
         <option selected value="25">25</option>
@@ -64,16 +64,16 @@ $sets = $form->getOption('sets') ?: [];
         <option value="1000">1000</option>
     </select>
 
-    <button type="button" class="button button-previous" onclick="prevPage()"><?= $translate('Previous') ?></button>
+    <button type="button" class="button button-previous"><?= $translate('Previous') ?></button>
     <span class="pagination-page-index">1</span>
-    <button type="button" class="button button-next" onclick="nextPage()"><?= $translate('Next') ?></button>
+    <button type="button" class="button button-next"><?= $translate('Next') ?></button>
 </div>
 
 <?= $this->form($form) ?>
 
 <div class="pagination pagination-footer" style="float: right">
     <label for="nbrPerPage"><?= $translate('Number of oai sets per page') ?></label>
-    <select onclick="updateNbrPerPage()" name="nbrPerPage" id="pagination_nbrPerPage">
+    <select class="pagination_nbrPerPage" name="nbrPerPage">
         <option value="5">5</option>
         <option value="10">10</option>
         <option selected value="25">25</option>
@@ -84,9 +84,9 @@ $sets = $form->getOption('sets') ?: [];
         <option value="1000">1000</option>
     </select>
 
-    <button type="button" class="button button-previous" onclick="prevPage()"><?= $translate('Previous') ?></button>
+    <button type="button" class="button button-previous"><?= $translate('Previous') ?></button>
     <span class="pagination-page-index">1</span>
-    <button type="button" class="button button-next" onclick="nextPage()"><?= $translate('Next') ?></button>
+    <button type="button" class="button button-next"><?= $translate('Next') ?></button>
 </div>
 
 <script>
@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         // Count how many fields will be sent in the POST request.
-        if (new FormData(this).entries().length > 999) {
+        if ([...new FormData(this).keys()].length > 999) {
             let text = "More than 1000 fields have been submitted in the request; it's possible that not all the data will be taken into account. "
                 + "\nDo you want to continue?";
             if (!confirm(text)) {

@@ -14,7 +14,7 @@ class OaiPmhRepositoryFactory implements FactoryInterface
         $basePath = $config['file_store']['local']['base_path'] ?: (OMEKA_PATH . '/files');
         $baseUri = $config['file_store']['local']['base_uri'] ?: '';
 
-        if (empty($this->baseUri)) {
+        if (empty($baseUri)) {
             $helpers = $services->get('ViewHelperManager');
             $serverUrlHelper = $helpers->get('ServerUrl');
             $basePathHelper = $helpers->get('BasePath');

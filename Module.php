@@ -145,16 +145,15 @@ class Module extends AbstractModule
         $resourceId = $request->getId();
         $resourceName = $request->getResource();
         if ($resourceId && $resourceName) {
-            try {
-                $api
-                    ->delete(
-                        'oaipmhharvester_entities',
-                        [
-                            'entityId' => $resourceId,
-                            'entityName' => $resourceName,
-                        ],
-                    );
-            } catch (\Throwable $e) {
+            $response = $api->search('oaipmhharvester_entities', [
+                'entity_id' => $resourceId,
+                'entity_name' => $resourceName,
+            ]);
+            foreach ($response->getContent() as $entity) {
+                try {
+                    $api->delete('oaipmhharvester_entities', $entity->id());
+                } catch (\Throwable $e) {
+                }
             }
         }
     }
