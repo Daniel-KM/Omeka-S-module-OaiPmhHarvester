@@ -371,4 +371,3 @@ if (version_compare($oldVersion, '3.4.25', '<')) {
     $message->setEscapeHtml(false);
     $messenger->addSuccess($message);
 }
-
