@@ -1184,7 +1184,7 @@ class Harvest extends AbstractJob
         $dom = new \DOMDocument('1.0', 'UTF-8');
         $dom->preserveWhiteSpace = false;
         $dom->formatOutput = true;
-        $dom->loadXML($xml->asXML());
+        $dom->loadXML($xml->asXML(), LIBXML_NONET);
         $result = $dom->save($filepath);
         if (!$result) {
             $isRecord

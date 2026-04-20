@@ -272,7 +272,7 @@ class OaiPmhRepository extends AbstractPlugin
         $dom = new \DOMDocument('1.0', 'UTF-8');
         $dom->preserveWhiteSpace = false;
         $dom->formatOutput = true;
-        $dom->loadXML($xml->asXML());
+        $dom->loadXML($xml->asXML(), LIBXML_NONET);
         $resultSave = $dom->save($filepath);
         // $resultSave = $xml->saveXML($filepath);
         if (!$resultSave) {
