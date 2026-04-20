@@ -793,7 +793,7 @@ class Harvest extends AbstractJob
             ];
             try {
                 $this->api->update('oaipmhharvester_harvests', $harvestId, $harvestData);
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 // Don't fail here, because this is only information and to
                 // harvest is long.
             }
@@ -943,7 +943,7 @@ class Harvest extends AbstractJob
                     $resource['o:owner']['o:id'] = $this->staticEntityIds['user_id'];
                     try {
                         $response = $this->api->create('items', $resource);
-                    } catch (\Exception $e) {
+                    } catch (\Throwable $e) {
                         $this->logger->err(
                             'Unable do create resource for oai record {oai_id}: {msg}.', // @translate
                             ['oai_id' => $identifier, 'msg' => $e->getMessage()]
@@ -1030,7 +1030,7 @@ class Harvest extends AbstractJob
 
         try {
             $this->api->update('items', $resourceId, $updatedResource, [], ['isPartial' => true]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return false;
         }
 

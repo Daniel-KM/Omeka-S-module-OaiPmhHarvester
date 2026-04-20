@@ -180,7 +180,7 @@ if (version_compare($oldVersion, '3.3.0.12', '<')) {
         SQL;
     try {
         $connection->executeStatement($sql);
-    } catch (\Exception $e) {
+    } catch (\Throwable $e) {
         // Nothing.
     }
 
@@ -223,7 +223,7 @@ if (version_compare($oldVersion, '3.4.18', '<')) {
         SQL;
     try {
         $connection->executeStatement($sql);
-    } catch (\Exception $e) {
+    } catch (\Throwable $e) {
         // Already updated.
     }
 
@@ -238,7 +238,7 @@ if (version_compare($oldVersion, '3.4.18', '<')) {
                 CHANGE `harvest_id` `harvest_id` INT NOT NULL AFTER `id`;
             SQL;
         $connection->executeStatement($sql);
-    } catch (\Exception $e) {
+    } catch (\Throwable $e) {
         // Already updated.
     }
 
@@ -248,7 +248,7 @@ if (version_compare($oldVersion, '3.4.18', '<')) {
                 DROP FOREIGN KEY `FK_FE902C0EBE04EA9`;
         SQL;
         $connection->executeStatement($sql);
-    } catch (\Exception $e) {
+    } catch (\Throwable $e) {
         // Already updated.
     }
 
@@ -259,7 +259,7 @@ if (version_compare($oldVersion, '3.4.18', '<')) {
                 ADD CONSTRAINT FK_FE902C0E9079E5F6 FOREIGN KEY (`harvest_id`) REFERENCES `oaipmhharvester_harvest` (`id`) ON DELETE CASCADE;
             SQL;
         $connection->executeStatement($sql);
-    } catch (\Exception $e) {
+    } catch (\Throwable $e) {
         // Already updated.
     }
 
@@ -284,7 +284,7 @@ if (version_compare($oldVersion, '3.4.19', '<')) {
         SQL;
     try {
         $connection->executeStatement($sql);
-    } catch (\Exception $e) {
+    } catch (\Throwable $e) {
         // Already updated.
     }
 
@@ -296,7 +296,7 @@ if (version_compare($oldVersion, '3.4.19', '<')) {
         SQL;
     try {
         $connection->executeStatement($sql);
-    } catch (\Exception $e) {
+    } catch (\Throwable $e) {
         // Already updated.
     }
 

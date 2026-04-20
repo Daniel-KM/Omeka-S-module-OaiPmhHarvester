@@ -154,7 +154,7 @@ class Module extends AbstractModule
                             'entityName' => $resourceName,
                         ],
                     );
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
             }
         }
     }

@@ -125,7 +125,7 @@ class MapperFormat extends AbstractHarvesterMap
 
             $this->mappingLoaded = true;
             return true;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->logger->err(
                 'Error loading mapping "{mapping}" for format "{format}": {error}', // @translate
                 ['mapping' => $this->mappingReference, 'format' => $this->metadataPrefix, 'error' => $e->getMessage()]
