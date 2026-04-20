@@ -12,7 +12,7 @@ class HarvesterMapManagerFactory implements FactoryInterface
     /**
      * Create the oai metadata format manager service.
      */
-    public function __invoke(ContainerInterface $services, $requestedName, array $options = null)
+    public function __invoke(ContainerInterface $services, $requestedName, ?array $options = null)
     {
         $config = $services->get('Config');
         if (empty($config['oaipmh_harvester_maps'])) {
