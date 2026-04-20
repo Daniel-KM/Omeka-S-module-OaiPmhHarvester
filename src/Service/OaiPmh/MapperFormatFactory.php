@@ -12,9 +12,9 @@
 
 namespace OaiPmhHarvester\Service\OaiPmh;
 
-use Interop\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\AbstractFactoryInterface;
 use OaiPmhHarvester\OaiPmh\HarvesterMap\MapperFormat;
+use Psr\Container\ContainerInterface;
 
 class MapperFormatFactory implements AbstractFactoryInterface
 {
