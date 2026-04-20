@@ -1,12 +1,19 @@
 {
     "name": "daniel-km/omeka-s-module-oai-pmh-harvester",
     "type": "omeka-s-module",
-    "description": "Module for Omeka S that fetch records from remote OAI-PMH repositories",
+    "description": "Module for Omeka S: Fetch records from remote OAI-PMH repositories.",
+    "keywords": [
+        "Omeka S",
+        "Omeka S module",
+        "admin",
+        "import"
+    ],
     "license": "GPL-3.0-or-later",
+    "homepage": "https://gitlab.com/Daniel-KM/Omeka-S-module-OaiPmhHarvester",
     "authors": [
         {
             "name": "Daniel Berthereau",
-            "homepage": "https://gitlab.com/Daniel-KM",
+            "email": "Daniel.packagist@Berthereau.net",
             "role": "Maintainer"
         },
         {
@@ -25,13 +32,15 @@
             "role": "Original Author"
         }
     ],
-    "homepage": "https://gitlab.com/Daniel-KM/Omeka-S-module-OaiPmhHarvester",
     "support": {
         "issues": "https://gitlab.com/Daniel-KM/Omeka-S-module-OaiPmhHarvester/-/issues",
-        "source": "https://gitlab.com/Daniel-KM/Omeka-S-module-OaiPmhHarvester"
+        "forum": "https://forum.omeka.org/"
     },
     "require": {
         "php": "^7.4 || ^8.0"
+    },
+    "_require (not set until Omeka S merges PR #2432)": {
+        "omeka/omeka-s": "^3.0 || ^4.0"
     },
     "require-dev": {
         "phpstan/phpstan": "^2.1"
