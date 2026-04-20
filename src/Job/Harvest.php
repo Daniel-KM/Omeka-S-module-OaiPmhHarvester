@@ -900,8 +900,22 @@ class Harvest extends AbstractJob
         int $retry = self::REQUEST_MAX_RETRY,
         int $timeToWaitBeforeRetry = self::REQUEST_WAIT * 3
     ): ?SimpleXMLElement {
+        static $context;
+        $context ??= stream_context_create([
+            'http' => [
+                'user_agent' => 'Omeka-S-OaiPmhHarvester/3.4.26',
+                'timeout' => 30,
+                'follow_location' => 1,
+            ],
+            'https' => [
+                'user_agent' => 'Omeka-S-OaiPmhHarvester/3.4.26',
+                'timeout' => 30,
+                'follow_location' => 1,
+            ],
+        ]);
+        $body = @file_get_contents($url, false, $context);
         /** @var \SimpleXMLElement $response */
-        $response = simplexml_load_file($url);
+        $response = $body === false || $body === '' ? null : (@simplexml_load_string($body) ?: null);
         if (!$response && $retry > 0) {
             $retry -= 1;
             $this->logger->warn(

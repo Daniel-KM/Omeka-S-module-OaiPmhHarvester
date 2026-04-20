@@ -62,6 +62,33 @@ class OaiPmhRepository extends AbstractPlugin
      */
     protected $maxListSets = 1000;
 
+    /**
+     * @var string
+     */
+    protected $userAgent = 'Omeka-S-OaiPmhHarvester/3.4.26';
+
+    protected function loadXml(string $url)
+    {
+        static $context;
+        $context ??= stream_context_create([
+            'http' => [
+                'user_agent' => $this->userAgent,
+                'timeout' => 30,
+                'follow_location' => 1,
+            ],
+            'https' => [
+                'user_agent' => $this->userAgent,
+                'timeout' => 30,
+                'follow_location' => 1,
+            ],
+        ]);
+        $body = @file_get_contents($url, false, $context);
+        if ($body === false || $body === '') {
+            return false;
+        }
+        return @simplexml_load_string($body);
+    }
+
     public function __construct(
         HarvesterMapManager $harvesterMapManager,
         Logger $logger,
@@ -128,7 +155,7 @@ class OaiPmhRepository extends AbstractPlugin
         }
 
         $url = $endpoint . '?verb=Identify';
-        $response = @\simplexml_load_file($url);
+        $response = $this->loadXml($url);
         return (bool) $response;
     }
 
@@ -148,7 +175,7 @@ class OaiPmhRepository extends AbstractPlugin
             return null;
         }
         $url = $endpoint . '?verb=Identify';
-        $response = @\simplexml_load_file($url);
+        $response = $this->loadXml($url);
         if (!$response) {
             return null;
         }
@@ -170,7 +197,7 @@ class OaiPmhRepository extends AbstractPlugin
         $formats = [];
 
         $url = $endpoint . '?verb=ListMetadataFormats';
-        $response = @\simplexml_load_file($url);
+        $response = $this->loadXml($url);
         if ($response) {
             if ($response && $this->isStoreXml) {
                 $this->storeXml($response, 'ListMetadataFormats');
@@ -212,7 +239,7 @@ class OaiPmhRepository extends AbstractPlugin
             }
 
             /** @var \SimpleXMLElement $response */
-            $response = @\simplexml_load_file($url);
+            $response = $this->loadXml($url);
             if (!$response || !isset($response->ListSets)) {
                 break;
             }
